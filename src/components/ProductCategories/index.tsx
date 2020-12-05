@@ -34,8 +34,30 @@ export default function ProductCategories() {
     return (
         <View style={styles.container}>
             <View>
+                {/* Title*/}
                 <Text style={styles.title}>{productCategoryAdditionals?.title}</Text>
 
+                {/* Prices*/}
+                <Text style={styles.minText}>
+                    {
+                        productCategoryAdditionals && productCategoryAdditionals.min > 0 ?
+                            `Mínimo ${productCategoryAdditionals.min} ${productCategoryAdditionals.min === 1 ? 'opção.' : 'opções.'}` :
+                            "Opcional."
+
+                    }
+                </Text>
+
+                {/* Obrigatory*/}
+                <Text style={styles.maxText}>
+                    {
+                        productCategoryAdditionals && productCategoryAdditionals.max > 0 ?
+                            `Escolha até ${productCategoryAdditionals.max} ${productCategoryAdditionals.max === 1 ? 'opção.' : 'opções.'}` :
+                            "Escolha quantos quiser."
+
+                    }
+                </Text>
+
+                {/* Additionals*/}
                 <View>
                     {
                         productCategoryAdditionals?.productAdditional.map(additional => {
@@ -72,5 +94,21 @@ const styles = StyleSheet.create({
         fontSize: 22,
         color: '#cc0000',
         padding: 10
+    },
+
+    minText: {
+        fontFamily: 'Nunito_300Light_Italic',
+        fontSize: 13,
+        color: '#8c8c8c',
+        marginLeft: 15,
+        marginVertical: 5
+    },
+
+    maxText: {
+        fontFamily: 'Nunito_300Light_Italic',
+        fontSize: 13,
+        color: '#8c8c8c',
+        marginLeft: 15,
+        marginVertical: 5,
     }
 });

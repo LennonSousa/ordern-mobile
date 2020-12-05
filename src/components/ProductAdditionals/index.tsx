@@ -80,7 +80,9 @@ export default function ProductAdditionals({ productAdditional, idCategory }: Pr
                             }
                             else if (category.max === 1 && category.selectedAdditionals.length > 0) {
                                 setIsEnabled(!isEnabled);
-                                
+
+                                selectedAdditionals = 1;
+
                                 const additionalsUpdated = category.selectedAdditionals.filter(item => item.id !== category.selectedAdditionals[0].id);
 
                                 return {
