@@ -29,6 +29,7 @@ export default function ProductDetails() {
 
             handleSelectedProduct({
                 id: params.product.id,
+                price: params.product.price,
                 categoiesAdditional: params.product.categoriesAdditional.map(category => {
                     return {
                         id: category.id,
@@ -43,6 +44,14 @@ export default function ProductDetails() {
 
     function handleNavigateToCategoryAdditionals(categoryAdditional: ProductCategory) {
         navigation.navigate('CategoryAdditionals', { productCategory: categoryAdditional });
+    }
+
+    function handleAmount(){
+
+    }
+
+    function handleNavigateToCart() {
+        navigation.navigate('LandingPage');
     }
 
     return (
@@ -124,11 +133,38 @@ export default function ProductDetails() {
 
             {/* Footer*/}
             <View style={styles.footer}>
-                <View style={styles.footerAmount}></View>
+                <View style={styles.footerContainerAmount}>
+                    <View style={styles.footerContainerAmountRow}>
+                        <View style={styles.footerContainerAmountColumnMinus}>
+                            <TouchableHighlight>
+                                <Feather name="minus" style={styles.iconButtons} />
+                            </TouchableHighlight>
+                        </View>
 
-                <TouchableHighlight underlayColor='#ff0000' style={styles.footerButton}>
-                    <Text style={{color: '#fff'}}>R$ 15,75</Text>
-                </TouchableHighlight>
+                        <View style={styles.footerContainerAmountColumnValue}>
+                            <Text style={styles.iconButtons}>1</Text>
+                        </View>
+
+                        <View style={styles.footerContainerAmountColumnPlus}>
+                            <TouchableHighlight>
+                                <Feather name="plus" style={styles.iconButtons} />
+                            </TouchableHighlight>
+                        </View>
+                    </View>
+                </View>
+
+                <View style={styles.footerContainerButton}>
+                    <TouchableHighlight underlayColor="#ff0000" onPress={handleNavigateToCart} style={styles.footerButton} >
+                        <View style={styles.footerContainerButtonRow}>
+                            <View style={styles.footerContainerButtonColumnText}>
+                                <Text style={styles.textButtons}>Adicionar</Text>
+                            </View>
+                            <View style={styles.footerContainerButtonColumnTotal}>
+                                <Text style={styles.textButtons}>{`R$ ${product?.price.toString().replace('.', ',')}`}</Text>
+                            </View>
+                        </View>
+                    </TouchableHighlight>
+                </View>
             </View>
         </>
     );
@@ -284,15 +320,68 @@ const styles = StyleSheet.create({
         borderTopWidth: 1,
         backgroundColor: '#fff',
         padding: 10,
+        justifyContent: 'space-between'
     },
 
-    footerAmount: {
-        flex: 0.5
+    footerContainerAmount: {
+        flex: 0.4,
+        borderColor: '#d9d9d9',
+        borderWidth: 1,
+        borderRadius: 5
+    },
+
+    footerContainerAmountRow: {
+        flexDirection: 'row',
+        flex: 1,
+        alignItems: 'center',
+    },
+
+    footerContainerAmountColumnMinus: {
+        flex: 0.3,
+    },
+
+    footerContainerAmountColumnValue: {
+        flex: 0.4,
+    },
+
+    footerContainerAmountColumnPlus: {
+        flex: 0.3,
+    },
+
+    iconButtons: {
+        fontFamily: 'Nunito_300Light',
+        fontSize: 18,
+        color: '#8c8c8c',
+        textAlign: 'center'
+    },
+
+    footerContainerButton: {
+        backgroundColor: '#cc0000',
+        flex: 0.5,
+        borderRadius: 5
+    },
+
+    footerContainerButtonRow: {
+        flexDirection: 'row',
     },
 
     footerButton: {
+        paddingVertical: 12,
+        alignItems: 'center'
+    },
+
+    footerContainerButtonColumnText: {
         flex: 0.5,
-        backgroundColor: '#cc0000',
-        borderRadius: 2
-    }
+    },
+
+    footerContainerButtonColumnTotal: {
+        flex: 0.5
+    },
+
+    textButtons: {
+        fontFamily: 'Nunito_600SemiBold',
+        fontSize: 16,
+        color: '#fff',
+        textAlign: 'center'
+    },
 });

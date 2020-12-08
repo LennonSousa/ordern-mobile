@@ -15,6 +15,7 @@ interface CategoriesAdditional {
 
 export interface SelectedProduct {
     id: number;
+    price: number;
     categoiesAdditional: CategoriesAdditional[];
 }
 
