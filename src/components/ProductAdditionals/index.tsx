@@ -73,7 +73,8 @@ export default function ProductAdditionals({ productAdditional, idCategory }: Pr
                                         ...category.selectedAdditionals, {
                                             id: productAdditional.id,
                                             title: productAdditional.additional.title,
-                                            enabled: true
+                                            enabled: true,
+                                            price: productAdditional.price
                                         }
                                     ]
                                 }
@@ -91,7 +92,8 @@ export default function ProductAdditionals({ productAdditional, idCategory }: Pr
                                         ...additionalsUpdated, {
                                             id: productAdditional.id,
                                             title: productAdditional.additional.title,
-                                            enabled: true
+                                            enabled: true,
+                                            price: productAdditional.price
                                         }
                                     ]
                                 }

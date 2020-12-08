@@ -2,12 +2,13 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useRoute } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import { Dimensions, ImageBackground, StyleSheet, Text, TextInput, View } from 'react-native';
-import { ScrollView, TouchableHighlight } from 'react-native-gesture-handler';
+import { ScrollView, TouchableHighlight, TouchableOpacity } from 'react-native-gesture-handler';
 import { Feather } from '@expo/vector-icons';
 
 import { Product } from '../components/Products';
 import { ProductCategory } from '../components/ProductCategories';
 import { ContextSelectedProduct } from '../context/selectedProductContext';
+import ProductValues from '../components/ProductValues';
 
 interface ProductDetailsRouteParams {
     product: Product;
@@ -29,7 +30,12 @@ export default function ProductDetails() {
 
             handleSelectedProduct({
                 id: params.product.id,
-                price: params.product.price,
+                price_one: params.product.price_one,
+                price: params.product.price_one ? params.product.discount ? params.product.discount_price : params.product.price : 0,
+                values: params.product.values,
+                selectedValue: undefined,
+                amount: 1,
+                total: params.product.price_one ? params.product.discount ? params.product.discount_price : params.product.price : 0,
                 categoiesAdditional: params.product.categoriesAdditional.map(category => {
                     return {
                         id: category.id,
@@ -46,7 +52,23 @@ export default function ProductDetails() {
         navigation.navigate('CategoryAdditionals', { productCategory: categoryAdditional });
     }
 
-    function handleAmount(){
+    function handleAmount(operation: string) {
+        if (selectedProduct) {
+            if (operation === "plus")
+                handleSelectedProduct(
+                    {
+                        ...selectedProduct,
+                        amount: selectedProduct.amount + 1
+                    }
+                );
+            if (operation === "minus" && selectedProduct.amount !== 1)
+                handleSelectedProduct(
+                    {
+                        ...selectedProduct,
+                        amount: selectedProduct.amount - 1
+                    }
+                );
+        }
 
     }
 
@@ -56,116 +78,145 @@ export default function ProductDetails() {
 
     return (
         <>
-            <ScrollView style={styles.container}>
-                <View style={styles.containerCover}>
-                    <ImageBackground source={{ uri: product?.image }} style={styles.cover} />
-                </View>
-
-                <View>
-                    <Text style={styles.productTitle}>{product?.title}</Text>
-                    <Text style={styles.productDescription}>{product?.description}</Text>
-                </View>
-
-                <View style={styles.rowPrice}>
-
-                    {
-                        product?.discount ? <Text style={styles.productPriceDiscount}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text> :
-                            <Text style={styles.productPrice}>{`R$ ${product?.price.toString().replace('.', ',')}`}</Text>
-                    }
-                    {
-                        product?.discount && <Text style={styles.productPrice}>{`R$ ${product.discount_price.toString().replace('.', ',')}`}</Text>
-                    }
-                </View>
-
-                {
-                    product && product.categoriesAdditional.map(categoryAdditional => {
-                        return (
-                            <View key={categoryAdditional.id} style={styles.containerAdditionals}>
-                                <View style={styles.rowAdditionals}>
-                                    <TouchableHighlight
-                                        underlayColor='#e6e6e6'
-                                        onPress={() => { handleNavigateToCategoryAdditionals(categoryAdditional) }}>
-                                        <View style={styles.rowTitleCategoryAdditionals}>
-                                            <Text style={styles.categoryAdditionalTitle}>{categoryAdditional.title}</Text>
-                                            <Feather name="chevron-right" style={styles.categoryAdditionalArrow} />
-                                        </View>
-                                    </TouchableHighlight>
-                                </View>
-
-                                {
-                                    categoryAdditional.min > 0 && <View style={styles.rowObrigatory}>
-                                        <Text style={styles.obrigatoryTitle}>Obrigatório</Text>
-                                    </View>
-                                }
-
-                                <View style={styles.rowTitleSelectedAdditionals} >
-                                    {
-                                        selectedProduct && selectedProduct.categoiesAdditional.map(category => {
-                                            if (categoryAdditional.id === category.id) {
-                                                const additionals = category.selectedAdditionals.map(additional => {
-                                                    return additional;
-                                                });
-
-                                                return additionals && additionals.map(item => {
-                                                    return <Text key={item.id} style={styles.selectedAdditionals}>{item.title}</Text>
-                                                });
-                                            }
-                                        })
-                                    }
-                                </View>
-                            </View>
-                        )
-                    })
-                }
-
-                {/* Divider*/}
-                <View style={styles.divider}></View>
-
-                {/* Notes*/}
-                <View style={styles.containerNotes}>
-                    <View style={{ flexDirection: 'row' }}>
-                        <Feather name="message-square" style={styles.iconNotes} />
-                        <Text style={styles.titleNotes}>  Alguma observação?</Text>
+            {
+                product && selectedProduct && <ScrollView style={styles.container}>
+                    <View style={styles.containerCover}>
+                        <ImageBackground source={{ uri: product.image }} style={styles.cover} />
                     </View>
-                    <TextInput multiline={true} numberOfLines={3} maxLength={140} style={styles.inputNotes} />
-                </View>
-            </ScrollView>
+
+                    <View>
+                        <Text style={styles.productTitle}>{product.title}</Text>
+                        <Text style={styles.productDescription}>{product.description}</Text>
+                    </View>
+
+                    <View style={styles.rowPrice}>
+                        {
+                            product.discount ? <Text style={styles.productPriceDiscount}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text> :
+                                <Text style={styles.productPrice}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text>
+                        }
+
+                        {
+                            product.discount && <Text style={styles.productPrice}>{`R$ ${product.discount_price.toString().replace('.', ',')}`}</Text>
+                        }
+                    </View>
+
+                    {
+                        !product.price_one && <View style={styles.productValuesContainer}>
+                            <Text style={styles.categoryAdditionalTitle} >Escolha uma opção:</Text>
+                            {
+                                product.values.map(value => {
+                                    return <View key={value.id}>
+                                        <ProductValues productValue={value} />
+                                    </View>
+                                })
+                            }
+                        </View>
+                    }
+
+                    {
+                        product && product.categoriesAdditional.map(categoryAdditional => {
+                            return (
+                                <View key={categoryAdditional.id} style={styles.containerAdditionals}>
+                                    <View style={styles.rowAdditionals}>
+                                        <TouchableHighlight
+                                            underlayColor='#e6e6e6'
+                                            onPress={() => { handleNavigateToCategoryAdditionals(categoryAdditional) }}>
+                                            <View style={styles.rowTitleCategoryAdditionals}>
+                                                <Text style={styles.categoryAdditionalTitle}>{categoryAdditional.title}</Text>
+                                                <Feather name="chevron-right" style={styles.categoryAdditionalArrow} />
+                                            </View>
+                                        </TouchableHighlight>
+                                    </View>
+
+                                    {
+                                        categoryAdditional.min > 0 && <View style={styles.rowObrigatory}>
+                                            <Text style={styles.obrigatoryTitle}>Obrigatório</Text>
+                                        </View>
+                                    }
+
+                                    <View style={styles.rowTitleSelectedAdditionals} >
+                                        {
+                                            selectedProduct.categoiesAdditional.map(category => {
+                                                if (categoryAdditional.id === category.id) {
+                                                    const additionals = category.selectedAdditionals.map(additional => {
+                                                        return additional;
+                                                    });
+
+                                                    return additionals && additionals.map(item => {
+                                                        return <Text key={item.id} style={styles.selectedAdditionals}>{item.title}</Text>
+                                                    });
+                                                }
+                                            })
+                                        }
+                                    </View>
+                                </View>
+                            )
+                        })
+                    }
+
+                    {/* Divider*/}
+                    <View style={styles.divider}></View>
+
+                    {/* Notes*/}
+                    <View style={styles.containerNotes}>
+                        <View style={{ flexDirection: 'row' }}>
+                            <Feather name="message-square" style={styles.iconNotes} />
+                            <Text style={styles.titleNotes}>  Alguma observação?</Text>
+                        </View>
+                        <TextInput multiline={true} numberOfLines={3} maxLength={140} style={styles.inputNotes} />
+                    </View>
+                </ScrollView>
+            }
 
             {/* Footer*/}
-            <View style={styles.footer}>
-                <View style={styles.footerContainerAmount}>
-                    <View style={styles.footerContainerAmountRow}>
-                        <View style={styles.footerContainerAmountColumnMinus}>
-                            <TouchableHighlight>
-                                <Feather name="minus" style={styles.iconButtons} />
-                            </TouchableHighlight>
-                        </View>
+            {
+                selectedProduct && <View style={styles.footer}>
+                    <View style={styles.footerContainerAmount}>
+                        <View style={styles.footerContainerAmountRow}>
+                            <View style={styles.footerContainerAmountColumnMinus}>
+                                <TouchableOpacity
+                                    onPress={() => { handleAmount("minus") }}
+                                    disabled={
+                                        selectedProduct.amount > 1 ? false : true
+                                    }
+                                >
+                                    <Feather name="minus" style={styles.iconButtons} />
+                                </TouchableOpacity>
+                            </View>
 
-                        <View style={styles.footerContainerAmountColumnValue}>
-                            <Text style={styles.iconButtons}>1</Text>
-                        </View>
+                            <View style={styles.footerContainerAmountColumnValue}>
+                                <Text style={styles.iconButtons}>{selectedProduct?.amount}</Text>
+                            </View>
 
-                        <View style={styles.footerContainerAmountColumnPlus}>
-                            <TouchableHighlight>
-                                <Feather name="plus" style={styles.iconButtons} />
-                            </TouchableHighlight>
+                            <View style={styles.footerContainerAmountColumnPlus}>
+                                <TouchableOpacity onPress={() => { handleAmount("plus") }}>
+                                    <Feather name="plus" style={styles.iconButtons} />
+                                </TouchableOpacity>
+                            </View>
                         </View>
                     </View>
-                </View>
 
-                <View style={styles.footerContainerButton}>
-                    <TouchableHighlight underlayColor="#ff0000" onPress={handleNavigateToCart} style={styles.footerButton} >
-                        <View style={styles.footerContainerButtonRow}>
-                            <View style={styles.footerContainerButtonColumnText}>
-                                <Text style={styles.textButtons}>Adicionar</Text>
+                    <View style={styles.footerContainerButton}>
+                        <TouchableHighlight
+                            underlayColor="#ff0000"
+                            onPress={handleNavigateToCart}
+                            disabled={selectedProduct.price === 0.00 ? true : false}
+                            style={styles.footerButton}
+                        >
+                            <View style={styles.footerContainerButtonRow}>
+                                <View style={styles.footerContainerButtonColumnText}>
+                                    <Text style={styles.textButtons}>Adicionar</Text>
+                                </View>
+                                <View style={styles.footerContainerButtonColumnTotal}>
+                                    <Text style={styles.textButtons}>
+                                        {`R$ ${selectedProduct && Number(selectedProduct.total).toFixed(2).toString().replace('.', ',')}`}
+                                    </Text>
+                                </View>
                             </View>
-                            <View style={styles.footerContainerButtonColumnTotal}>
-                                <Text style={styles.textButtons}>{`R$ ${product?.price.toString().replace('.', ',')}`}</Text>
-                            </View>
-                        </View>
-                    </TouchableHighlight>
+                        </TouchableHighlight>
+                    </View>
                 </View>
-            </View>
+            }
         </>
     );
 }
@@ -229,6 +280,11 @@ const styles = StyleSheet.create({
         marginRight: 5
     },
 
+    productValuesContainer: {
+        paddingHorizontal: 15,
+        marginVertical: 8
+    },
+
     containerAdditionals: {
         paddingHorizontal: 15,
         marginVertical: 8
@@ -241,7 +297,6 @@ const styles = StyleSheet.create({
     rowTitleCategoryAdditionals: {
         flexDirection: 'row',
         alignItems: 'flex-end',
-        paddingHorizontal: 10
     },
 
     categoryAdditionalTitle: {
@@ -380,7 +435,7 @@ const styles = StyleSheet.create({
 
     textButtons: {
         fontFamily: 'Nunito_600SemiBold',
-        fontSize: 16,
+        fontSize: 15,
         color: '#fff',
         textAlign: 'center'
     },
