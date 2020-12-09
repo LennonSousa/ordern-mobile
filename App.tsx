@@ -3,6 +3,7 @@ import { Nunito_300Light, Nunito_300Light_Italic, Nunito_600SemiBold, Nunito_700
 
 import Routes from './src/routes';
 
+import { OrderingProvider } from './src/context/orderingContext';
 import { ProductSelectedProvider } from './src/context/selectedProductContext';
 
 export default function App() {
@@ -19,8 +20,10 @@ export default function App() {
   }
 
   return (
-    <ProductSelectedProvider>
-      <Routes />
-    </ProductSelectedProvider>
+    <OrderingProvider>
+      <ProductSelectedProvider>
+        <Routes />
+      </ProductSelectedProvider>
+    </OrderingProvider>
   );
 }

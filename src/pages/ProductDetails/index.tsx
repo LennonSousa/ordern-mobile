@@ -5,10 +5,11 @@ import { Dimensions, ImageBackground, StyleSheet, Text, TextInput, View } from '
 import { ScrollView, TouchableHighlight, TouchableOpacity } from 'react-native-gesture-handler';
 import { Feather } from '@expo/vector-icons';
 
-import { Product } from '../components/Products';
-import { ProductCategory } from '../components/ProductCategories';
-import { ContextSelectedProduct } from '../context/selectedProductContext';
-import ProductValues from '../components/ProductValues';
+import { Product } from '../../components/Products';
+import { ProductCategory } from '../../components/ProductCategories';
+import { ContextSelectedProduct } from '../../context/selectedProductContext';
+import { ContextOrdering } from '../../context/orderingContext';
+import ProductValues from '../../components/ProductValues';
 
 interface ProductDetailsRouteParams {
     product: Product;
@@ -23,6 +24,7 @@ export default function ProductDetails() {
     const params = route.params as ProductDetailsRouteParams;
 
     const { selectedProduct, handleSelectedProduct } = useContext(ContextSelectedProduct);
+    const { order, handleOrder } = useContext(ContextOrdering);
 
     useEffect(() => {
         if (params.product) {
@@ -69,11 +71,72 @@ export default function ProductDetails() {
                     }
                 );
         }
-
     }
 
-    function handleNavigateToCart() {
-        navigation.navigate('LandingPage');
+    function handleAddProductToCart() {
+        if (product && selectedProduct) {
+            let itemsToOrder = {
+                id: order ? order.orderItems.length : 0,
+                amount: selectedProduct.amount,
+                name: product.title,
+                value: selectedProduct.price,
+                additional: false,
+                additional_item: 0,
+                additionals: [{
+                    id: 0,
+                    amount: 1,
+                    name: "",
+                    value: 0,
+                    additional: true,
+                    additional_item: 0,
+                    additionals: []
+                }]
+            };
+
+            itemsToOrder.additionals = [];
+
+            selectedProduct.categoiesAdditional.forEach(category => {
+                category.selectedAdditionals.forEach(additional => {
+                    itemsToOrder.additionals.push({
+                        id: itemsToOrder.additionals.length,
+                        amount: 1,
+                        name: additional.title,
+                        value: additional.price,
+                        additional: true,
+                        additional_item: itemsToOrder.id,
+                        additionals: []
+                    });
+                });
+            });
+
+            if (order) {
+                handleOrder({
+                    ...order, orderItems: [...order.orderItems, itemsToOrder]
+                });
+            }
+            else {
+                handleOrder({
+                    id: 0,
+                    client_id: 0,
+                    client: '',
+                    ordered: new Date(),
+                    delivery: new Date(),
+                    delivered: new Date(),
+                    sub_total: 0,
+                    cupom: '',
+                    delivery_tax: 0,
+                    fee: 0,
+                    total: 0,
+                    payment: '',
+                    address: '',
+                    reason_cancellation: '',
+                    orderStatus: '',
+                    orderItems: [itemsToOrder],
+                });
+            }
+
+            navigation.navigate('Cart');
+        }
     }
 
     return (
@@ -199,7 +262,7 @@ export default function ProductDetails() {
                     <View style={styles.footerContainerButton}>
                         <TouchableHighlight
                             underlayColor="#ff0000"
-                            onPress={handleNavigateToCart}
+                            onPress={handleAddProductToCart}
                             disabled={selectedProduct.price === 0.00 ? true : false}
                             style={styles.footerButton}
                         >

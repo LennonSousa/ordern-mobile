@@ -4,10 +4,11 @@ import { createStackNavigator } from '@react-navigation/stack';
 
 const { Navigator, Screen } = createStackNavigator();
 
-import Header from './components/Header';
+import Header from './components/PageHeader';
 import LandingPage from './pages/LandingPage';
 import ProductDetails from './pages/ProductDetails';
 import CategoryAdditionals from './components/ProductCategories';
+import Cart from './pages/Cart';
 
 export default function Routes() {
     return (
@@ -33,6 +34,15 @@ export default function Routes() {
                     options={{
                         headerShown: true,
                         header: () => <Header title="" showCancel={false} />
+                    }}
+                />
+
+                <Screen
+                    name="Cart"
+                    component={Cart}
+                    options={{
+                        headerShown: true,
+                        header: () => <Header title="Sacola" showCancel={true} />
                     }}
                 />
             </Navigator>

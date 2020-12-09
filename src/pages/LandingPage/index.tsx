@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, TouchableOpacity, View, Image, Dimensions, ImageBackground } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
-import api from '../services/api';
+import api from '../../services/api';
 import { ScrollView } from 'react-native-gesture-handler';
 
-import CategoryItem, { Category } from '../components/Categories';
+import CategoryItem, { Category } from '../../components/Categories';
 
 interface Restaurant {
     id: number,
