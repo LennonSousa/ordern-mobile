@@ -42,7 +42,7 @@ export default function Routes() {
                     component={Cart}
                     options={{
                         headerShown: true,
-                        header: () => <Header title="Sacola" showCancel={true} />
+                        header: () => <Header title="Sacola" showCancel={false} showClearBag={true} />
                     }}
                 />
             </Navigator>

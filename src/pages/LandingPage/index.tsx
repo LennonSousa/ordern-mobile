@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, View, Image, Dimensions, ImageBackground } from 'react-native';
+import React, { useState, useEffect, useContext } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import { StyleSheet, TouchableOpacity, TouchableHighlight, View, Image, Dimensions, ImageBackground, Text } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
 import api from '../../services/api';
 import { ScrollView } from 'react-native-gesture-handler';
 
+import { ContextOrdering } from '../../context/orderingContext';
 import CategoryItem, { Category } from '../../components/Categories';
 
 interface Restaurant {
@@ -24,6 +26,11 @@ interface Restaurant {
 }
 
 export default function LandingPage() {
+    const navigation = useNavigation();
+
+    const { order } = useContext(ContextOrdering);
+    const [amountOrderItems, setAmountOrderItems] = useState(0);
+
     const [restaurant, setRestaurant] = useState<Restaurant>();
     const [categories, setCategories] = useState<Category[]>()
 
@@ -47,6 +54,17 @@ export default function LandingPage() {
             });
     }, []);
 
+    useEffect(() => {
+        if (order) {
+            let totalAmount = 0;
+            order.orderItems.forEach(item => {
+                totalAmount = totalAmount + item.amount;
+            });
+
+            setAmountOrderItems(totalAmount);
+        }
+    }, [order]);
+
     return (
         <View style={styles.container}>
             <View style={styles.containerCover}>
@@ -68,6 +86,33 @@ export default function LandingPage() {
                     })
                 }
             </ScrollView>
+
+            {
+                order && <View>
+                    <TouchableHighlight style={styles.footerButton} underlayColor="#ff0000" onPress={() => { navigation.navigate('Cart'); }}>
+                        <View style={styles.footerButtonRow}>
+                            <View style={styles.footerButtonColumnIcon}>
+                                <View style={styles.footerButtonIconRow}>
+                                    <View style={styles.footerButtonIconColumnBag}>
+                                        <Feather name="shopping-bag" size={20} color="#fff" />
+                                    </View>
+                                    <View style={styles.footerButtonIconColumnAmount}>
+                                        <Text style={styles.footerButtonIconColumnAmountText}>{amountOrderItems}</Text>
+                                    </View>
+                                </View>
+                            </View>
+
+                            <View style={styles.footerButtonColumnText}>
+                                <Text style={styles.footerButtonText}>Ver sacola</Text>
+                            </View>
+
+                            <View style={styles.footerButtonColumnTotal}>
+                                <Text style={styles.footerButtonText}>{`R$ ${Number(order.total).toFixed(2).replace('.', ',')}`}</Text>
+                            </View>
+                        </View>
+                    </TouchableHighlight>
+                </View>
+            }
         </View>
     )
 }
@@ -76,9 +121,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#e2e2e2',
-        alignItems: 'center',
-        justifyContent: 'center',
-        textAlign: 'center'
     },
 
     containerCover: {
@@ -98,5 +140,58 @@ const styles = StyleSheet.create({
         height: 75,
         resizeMode: 'cover',
         borderRadius: 100
-    }
+    },
+
+    footerButton: {
+        backgroundColor: '#cc0000',
+        height: 45,
+        justifyContent: 'center'
+    },
+
+    footerButtonRow: {
+        flexDirection: 'row',
+    },
+
+    footerButtonColumnIcon: {
+        flex: 3,
+        alignItems: 'center',
+    },
+
+    footerButtonIconRow: {
+        flexDirection: 'row',
+    },
+
+    footerButtonIconColumnBag: {
+        flex: 0.5,
+        alignItems: 'flex-end',
+    },
+
+    footerButtonIconColumnAmount: {
+        flex: 0.5,
+        alignItems: 'flex-start'
+    },
+
+    footerButtonIconColumnAmountText: {
+        width: 20,
+        backgroundColor: '#ffffff',
+        color: '#cc0000',
+        borderRadius: 10,
+        textAlign: 'center',
+    },
+
+    footerButtonColumnText: {
+        flex: 4,
+    },
+
+    footerButtonColumnTotal: {
+        flex: 3,
+        alignItems: 'center',
+    },
+
+    footerButtonText: {
+        color: '#ffffff',
+        fontFamily: 'Nunito_600SemiBold',
+        fontSize: 16,
+        textAlign: 'center',
+    },
 });

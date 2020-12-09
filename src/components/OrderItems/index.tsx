@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 export interface OrderItem {
     id: number;
@@ -16,24 +16,160 @@ interface OrderItemProps {
 }
 
 export default function OrderItems({ orderItem }: OrderItemProps) {
+    const priceProduct = orderItem.value;
+
+    let totalAdditionals = 0;
+
+    orderItem.additionals.forEach(additional => {
+        totalAdditionals = Number(totalAdditionals) + Number(additional.value);
+    });
+
+    const amountProduct = orderItem.amount;
+    const subTotal = Number(priceProduct) + Number(totalAdditionals);
+
+
+
+    const total = Number(subTotal) * Number(amountProduct);
+
     return (
-        <View style={{ marginVertical: 5, marginHorizontal: 10 }}>
-            <View style={{ flexDirection: 'row' }}>
-                <Text style={{ flex: 0.2 }}>{orderItem.amount}</Text>
-                <Text style={{ flex: 0.5 }}>{orderItem.name}</Text>
-                <Text style={{ flex: 0.3 }}>{orderItem.value}</Text>
+        <View style={styles.container}>
+            <View style={styles.itemRow}>
+                <View style={styles.itemColumnAmount}>
+                    <Text style={styles.itemAmountText}>{orderItem.amount}</Text>
+                </View>
+
+                <View style={styles.itemColumnName}>
+                    <Text style={styles.itemTexts}>{orderItem.name}</Text>
+                </View>
+
+                <View style={styles.itemColumnValue}>
+                    <Text style={styles.itemValueTexts}>{`R$ ${Number(orderItem.value).toFixed(2).replace('.', ',')}`}</Text>
+                </View>
             </View>
-            <View style={{ marginHorizontal: 15 }}>
+            <View style={styles.additionalContainer}>
                 {
                     orderItem.additionals.map(additional => {
-                        return <View key={additional.id} style={{ flexDirection: 'row' }}>
-                            <Text style={{ flex: 0.2 }}>{additional.amount}</Text>
-                            <Text style={{ flex: 0.5 }}>{additional.name}</Text>
-                            <Text style={{ flex: 0.3 }}>{additional.value}</Text>
+                        return <View key={additional.id} style={styles.additionalRow}>
+                            <View style={styles.additionalColumnAmount}>
+                                <Text style={styles.additionalTextAmount}>{additional.amount}</Text>
+                            </View>
+
+                            <View style={styles.additionalColumnName}>
+                                <Text style={styles.additionalTexts}>{additional.name}</Text>
+                            </View>
+
+                            <View style={styles.additionalColumnValue}>
+                                <Text style={styles.additionalTexts}>{`R$ ${Number(additional.value).toFixed(2).replace('.', ',')}`}</Text>
+                            </View>
                         </View>
                     })
                 }
             </View>
+
+            <View style={styles.itemTotalContainer}>
+                <Text style={styles.itemTotalText}>{`R$ ${Number(total).toFixed(2).replace('.', ',')}`}</Text>
+            </View>
+            {/* Divider*/}
+            <View style={styles.divider}></View>
         </View>
     )
 }
+
+const styles = StyleSheet.create(
+    {
+        container: {
+            marginVertical: 5,
+            marginHorizontal: 10
+        },
+
+        divider: {
+            borderTopColor: '#e6e6e6',
+            borderTopWidth: 1,
+            marginHorizontal: 15,
+            marginVertical: 15
+        },
+
+        itemRow: {
+            flexDirection: 'row',
+        },
+
+        itemColumnAmount: {
+            flex: 0.1,
+            backgroundColor: '#8c8c8c',
+            borderRadius: 3,
+            marginRight: 5,
+        },
+
+        itemColumnName: {
+            flex: 0.7
+        },
+
+        itemColumnValue: {
+            flex: 0.2
+        },
+
+        itemAmountText: {
+            color: '#ffffff',
+            textAlign: 'center',
+        },
+
+        itemTexts: {
+            color: '#4d4d4d',
+        },
+
+        itemValueTexts: {
+            color: '#4d4d4d',
+            textAlign: 'center',
+        },
+
+        itemTotalContainer: {
+            flexDirection: 'row',
+            marginVertical: 5,
+            justifyContent: 'flex-end'
+        },
+
+        itemTotalText: {
+            flex: 0.2,
+            color: '#ffffff',
+            textAlign: 'center',
+            backgroundColor: '#ff6666',
+            borderRadius: 3,
+        },
+
+        additionalContainer: {
+            marginLeft: 15
+        },
+
+        additionalRow: {
+            flexDirection: 'row',
+            marginVertical: 5,
+            marginLeft: 8,
+            alignItems: 'center'
+        },
+
+        additionalColumnAmount: {
+            flex: 0.1,
+            backgroundColor: '#e6e6e6',
+            borderRadius: 3,
+            marginRight: 5,
+        },
+
+        additionalColumnName: {
+            flex: 0.7
+        },
+
+        additionalColumnValue: {
+            flex: 0.2
+        },
+
+        additionalTextAmount: {
+            textAlign: 'center',
+            fontSize: 10,
+            color: '#8c8c8c',
+        },
+
+        additionalTexts: {
+            color: '#8c8c8c',
+        },
+    }
+)
