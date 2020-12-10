@@ -28,6 +28,7 @@ export default function ProductDetails() {
 
     useEffect(() => {
         if (params.product) {
+            navigation.setOptions({ title: params.product.title });
             setProduct(params.product);
 
             handleSelectedProduct({

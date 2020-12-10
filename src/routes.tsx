@@ -1,25 +1,85 @@
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Feather } from '@expo/vector-icons';
 
-const { Navigator, Screen } = createStackNavigator();
+const Stack = createStackNavigator();
+const Tab = createBottomTabNavigator();
+
+import { ContextOrdering } from './context/orderingContext';
 
 import Header from './components/PageHeader';
 import LandingPage from './pages/LandingPage';
+import Cart from './pages/Cart';
+import Profile from './pages/Profile';
 import ProductDetails from './pages/ProductDetails';
 import CategoryAdditionals from './components/ProductCategories';
-import Cart from './pages/Cart';
+
+function HomeTabs() {
+    const { order } = useContext(ContextOrdering);
+    const [amountOrderItems, setAmountOrderItems] = useState(0);
+
+    useEffect(() => {
+        if (order) {
+            let totalAmount = 0;
+            order.orderItems.forEach(item => {
+                totalAmount = totalAmount + item.amount;
+            });
+
+            setAmountOrderItems(totalAmount);
+        }
+    }, [order]);
+
+    return (
+        <Tab.Navigator>
+            <Tab.Screen
+                name="LandingPage"
+                component={LandingPage}
+                options={{
+                    tabBarLabel: 'Início',
+                    tabBarIcon: ({ color, size }) => (
+                        <Feather name="home" size={size} color={color} />
+                    )
+                }}
+            />
+
+            <Tab.Screen
+                name="Cart"
+                component={Cart}
+                options={{
+                    tabBarLabel: 'Sacola',
+                    tabBarIcon: ({ color, size }) => (
+                        <Feather name="shopping-bag" size={size} color={color} />
+                    ),
+                    tabBarBadge: amountOrderItems > 0 ? amountOrderItems : undefined,
+                }}
+            />
+
+            <Tab.Screen
+                name="Profile"
+                component={Profile}
+                options={{
+                    tabBarLabel: 'Perfil',
+                    tabBarIcon: ({ color, size }) => (
+                        <Feather name="user" size={size} color={color} />
+                    )
+                }}
+            />
+        </Tab.Navigator>
+    );
+}
 
 export default function Routes() {
     return (
         <NavigationContainer>
-            <Navigator screenOptions={{ headerShown: false, cardStyle: { backgroundColor: '#f2f3f5' } }}>
-                <Screen
-                    name="LandingPage"
-                    component={LandingPage}
+            <Stack.Navigator screenOptions={{ headerShown: false, cardStyle: { backgroundColor: '#f2f3f5' } }}>
+                <Stack.Screen
+                    name="HomeTabs"
+                    component={HomeTabs}
                 />
 
-                <Screen
+                <Stack.Screen
                     name="ProductDetails"
                     component={ProductDetails}
                     options={{
@@ -28,7 +88,7 @@ export default function Routes() {
                     }}
                 />
 
-                <Screen
+                <Stack.Screen
                     name="CategoryAdditionals"
                     component={CategoryAdditionals}
                     options={{
@@ -36,16 +96,7 @@ export default function Routes() {
                         header: () => <Header title="" showCancel={false} />
                     }}
                 />
-
-                <Screen
-                    name="Cart"
-                    component={Cart}
-                    options={{
-                        headerShown: true,
-                        header: () => <Header title="Sacola" showCancel={false} showClearBag={true} />
-                    }}
-                />
-            </Navigator>
+            </Stack.Navigator>
         </NavigationContainer>
     )
 }

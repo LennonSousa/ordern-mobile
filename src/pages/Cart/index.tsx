@@ -3,12 +3,14 @@ import { ScrollView, StyleSheet, Text, View, TouchableHighlight } from 'react-na
 
 import { ContextOrdering } from '../../context/orderingContext';
 import OrderItems from '../../components/OrderItems';
+import Header from '../../components/PageHeader';
 
 export default function Cart() {
     const { order } = useContext(ContextOrdering);
 
     return (
         <View style={styles.container}>
+            <Header title="Sacola" showCancel={false} showClearBag={true} />
             {
                 order ? <ScrollView>
                     <View>
