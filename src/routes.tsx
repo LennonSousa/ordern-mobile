@@ -15,6 +15,8 @@ import Cart from './pages/Cart';
 import Profile from './pages/Profile';
 import ProductDetails from './pages/ProductDetails';
 import CategoryAdditionals from './components/ProductCategories';
+import NewCustomer from './pages/NewCustomer';
+import AddressCustomer from './pages/AddressCustomer';
 
 function HomeTabs() {
     const { order } = useContext(ContextOrdering);
@@ -32,7 +34,7 @@ function HomeTabs() {
     }, [order]);
 
     return (
-        <Tab.Navigator>
+        <Tab.Navigator tabBarOptions={{ activeTintColor: '#fe3807', keyboardHidesTabBar: true }}>
             <Tab.Screen
                 name="LandingPage"
                 component={LandingPage}
@@ -94,6 +96,24 @@ export default function Routes() {
                     options={{
                         headerShown: true,
                         header: () => <Header title="" showCancel={false} />
+                    }}
+                />
+
+                <Stack.Screen
+                    name="NewCustomer"
+                    component={NewCustomer}
+                    options={{
+                        headerShown: true,
+                        header: () => <Header title="Criar conta" showCancel={true} />
+                    }}
+                />
+
+                <Stack.Screen
+                    name="AddressCustomer"
+                    component={AddressCustomer}
+                    options={{
+                        headerShown: true,
+                        header: () => <Header title="Endereço" showCancel={true} />
                     }}
                 />
             </Stack.Navigator>

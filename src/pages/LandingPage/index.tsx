@@ -92,8 +92,8 @@ const styles = StyleSheet.create({
     },
 
     avatar: {
-        width: 75,
-        height: 75,
+        width: 90,
+        height: 90,
         resizeMode: 'cover',
         borderRadius: 100
     },

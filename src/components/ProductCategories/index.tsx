@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     title: {
         fontFamily: 'Nunito_300Light',
         fontSize: 22,
-        color: '#cc0000',
+        color: '#fe3807',
         padding: 10
     },
 
