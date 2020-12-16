@@ -15,9 +15,10 @@ import Cart from './pages/Cart';
 import Profile from './pages/Profile';
 import ProductDetails from './pages/ProductDetails';
 import CategoryAdditionals from './components/ProductCategories';
-import NewCustomer from './pages/NewCustomer';
-import CreateCustomer from './pages/NewCustomer/create';
-import AddressCustomer from './pages/AddressCustomer';
+import NewCustomer from './pages/Profile/NewCustomer';
+import CreateCustomer from './pages/Profile/NewCustomer/create';
+import CustomerUpdate from './pages/Profile/UpdateCustomer';
+import AddressCustomer from './pages/Profile/AddressCustomer';
 
 function HomeTabs() {
     const { order } = useContext(ContextOrdering);
@@ -110,6 +111,15 @@ export default function Routes() {
                 />
 
                 <Stack.Screen
+                    name="CustomerUpdate"
+                    component={CustomerUpdate}
+                    options={{
+                        headerShown: true,
+                        header: () => <Header title="Suas informações" showCancel={false} />
+                    }}
+                />
+
+                <Stack.Screen
                     name="CreateCustomer"
                     component={CreateCustomer}
                     options={{
@@ -123,7 +133,7 @@ export default function Routes() {
                     component={AddressCustomer}
                     options={{
                         headerShown: true,
-                        header: () => <Header title="Endereço" showCancel={true} />
+                        header: () => <Header title="Seus endereços" showCancel={true} />
                     }}
                 />
             </Stack.Navigator>

@@ -10,25 +10,26 @@ interface AuthContextData {
     loading: boolean;
     handleLogin(email: string, password: string): Promise<boolean>;
     handleLogout(): Promise<void>;
+    handleCustomer(customer: Customer): void;
 }
 
 const CustomerContext = createContext<AuthContextData>({} as AuthContextData);
 
 const AuthProvider: React.FC = ({ children }) => {
-    const [client, setClient] = useState<Customer | null>(null);
+    const [customer, setCustomer] = useState<Customer | null>(null);
     const [signed, setSigned] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         try {
             async () => {
-                const storagedUser = await AsyncStorage.getItem('client');
+                const storagedCustomer = await AsyncStorage.getItem('customer');
                 const storagedToken = await AsyncStorage.getItem('token');
 
-                if (storagedUser && storagedToken) {
+                if (storagedCustomer && storagedToken) {
                     api.defaults.headers['Authorization'] = `Bearer ${storagedToken}`;
 
-                    setClient(JSON.parse(storagedToken));
+                    setCustomer(JSON.parse(storagedCustomer));
                     setSigned(true);
                 }
                 else {
@@ -50,21 +51,13 @@ const AuthProvider: React.FC = ({ children }) => {
                 password
             });
 
-            const { id, name, email, token } = res.data;
+            setCustomer(res.data);
 
-            setClient({
-                id,
-                name,
-                cpf: '',
-                birth: new Date(),
-                phone: '',
-                email,
-                address: []
-            });
+            const { id, name, email, token } = res.data;
 
             api.defaults.headers['Authorization'] = `Bearer ${token}`;
 
-            await AsyncStorage.setItem('client', JSON.stringify(JSON.stringify({ id, name, email })));
+            await AsyncStorage.setItem('customer', JSON.stringify(JSON.stringify({ id, name, email })));
             await AsyncStorage.setItem('token', token);
 
             setSigned(true);
@@ -72,7 +65,7 @@ const AuthProvider: React.FC = ({ children }) => {
             return true;
         }
         catch (error) {
-            console.log('error get client authentication', error);
+            console.log('error get customer authentication', error);
             return false;
         }
     }
@@ -80,12 +73,16 @@ const AuthProvider: React.FC = ({ children }) => {
     async function handleLogout() {
         await AsyncStorage.clear();
         setSigned(false);
-        setClient(null);
+        setCustomer(null);
         api.defaults.headers.Authorization = undefined;
     }
 
+    function handleCustomer(customer: Customer){
+        setCustomer(customer);
+    }
+
     return (
-        <CustomerContext.Provider value={{ customer: client, signed, loading, handleLogin, handleLogout }}>
+        <CustomerContext.Provider value={{ customer, signed, loading, handleLogin, handleLogout, handleCustomer }}>
             {children}
         </CustomerContext.Provider>
     );

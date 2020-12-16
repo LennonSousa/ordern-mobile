@@ -3,29 +3,24 @@ import { ScrollView, StyleSheet, Text, View, TouchableHighlight } from 'react-na
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
+import { Formik } from 'formik';
+import * as Yup from 'yup';
 
 import { CustomerContext } from '../../context/customerContext';
 import Header from '../../components/PageHeader';
-import Input from '../../components/Inputs';
+import Input from '../../components/Interfaces/Inputs';
+import InvalidFeedback from '../../components/Interfaces/InvalidFeedback';
 
 export default function Profile() {
     const navigation = useNavigation();
     const { signed, customer, handleLogin, handleLogout } = useContext(CustomerContext);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
     const [messageErrorLogin, setMessageErrorLogin] = useState(false);
 
-    function handleClient() {
-        if (email !== '' && password !== '')
-            handleLogin(email, password)
-                .then(res => {
-                    !res ? setMessageErrorLogin(true) : null
-                })
-                .catch(err => {
-                    console.log('error profile');
-                    console.log(err);
-                });
-    }
+    const validatiionSchema = Yup.object().shape({
+        email: Yup.string().email('E-mail inválido!').required('Você precisa preencher o seu e-mail!'),
+        password: Yup.string().required('Obrigatório!').min(8, 'Deve conter no mínimo 8 caracteres!').max(22, 'Deve ser menor que 22!')
+    });
+
     return (
         <View style={styles.container}>
             <Header title="Perfil" showCancel={false} />
@@ -40,7 +35,9 @@ export default function Profile() {
 
                         <View style={styles.fieldsRow}>
                             <View style={styles.fieldsColumn}>
-                                <BorderlessButton>
+                                <BorderlessButton onPress={() => {
+                                    navigation.navigate('CustomerUpdate');
+                                }}>
                                     <View style={styles.menuRow}>
                                         <View style={styles.menuColumn}>
                                             <Text>Informações pessoais</Text>
@@ -60,7 +57,9 @@ export default function Profile() {
 
                         <View style={styles.fieldsRow}>
                             <View style={styles.fieldsColumn}>
-                                <BorderlessButton>
+                                <BorderlessButton onPress={() => {
+                                    navigation.navigate('AddressCustomer');
+                                }}>
                                     <View style={styles.menuRow}>
                                         <View style={styles.menuColumn}>
                                             <Text>Endereços</Text>
@@ -138,65 +137,84 @@ export default function Profile() {
                             </View>
                         </View>
                     </View> :
-                    <ScrollView style={styles.containerLogIn}>
-                        <View style={styles.fieldsRow}>
-                            <View style={styles.fieldsColumn}>
-                                <Text style={styles.textsLogIn}>Entrar</Text>
-                            </View>
-                        </View>
+                    <Formik
+                        initialValues={{ email: '', password: '' }}
+                        onSubmit={async values => {
+                            if (values.email !== '' && values.password !== '') {
+                                try {
+                                    const res = await handleLogin(values.email, values.password)
 
-                        <View style={styles.fieldsRow}>
-                            <View style={styles.fieldsColumn}>
-                                <Input
-                                    style={styles.fieldsLogIn}
-                                    title='E-mail'
-                                    textContentType='emailAddress'
-                                    autoCapitalize='none'
-                                    keyboardType='email-address'
-                                    onChangeText={e => { setEmail(e) }}
-                                />
-                            </View>
-                        </View>
+                                    !res && setMessageErrorLogin(true);
+                                }
+                                catch {
+                                    setMessageErrorLogin(true);
+                                }
 
-                        <View style={styles.fieldsRow}>
-                            <View style={styles.fieldsColumn}>
-                                <Input
-                                    style={styles.fieldsLogIn}
-                                    title='Senha'
-                                    textContentType='password'
-                                    autoCapitalize='none'
-                                    secureTextEntry={true}
-                                    onChangeText={e => { setPassword(e) }}
-                                />
-                            </View>
-                        </View>
+                            }
+                        }}
+                        validationSchema={validatiionSchema}
+                    >
+                        {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
+                            <ScrollView style={styles.containerLogIn}>
+                                <View style={styles.fieldsRow}>
+                                    <View style={styles.fieldsColumn}>
+                                        <Text style={styles.textsLogIn}>Entrar</Text>
+                                    </View>
+                                </View>
 
-                        <View style={styles.fieldsRow}>
-                            <View style={styles.fieldsColumn}>
-                                <TouchableHighlight style={styles.buttonLogIn} onPress={handleClient}>
-                                    <Text style={styles.buttonTextLogIn}>Entrar</Text>
-                                </TouchableHighlight>
-                                <Text
-                                    style={
+                                <View style={styles.fieldsRow}>
+                                    <View style={styles.fieldsColumn}>
+                                        <Input
+                                            style={styles.fieldsLogIn}
+                                            title='E-mail'
+                                            textContentType='emailAddress'
+                                            autoCapitalize='none'
+                                            keyboardType='email-address'
+                                            onChangeText={handleChange('email')}
+                                            onBlur={() => { handleBlur('email'); setMessageErrorLogin(false); }}
+                                            value={values.email}
+                                        />
+                                        <InvalidFeedback message={errors.email}></InvalidFeedback>
+                                    </View>
+                                </View>
+
+                                <View style={styles.fieldsRow}>
+                                    <View style={styles.fieldsColumn}>
+                                        <Input
+                                            style={styles.fieldsLogIn}
+                                            title='Senha'
+                                            textContentType='password'
+                                            autoCapitalize='none'
+                                            secureTextEntry={true}
+                                            onChangeText={handleChange('password')}
+                                            onBlur={() => { handleBlur('password'); setMessageErrorLogin(false); }}
+                                            value={values.password}
+                                        />
+                                        <InvalidFeedback message={errors.password}></InvalidFeedback>
+                                    </View>
+                                </View>
+
+                                <View style={styles.fieldsRow}>
+                                    <View style={styles.fieldsColumn}>
+                                        <TouchableHighlight underlayColor='#cc0000' style={styles.buttonLogIn} onPress={handleSubmit as any}>
+                                            <Text style={styles.buttonTextLogIn}>Entrar</Text>
+                                        </TouchableHighlight>
                                         {
-                                            display: messageErrorLogin ? 'flex' : 'none',
-                                            color: '#fe3807',
-                                            alignSelf: 'center',
-                                            fontFamily: 'Nunito_600SemiBold',
-                                            fontSize: 16,
+                                            messageErrorLogin && <InvalidFeedback message="E-mail ou senha incorretos!"></InvalidFeedback>
                                         }
-                                    }>E-mail ou senha incorretos!</Text>
-                            </View>
-                        </View>
+                                    </View>
+                                </View>
 
-                        <View style={styles.fieldsRow}>
-                            <View style={styles.fieldsColumn}>
-                                <BorderlessButton onPress={() => { navigation.navigate('NewCustomer') }}>
-                                    <Text style={styles.buttonTextSignIn}>Criar o meu cadastro.</Text>
-                                </BorderlessButton>
-                            </View>
-                        </View>
-                    </ScrollView>
+                                <View style={styles.fieldsRow}>
+                                    <View style={styles.fieldsColumn}>
+                                        <BorderlessButton onPress={() => { navigation.navigate('NewCustomer') }}>
+                                            <Text style={styles.buttonTextSignIn}>Criar o meu cadastro.</Text>
+                                        </BorderlessButton>
+                                    </View>
+                                </View>
+                            </ScrollView>
+                        )}
+                    </Formik>
             }
         </View>
     )

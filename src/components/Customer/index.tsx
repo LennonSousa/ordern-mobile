@@ -9,5 +9,9 @@ export interface Customer {
     birth: Date;
     phone: string;
     email: string;
+    active: boolean;
+    paused: boolean;
     address: CustomerAddress[];
+    payment: string[];
+    token: string;
 }

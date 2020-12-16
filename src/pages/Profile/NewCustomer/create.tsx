@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { StyleSheet, View, Text, TouchableHighlight, ScrollView, Platform, TextInput, Button } from 'react-native';
+import { StyleSheet, View, Text, TouchableHighlight, ScrollView, Platform } from 'react-native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
@@ -8,16 +8,17 @@ import { format } from 'date-fns';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 
-import { CustomerContext } from '../../context/customerContext';
-import { CustomerAddress } from '../../components/CustomerAddress';
-import Input from '../../components/Inputs';
-import api from '../../services/api';
+import api from '../../../services/api';
+
+import { CustomerContext } from '../../../context/customerContext';
+import Input from '../../../components/Interfaces/Inputs';
+import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
+
 
 interface NewCustomerRouteParams {
     email: string;
     token: string;
 }
-
 
 export default function NewClient() {
     const route = useRoute();
@@ -25,16 +26,11 @@ export default function NewClient() {
     const { handleLogin } = useContext(CustomerContext);
     const params = route.params as NewCustomerRouteParams;
 
-    const [containerNewAddress, setContainerNewAddress] = useState(false);
-
     const [show, setShow] = useState(false);
 
     const [email, setEmail] = useState('');
     const [token, setToken] = useState('');
-    const [birth, setBirth] = useState(new Date);
-
-    // Customer address
-    const [customerAddress, setCustomerAddress] = useState<CustomerAddress[]>([]);
+    const [birth, setBirth] = useState(new Date());
 
     useEffect(() => {
         if (params.email && params.token) {
@@ -46,7 +42,6 @@ export default function NewClient() {
     const validatiionSchema = Yup.object().shape({
         name: Yup.string().required('Você precisa preencher o seu nome!'),
         cpf: Yup.number().notRequired().positive('CPF inválido'),
-        birth: Yup.date().required(),
         phone: Yup.string().notRequired(),
         password: Yup.string().required('Obrigatório!').min(8, 'Deve conter no mínimo 8 caracteres!').max(22, 'Deve ser menor que 22!')
     });
@@ -55,9 +50,8 @@ export default function NewClient() {
         <View style={styles.container}>
             <Formik
                 initialValues={{
-                    name: 'sa',
+                    name: '',
                     cpf: '',
-                    birth: new Date(),
                     phone: '',
                     password: ''
                 }}
@@ -88,6 +82,7 @@ export default function NewClient() {
                     catch {
 
                     }
+
                 }}
                 validationSchema={validatiionSchema}
             >
@@ -118,7 +113,7 @@ export default function NewClient() {
                                     onBlur={handleBlur('name')}
                                     value={values.name}
                                 />
-                                <Text style={styles.errorFields}>{errors.name}</Text>
+                                <InvalidFeedback message={errors.name}></InvalidFeedback>
                             </View>
                         </View>
 
@@ -133,7 +128,7 @@ export default function NewClient() {
                                     onBlur={handleBlur('cpf')}
                                     value={values.cpf}
                                 />
-                                <Text style={styles.errorFields}>{errors.cpf}</Text>
+                                <InvalidFeedback message={errors.cpf}></InvalidFeedback>
                             </View>
                         </View>
 
@@ -146,7 +141,6 @@ export default function NewClient() {
                                     editable={false}
                                     onChangeText={handleChange('birth')}
                                 />
-                                <Text style={styles.errorFields}>{errors.birth}</Text>
                             </View>
                             <View style={{ flex: 0.2, alignItems: 'center' }}>
                                 <TouchableHighlight underlayColor="#e8e8e8" style={styles.buttonNewItem} onPress={() => { setShow(true) }}>
@@ -154,12 +148,11 @@ export default function NewClient() {
                                 </TouchableHighlight>
                                 {
                                     show && <DateTimePicker
-                                        value={values.birth}
+                                        value={birth}
                                         style={styles.fieldsLogIn}
                                         mode="date"
                                         onChange={(birthDate, selectedDate) => {
                                             setShow(Platform.OS === 'ios');
-                                            handleChange('birth');
                                             selectedDate && setBirth(selectedDate);
                                         }}
                                     />
@@ -179,7 +172,7 @@ export default function NewClient() {
                                     onBlur={handleBlur('phone')}
                                     value={values.phone}
                                 />
-                                <Text style={styles.errorFields}>{errors.phone}</Text>
+                                <InvalidFeedback message={errors.phone}></InvalidFeedback>
                             </View>
                         </View>
 
@@ -196,91 +189,12 @@ export default function NewClient() {
                                     onBlur={handleBlur('password')}
                                     value={values.password}
                                 />
-                                <Text style={styles.errorFields}>{errors.password}</Text>
-                            </View>
-                        </View>
-
-                        <View style={styles.fieldsRow}>
-                            <View style={styles.fieldsColumn}>
-                                <View style={styles.menuRow}>
-                                    <View style={styles.menuColumn}>
-                                        <Text>Endereços</Text>
-                                    </View>
-                                    <View style={styles.menuIconColumn}>
-                                        <TouchableHighlight
-                                            style={styles.buttonNewItem}
-                                            underlayColor="#e8e8e8"
-                                            onPress={() => { setContainerNewAddress(!containerNewAddress) }}
-                                        >
-                                            <View>
-                                                <Feather name={containerNewAddress ? "x" : "plus"} size={24} color="#cc0000" />
-                                            </View>
-                                        </TouchableHighlight>
-                                    </View>
-                                </View>
-                                <View style={styles.menuDescriptionRow}>
-                                    <View style={styles.menuDescriptionColumn}>
-                                        <Text style={styles.textsDescriptionMenu}>Seus endereços para entrega.</Text>
-                                    </View>
-                                </View>
-                            </View>
-                        </View>
-
-                        {
-                            customerAddress.map((address, index) => {
-                                return <View key={index} style={styles.containerItem}>
-                                    <View style={styles.fieldsRow}>
-                                        <View style={styles.fieldsColumn}>
-                                            <View style={styles.menuRow}>
-                                                <View style={styles.colTitleButtonItem}>
-                                                    <BorderlessButton onPress={() => { navigation.navigate('AddressCustomer') }}>
-                                                        <View style={{ flexDirection: 'row' }}>
-                                                            <View style={styles.colTitleButtonItem}>
-                                                                <Text style={{ color: '#8c8c8c' }}>{`${address.street} - ${address.number}`}</Text>
-                                                            </View>
-                                                            <View style={styles.colIconButtonItem}>
-                                                                <Feather name="chevron-right" size={24} color="#cc0000" />
-                                                            </View>
-                                                        </View>
-                                                    </BorderlessButton>
-                                                </View>
-
-                                            </View>
-                                        </View>
-                                    </View>
-                                </View>
-                            })
-                        }
-
-                        {/* Divider*/}
-                        <View style={styles.divider}></View>
-
-                        <View style={styles.fieldsRow}>
-                            <View style={styles.fieldsColumn}>
-                                <BorderlessButton>
-                                    <View style={styles.menuRow}>
-                                        <View style={styles.menuColumn}>
-                                            <Text>Formas de pagamento</Text>
-                                        </View>
-                                        <View style={styles.menuIconColumn}>
-                                            <TouchableHighlight>
-                                                <View>
-                                                    <Feather name="plus" size={24} color="#cc0000" />
-                                                </View>
-                                            </TouchableHighlight>
-                                        </View>
-                                    </View>
-                                    <View style={styles.menuDescriptionRow}>
-                                        <View style={styles.menuDescriptionColumn}>
-                                            <Text style={styles.textsDescriptionMenu}>Cartões de crédito...</Text>
-                                        </View>
-                                    </View>
-                                </BorderlessButton>
+                                <InvalidFeedback message={errors.password}></InvalidFeedback>
                             </View>
                         </View>
 
                         <View>
-                            <TouchableHighlight style={styles.buttonLogIn} onPress={handleSubmit as any}>
+                            <TouchableHighlight underlayColor='#cc0000' style={styles.buttonLogIn} onPress={handleSubmit as any}>
                                 <Text style={styles.footerButtonText}>Cadastrar</Text>
                             </TouchableHighlight>
                         </View>
@@ -380,11 +294,6 @@ const styles = StyleSheet.create({
 
     fieldsLogIn: {
         marginVertical: 8,
-    },
-
-    errorFields: {
-        color: '#cc0000',
-        fontSize: 12,
     },
 
     buttonLogIn: {

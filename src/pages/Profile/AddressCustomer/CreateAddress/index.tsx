@@ -6,11 +6,11 @@ import { Feather } from '@expo/vector-icons';
 
 import cep from 'cep-promise';
 
-import { CustomerAddress } from '../../components/CustomerAddress';
-import Input from '../../components/Inputs';
-import api from '../../services/api';
+import { CustomerAddress } from '../../../../components/CustomerAddress';
+import Input from '../../../../components/Interfaces/Inputs';
+import api from '../../../../services/api';
 
-export default function AddressCustomer() {
+export default function CreateAddress() {
     const navigation = useNavigation();
 
     // Customer address
