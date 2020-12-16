@@ -16,6 +16,7 @@ import Profile from './pages/Profile';
 import ProductDetails from './pages/ProductDetails';
 import CategoryAdditionals from './components/ProductCategories';
 import NewCustomer from './pages/NewCustomer';
+import CreateCustomer from './pages/NewCustomer/create';
 import AddressCustomer from './pages/AddressCustomer';
 
 function HomeTabs() {
@@ -102,6 +103,15 @@ export default function Routes() {
                 <Stack.Screen
                     name="NewCustomer"
                     component={NewCustomer}
+                    options={{
+                        headerShown: true,
+                        header: () => <Header title="Vamos começar!" showCancel={false} />
+                    }}
+                />
+
+                <Stack.Screen
+                    name="CreateCustomer"
+                    component={CreateCustomer}
                     options={{
                         headerShown: true,
                         header: () => <Header title="Criar conta" showCancel={true} />

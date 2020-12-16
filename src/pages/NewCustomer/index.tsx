@@ -3,64 +3,59 @@ import { StyleSheet, View, Text, TouchableHighlight, ScrollView, Platform } from
 import { BorderlessButton, TouchableOpacity } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { format } from 'date-fns';
 
-import { CustomerAddress } from '../../components/CustomerAddress';
 import Input from '../../components/Inputs';
 import api from '../../services/api';
-
 
 export default function NewClient() {
     const navigation = useNavigation();
 
-    const [containerNewAddress, setContainerNewAddress] = useState(false);
-
-    const [name, setName] = useState('');
-    const [cpf, setCpf] = useState('');
-
-    const [show, setShow] = useState(false);
-
-    const [birth, setBirth] = useState(new Date());
-    const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [token, setToken] = useState('');
 
     const [emailConfirmed, setEmailConfirmed] = useState(false);
     const [messageErrorLogin, setMessageErrorLogin] = useState(false);
-
-    // Customer address
-    const [customerAddress, setCustomerAddress] = useState<CustomerAddress[]>([]);
+    const [messageTokenIncorrect, setMessageTokenIncorrect] = useState(false);
 
     async function handleEmail() {
         if (email !== '') {
             try {
-                await api.get(`clients/authenticate/${email}`);
+                const res = await api.post('customer/new', { email });
 
-                setMessageErrorLogin(true);
-            }
-            catch {
-                setEmailConfirmed(true);
-            }
+                console.log(res);
 
+                if (res.status === 200) {
+                    setMessageErrorLogin(true);
+                }
+                else if (res.status === 204) {
+                    setEmailConfirmed(true);
+                }
+            }
+            catch { }
         }
     }
 
-    async function handleCreateCustomer() {
-        console.log(birth);
+    async function handleConfirmEmail() {
+        if (email !== '' && token !== '') {
+            try {
+                const res = await api.put('customer/new', { email, token });
 
-        const res = await api.post('clients', {
-            "name": name,
-            "cpf": cpf,
-            "birth": birth,
-            "phone": phone,
-            "email": email,
-            "password": password,
-            "active": true,
-            "paused": false,
-        });
+                console.log(res);
 
-        console.log(res);
+                if (res.status === 201) {
+                    setMessageErrorLogin(false);
+
+                    navigation.navigate('CreateCustomer',
+                        {
+                            email: res.data.email,
+                            token: res.data.token
+                        });
+                }
+            }
+            catch {
+                setMessageTokenIncorrect(true);
+            }
+        }
     }
 
     return (
@@ -72,172 +67,46 @@ export default function NewClient() {
                             <View style={styles.fieldsColumn}>
                                 <View style={styles.menuRow}>
                                     <View style={styles.menuColumn}>
-                                        <Text>Informações pessoais</Text>
+                                        <Text>Confirme o seu e-mail.</Text>
                                     </View>
                                     <View style={styles.menuIconColumn}>
-                                        <Feather name="smile" size={24} color="#cc0000" />
-                                    </View>
-                                </View>
-                            </View>
-                        </View>
-
-                        <View style={styles.fieldsRow}>
-                            <View style={styles.fieldsColumn}>
-                                <Input
-                                    style={styles.fieldsLogIn}
-                                    title='Seu nome'
-                                    placeholder='Obrigatório'
-                                    textContentType='name'
-                                    onChangeText={e => { setName(e) }}
-                                />
-                            </View>
-                        </View>
-
-                        <View style={styles.fieldsRow}>
-                            <View style={styles.fieldsColumn}>
-                                <Input
-                                    style={styles.fieldsLogIn}
-                                    title='CPF'
-                                    placeholder='Opcional'
-                                    onChangeText={e => { setCpf(e) }}
-                                />
-                            </View>
-                        </View>
-
-                        <View style={styles.fieldsRow}>
-                            <View style={{ flex: 0.5 }}>
-                                <Input
-                                    style={styles.fieldsLogIn}
-                                    title='Data de nascimento'
-                                    defaultValue={format(birth, 'dd/MM/yyyy')}
-                                    editable={false}
-                                />
-                            </View>
-                            <View style={{ flex: 0.2, alignItems: 'center' }}>
-                                <TouchableHighlight underlayColor="#e8e8e8" style={styles.buttonNewItem} onPress={() => { setShow(true) }}>
-                                    <Feather name="calendar" size={24} color="#cc0000" />
-                                </TouchableHighlight>
-                                {
-                                    show && <DateTimePicker
-                                        value={birth}
-                                        style={styles.fieldsLogIn}
-                                        mode="date"
-                                        onChange={(birthDate, selectedDate) => {
-                                            setShow(Platform.OS === 'ios');
-                                            setBirth(selectedDate || birth);
-                                        }}
-                                    />
-                                }
-                            </View>
-                        </View>
-
-                        <View style={styles.fieldsRow}>
-                            <View style={styles.fieldsColumn}>
-                                <Input
-                                    style={styles.fieldsLogIn}
-                                    title='Telefone'
-                                    placeholder='Opcional'
-                                    textContentType='telephoneNumber'
-                                    onChangeText={e => { setPhone(e) }}
-                                />
-                            </View>
-                        </View>
-
-                        <View style={styles.fieldsRow}>
-                            <View style={styles.fieldsColumn}>
-                                <Input
-                                    style={styles.fieldsLogIn}
-                                    title='Senha'
-                                    placeholder='No mínimo 8 caracteres'
-                                    textContentType='newPassword'
-                                    onChangeText={e => { setPassword(e) }}
-                                />
-                            </View>
-                        </View>
-
-                        <View style={styles.fieldsRow}>
-                            <View style={styles.fieldsColumn}>
-                                <View style={styles.menuRow}>
-                                    <View style={styles.menuColumn}>
-                                        <Text>Endereços</Text>
-                                    </View>
-                                    <View style={styles.menuIconColumn}>
-                                        <TouchableHighlight
-                                            style={styles.buttonNewItem}
-                                            underlayColor="#e8e8e8"
-                                            onPress={() => { setContainerNewAddress(!containerNewAddress) }}
-                                        >
-                                            <View>
-                                                <Feather name={containerNewAddress ? "x" : "plus"} size={24} color="#cc0000" />
-                                            </View>
-                                        </TouchableHighlight>
+                                        <Feather name="mail" size={24} color="#cc0000" />
                                     </View>
                                 </View>
                                 <View style={styles.menuDescriptionRow}>
                                     <View style={styles.menuDescriptionColumn}>
-                                        <Text style={styles.textsDescriptionMenu}>Seus endereços para entrega.</Text>
+                                        <Text style={styles.textsDescriptionMenu}>Enviamos um código para o seu e-mail.</Text>
                                     </View>
                                 </View>
                             </View>
                         </View>
 
-                        {
-                            customerAddress.map((address, index) => {
-                                return <View key={index} style={styles.containerItem}>
-                                    <View style={styles.fieldsRow}>
-                                        <View style={styles.fieldsColumn}>
-                                            <View style={styles.menuRow}>
-                                                <View style={styles.colTitleButtonItem}>
-                                                    <BorderlessButton onPress={() => { navigation.navigate('AddressCustomer') }}>
-                                                        <View style={{ flexDirection: 'row' }}>
-                                                            <View style={styles.colTitleButtonItem}>
-                                                                <Text style={{ color: '#8c8c8c' }}>{`${address.street} - ${address.number}`}</Text>
-                                                            </View>
-                                                            <View style={styles.colIconButtonItem}>
-                                                                <Feather name="chevron-right" size={24} color="#cc0000" />
-                                                            </View>
-                                                        </View>
-                                                    </BorderlessButton>
-                                                </View>
-
-                                            </View>
-                                        </View>
-                                    </View>
-                                </View>
-                            })
-                        }
-
-                        {/* Divider*/}
-                        <View style={styles.divider}></View>
-
                         <View style={styles.fieldsRow}>
                             <View style={styles.fieldsColumn}>
-                                <BorderlessButton>
-                                    <View style={styles.menuRow}>
-                                        <View style={styles.menuColumn}>
-                                            <Text>Formas de pagamento</Text>
-                                        </View>
-                                        <View style={styles.menuIconColumn}>
-                                            <TouchableHighlight>
-                                                <View>
-                                                    <Feather name="plus" size={24} color="#cc0000" />
-                                                </View>
-                                            </TouchableHighlight>
-                                        </View>
-                                    </View>
-                                    <View style={styles.menuDescriptionRow}>
-                                        <View style={styles.menuDescriptionColumn}>
-                                            <Text style={styles.textsDescriptionMenu}>Cartões de crédito...</Text>
-                                        </View>
-                                    </View>
-                                </BorderlessButton>
+                                <Input
+                                    style={styles.fieldsLogIn}
+                                    title='Digite o código'
+                                    textContentType='password'
+                                    autoCapitalize='none'
+                                    onChangeText={e => { setToken(e) }}
+                                />
                             </View>
                         </View>
 
                         <View>
-                            <TouchableHighlight style={styles.footerButton} onPress={handleCreateCustomer}>
-                                <Text style={styles.footerButtonText}>Cadastrar</Text>
+                            <TouchableHighlight style={styles.footerButton} onPress={handleConfirmEmail}>
+                                <Text style={styles.footerButtonText}>Confirmar</Text>
                             </TouchableHighlight>
+                            <Text
+                                style={
+                                    {
+                                        display: messageTokenIncorrect ? 'flex' : 'none',
+                                        color: '#fe3807',
+                                        alignSelf: 'center',
+                                        fontFamily: 'Nunito_600SemiBold',
+                                        fontSize: 16,
+                                    }
+                                }>Código incorreto!</Text>
                         </View>
                     </ScrollView> :
                     <ScrollView style={styles.containerLogIn}>
@@ -247,6 +116,8 @@ export default function NewClient() {
                                     style={styles.fieldsLogIn}
                                     title='Qual o seu e-mail?'
                                     textContentType='emailAddress'
+                                    autoCapitalize='none'
+                                    keyboardType='email-address'
                                     onChangeText={e => { setEmail(e) }}
                                 />
                             </View>
@@ -279,7 +150,7 @@ export default function NewClient() {
                         </View>
                     </ScrollView>
             }
-        </View>
+        </View >
     )
 }
 

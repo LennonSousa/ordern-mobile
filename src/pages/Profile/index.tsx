@@ -10,7 +10,7 @@ import Input from '../../components/Inputs';
 
 export default function Profile() {
     const navigation = useNavigation();
-    const { signed, customer: client, handleLogin, handleLogout } = useContext(CustomerContext);
+    const { signed, customer, handleLogin, handleLogout } = useContext(CustomerContext);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [messageErrorLogin, setMessageErrorLogin] = useState(false);
@@ -30,11 +30,11 @@ export default function Profile() {
         <View style={styles.container}>
             <Header title="Perfil" showCancel={false} />
             {
-                signed && client ?
+                signed && customer ?
                     <View style={styles.containerMenu}>
                         <View style={styles.fieldsRow}>
                             <View style={styles.fieldsColumn}>
-                                <Text style={styles.textsLogIn}>{client.name}</Text>
+                                <Text style={styles.textsLogIn}>{customer.name}</Text>
                             </View>
                         </View>
 
@@ -151,6 +151,8 @@ export default function Profile() {
                                     style={styles.fieldsLogIn}
                                     title='E-mail'
                                     textContentType='emailAddress'
+                                    autoCapitalize='none'
+                                    keyboardType='email-address'
                                     onChangeText={e => { setEmail(e) }}
                                 />
                             </View>
@@ -162,6 +164,7 @@ export default function Profile() {
                                     style={styles.fieldsLogIn}
                                     title='Senha'
                                     textContentType='password'
+                                    autoCapitalize='none'
                                     secureTextEntry={true}
                                     onChangeText={e => { setPassword(e) }}
                                 />
