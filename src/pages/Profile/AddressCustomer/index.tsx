@@ -33,28 +33,13 @@ export default function AddressCustomer() {
     const [containerNewAddress, setContainerNewAddress] = useState(false);
 
     const validatiionSchema = Yup.object().shape({
-        name: Yup.string().required('Você precisa preencher o seu nome!'),
-        cpf: Yup.number().notRequired().positive('CPF inválido'),
-        phone: Yup.string().notRequired(),
-        password: Yup.string().required('Obrigatório!').min(8, 'Deve conter no mínimo 8 caracteres!').max(22, 'Deve ser menor que 22!')
+        zip_code: Yup.string().required('Obrigatório!').max(8, 'Deve conter no máximo 8 caracteres!'),
+        street: Yup.string().required('Obigatório!'),
+        number: Yup.string().required('Obigatório!'),
+        group: Yup.string().required('Obigatório!'),
+        city: Yup.string().required('Obigatório!'),
+        country: Yup.string().required('Obigatório!'),
     });
-
-    useEffect(() => {
-        if (cepCustomer !== '') {
-            setSpinnerCep('inline-block');
-            cep(cepCustomer)
-                .then(cep => {
-                    const { street, neighborhood, city, state } = cep;
-
-                    setStreetCustomer(street);
-                    setGroupCustomer(neighborhood);
-                    setCityCustomer(city);
-                    setCountryCustomer(state);
-                })
-                .catch(() => {
-                });
-        }
-    }, [cepCustomer]);
 
     function handleAddCustomerAddress() {
         if (customer) {
@@ -125,14 +110,38 @@ export default function AddressCustomer() {
                 {
                     containerNewAddress && <Formik
                         initialValues={{
-                            name: '',
-                            cpf: '',
-                            phone: '',
-                            password: ''
+                            zip_code: '',
+                            street: '',
+                            number: '',
+                            group: '',
+                            complement: '',
+                            city: '',
+                            country: '',
+                            type: 'home'
                         }}
                         onSubmit={async values => {
                             try {
-                                //navigation.navigate('Profile');
+                                customer && await api.post('customer/address', {
+                                    "zip_code": values.zip_code,
+                                    "street": values.street,
+                                    "number": values.number,
+                                    "group": values.group,
+                                    "complement": values.complement,
+                                    "city": values.city,
+                                    "country": values.country,
+                                    "type": values.type,
+                                    "client": customer.id
+                                });
+
+                                setContainerNewAddress(false);
+                                setCepCustomer('');
+                                setStreetCustomer('');
+                                setNumberCustomer('');
+                                setGroupCustomer('');
+                                setAddressLine2Customer('');
+                                setCityCustomer('');
+                                setCountryCustomer('');
+                                values.type = 'home';
                             }
                             catch {
 
@@ -141,8 +150,8 @@ export default function AddressCustomer() {
                         }}
                         validationSchema={validatiionSchema}
                     >
-                        {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
-                            <>
+                        {({ handleChange, handleBlur, handleSubmit, values, errors, setFieldValue }) => (
+                            <View style={styles.containerItem}>
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
                                         <View style={styles.menuRow}>
@@ -160,9 +169,31 @@ export default function AddressCustomer() {
                                             title='CEP'
                                             placeholder='Somente números'
                                             textContentType='postalCode'
-                                            onChangeText={e => { e.length === 8 && setCepCustomer(e) }}
-                                            defaultValue={cepCustomer}
+                                            keyboardType='numeric'
+                                            onBlur={handleBlur('zip_code')}
+                                            onChangeText={e => {
+                                                setFieldValue('zip_code', e);
+
+                                                if (e.length === 8) {
+                                                    if (e !== '') {
+                                                        setSpinnerCep('inline-block');
+                                                        cep(e)
+                                                            .then(cep => {
+                                                                const { street, neighborhood, city, state } = cep;
+
+                                                                setFieldValue('street', street, false);
+                                                                setFieldValue('group', neighborhood, false);
+                                                                setFieldValue('city', city, false);
+                                                                setFieldValue('country', state, false);
+                                                            })
+                                                            .catch(() => {
+                                                            });
+                                                    }
+                                                }
+                                            }}
+                                            value={values.zip_code}
                                         />
+                                        <InvalidFeedback message={errors.zip_code}></InvalidFeedback>
                                     </View>
                                 </View>
 
@@ -172,9 +203,12 @@ export default function AddressCustomer() {
                                             style={styles.fieldsLogIn}
                                             title='Rua'
                                             textContentType='streetAddressLine1'
-                                            onChangeText={e => { setStreetCustomer(e) }}
-                                            defaultValue={streetCustomer}
+                                            keyboardType='default'
+                                            onChangeText={handleChange('street')}
+                                            onBlur={handleBlur('street')}
+                                            value={values.street}
                                         />
+                                        <InvalidFeedback message={errors.street}></InvalidFeedback>
                                     </View>
                                 </View>
 
@@ -183,9 +217,11 @@ export default function AddressCustomer() {
                                         <Input
                                             style={styles.fieldsLogIn}
                                             title='Número'
-                                            onChangeText={e => { setNumberCustomer(e) }}
-                                            defaultValue={numberCustomer}
+                                            onChangeText={handleChange('number')}
+                                            onBlur={handleBlur('number')}
+                                            value={values.number}
                                         />
+                                        <InvalidFeedback message={errors.number}></InvalidFeedback>
                                     </View>
                                 </View>
 
@@ -195,9 +231,11 @@ export default function AddressCustomer() {
                                             style={styles.fieldsLogIn}
                                             title='Bairro'
                                             textContentType='sublocality'
-                                            onChangeText={e => { setGroupCustomer(e) }}
-                                            defaultValue={groupCustomer}
+                                            onChangeText={handleChange('group')}
+                                            onBlur={handleBlur('group')}
+                                            value={values.group}
                                         />
+                                        <InvalidFeedback message={errors.group}></InvalidFeedback>
                                     </View>
                                 </View>
 
@@ -207,10 +245,12 @@ export default function AddressCustomer() {
                                             style={styles.fieldsLogIn}
                                             title='Complemento'
                                             placeholder='Opcional'
-                                            textContentType='streetAddressLine1'
-                                            onChangeText={e => { setAddressLine2Customer(e) }}
-                                            defaultValue={addressLine2Customer}
+                                            textContentType='streetAddressLine2'
+                                            onChangeText={handleChange('complement')}
+                                            onBlur={handleBlur('complement')}
+                                            value={values.complement}
                                         />
+                                        <InvalidFeedback message={errors.complement}></InvalidFeedback>
                                     </View>
                                 </View>
 
@@ -220,9 +260,11 @@ export default function AddressCustomer() {
                                             style={styles.fieldsLogIn}
                                             title='Cidade'
                                             textContentType='addressCity'
-                                            onChangeText={e => { setCityCustomer(e) }}
-                                            defaultValue={cityCustomer}
+                                            onChangeText={handleChange('city')}
+                                            onBlur={handleBlur('city')}
+                                            value={values.city}
                                         />
+                                        <InvalidFeedback message={errors.city}></InvalidFeedback>
                                     </View>
                                 </View>
 
@@ -232,9 +274,11 @@ export default function AddressCustomer() {
                                             style={styles.fieldsLogIn}
                                             title='Estado'
                                             textContentType='addressState'
-                                            onChangeText={e => { setCountryCustomer(e) }}
-                                            defaultValue={countryCustomer}
+                                            onChangeText={handleChange('country')}
+                                            onBlur={handleBlur('country')}
+                                            value={values.country}
                                         />
+                                        <InvalidFeedback message={errors.country}></InvalidFeedback>
                                     </View>
                                 </View>
 
@@ -248,29 +292,29 @@ export default function AddressCustomer() {
                                     <View style={styles.fieldsColumn}>
                                         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                             <View style={{ width: '30%' }}>
-                                                <TouchableOpacity style={styles.buttonTypeAddressCustomer} onPress={() => { setTypeAddressCustomer('home') }}>
+                                                <TouchableOpacity style={styles.buttonTypeAddressCustomer} onPress={() => { setFieldValue('type', 'home') }}>
                                                     <View style={{ alignItems: 'center' }}>
-                                                        <Text style={{ color: typeAddressCustomer === 'home' ? '#cc0000' : 'darkgray' }}>Casa</Text>
-                                                        <Feather name="home" size={24} color={typeAddressCustomer === 'home' ? '#cc0000' : 'darkgray'} />
+                                                        <Text style={{ color: values.type === 'home' ? '#cc0000' : 'darkgray' }}>Casa</Text>
+                                                        <Feather name="home" size={24} color={values.type === 'home' ? '#cc0000' : 'darkgray'} />
                                                     </View>
                                                 </TouchableOpacity>
                                             </View>
 
 
                                             <View style={{ width: '30%' }}>
-                                                <TouchableOpacity style={styles.buttonTypeAddressCustomer} onPress={() => { setTypeAddressCustomer('work') }}>
+                                                <TouchableOpacity style={styles.buttonTypeAddressCustomer} onPress={() => { setFieldValue('type', 'work') }}>
                                                     <View style={{ alignItems: 'center' }}>
-                                                        <Text style={{ color: typeAddressCustomer === 'work' ? '#cc0000' : 'darkgray' }}>Trabalho</Text>
-                                                        <Feather name="coffee" size={24} color={typeAddressCustomer === 'work' ? '#cc0000' : 'darkgray'} />
+                                                        <Text style={{ color: values.type === 'work' ? '#cc0000' : 'darkgray' }}>Trabalho</Text>
+                                                        <Feather name="coffee" size={24} color={values.type === 'work' ? '#cc0000' : 'darkgray'} />
                                                     </View>
                                                 </TouchableOpacity>
                                             </View>
 
                                             <View style={{ width: '30%' }}>
-                                                <TouchableOpacity style={styles.buttonTypeAddressCustomer} onPress={() => { setTypeAddressCustomer('other') }}>
+                                                <TouchableOpacity style={styles.buttonTypeAddressCustomer} onPress={() => { setFieldValue('type', 'other') }}>
                                                     <View style={{ alignItems: 'center' }}>
-                                                        <Text style={{ color: typeAddressCustomer === 'other' ? '#cc0000' : 'darkgray' }}>Outros</Text>
-                                                        <Feather name="box" size={24} color={typeAddressCustomer === 'other' ? '#cc0000' : 'darkgray'} />
+                                                        <Text style={{ color: values.type === 'other' ? '#cc0000' : 'darkgray' }}>Outros</Text>
+                                                        <Feather name="box" size={24} color={values.type === 'other' ? '#cc0000' : 'darkgray'} />
                                                     </View>
                                                 </TouchableOpacity>
                                             </View>
@@ -299,7 +343,7 @@ export default function AddressCustomer() {
                                                     setAddressLine2Customer('');
                                                     setCityCustomer('');
                                                     setCountryCustomer('');
-                                                    setTypeAddressCustomer('home');
+                                                    setFieldValue('type', 'home');
                                                 }}
                                                 >
                                                     <View style={{ alignItems: 'center' }}>
@@ -310,7 +354,7 @@ export default function AddressCustomer() {
                                         </View>
                                     </View>
                                 </View>
-                            </>
+                            </View>
                         )}
                     </Formik>
                 }

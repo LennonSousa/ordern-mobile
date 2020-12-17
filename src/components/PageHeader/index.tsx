@@ -50,13 +50,13 @@ export default function Header({ title, showCancel = true, showClearBag = false 
 
 const styles = StyleSheet.create({
     container: {
-        height: 80,
+        height: 60,
         paddingHorizontal: 24,
         flexDirection: 'row',
         backgroundColor: '#f9fafc',
         borderBottomWidth: 1,
         borderColor: '#dde3f0',
-        paddingTop: 44,
+        alignItems: 'center'
     },
 
     title: {
