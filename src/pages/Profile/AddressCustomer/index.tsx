@@ -1,7 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { StyleSheet, View, Text, TouchableHighlight, ScrollView } from 'react-native';
 import { BorderlessButton, TouchableOpacity } from 'react-native-gesture-handler';
-import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -15,22 +14,13 @@ import Input from '../../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
 
 export default function AddressCustomer() {
-    const navigation = useNavigation();
     const { customer, handleCustomer } = useContext(CustomerContext);
 
     // Customer address
-    const [customerAddress, setCustomerAddress] = useState<CustomerAddress[]>([]);
-    const [cepCustomer, setCepCustomer] = useState('');
-    const [spinnerCep, setSpinnerCep] = useState('none');
-    const [streetCustomer, setStreetCustomer] = useState('');
-    const [numberCustomer, setNumberCustomer] = useState('');
-    const [groupCustomer, setGroupCustomer] = useState('');
-    const [addressLine2Customer, setAddressLine2Customer] = useState('');
-    const [cityCustomer, setCityCustomer] = useState('');
-    const [countryCustomer, setCountryCustomer] = useState('');
-    const [typeAddressCustomer, setTypeAddressCustomer] = useState('home');
+    const [selectedCustomerAddress, setSelectedCustomerAddress] = useState<CustomerAddress | null>();
 
     const [containerNewAddress, setContainerNewAddress] = useState(false);
+    const [buttonDeleteAddress, setButtonDeleteAddress] = useState(true);
 
     const validatiionSchema = Yup.object().shape({
         zip_code: Yup.string().required('Obrigatório!').max(8, 'Deve conter no máximo 8 caracteres!'),
@@ -41,41 +31,37 @@ export default function AddressCustomer() {
         country: Yup.string().required('Obigatório!'),
     });
 
-    function handleAddCustomerAddress() {
+    function handleAddressCustomer(id: number) {
         if (customer) {
-            handleCustomer(
-                {
-                    ...customer, address: [
-                        ...customer.address,
-                        ...customerAddress,
-                        {
-                            id: 0,
-                            zip_code: cepCustomer,
-                            street: streetCustomer,
-                            number: numberCustomer,
-                            group: groupCustomer,
-                            complement: addressLine2Customer,
-                            city: cityCustomer,
-                            country: countryCustomer,
-                            type: typeAddressCustomer
-                        }
-                    ]
-                }
-            );
+            customer.address.forEach(address => {
+                if (address.id === id) {
+                    setSelectedCustomerAddress(address);
 
-            setCepCustomer('');
-            setStreetCustomer('');
-            setNumberCustomer('');
-            setGroupCustomer('');
-            setAddressLine2Customer('');
-            setCityCustomer('');
-            setCountryCustomer('');
-            setTypeAddressCustomer('home');
+                    setButtonDeleteAddress(true);
+
+                    setContainerNewAddress(true);
+                }
+            })
         }
     }
 
-    function handleDeleteAddressCustomer(index: number) {
-        setCustomerAddress(customerAddress.splice(index, 0));
+    async function handleDeleteAddress(id: number) {
+        try {
+            if (customer) {
+                await api.delete(`customer/address/${id}`);
+
+                const res = await api.get(`clients/${customer.id}`);
+
+                handleCustomer(res.data);
+
+                setContainerNewAddress(false);
+                setSelectedCustomerAddress(null);
+                setButtonDeleteAddress(true);
+            }
+        }
+        catch {
+
+        }
     }
 
     return (
@@ -91,7 +77,11 @@ export default function AddressCustomer() {
                                 <TouchableHighlight
                                     style={styles.buttonNewItem}
                                     underlayColor="#e8e8e8"
-                                    onPress={() => { setContainerNewAddress(!containerNewAddress) }}
+                                    onPress={() => {
+                                        setSelectedCustomerAddress(null);
+                                        setButtonDeleteAddress(true);
+                                        setContainerNewAddress(!containerNewAddress);
+                                    }}
                                 >
                                     <View>
                                         <Feather name={containerNewAddress ? "x" : "plus"} size={24} color="#cc0000" />
@@ -110,43 +100,56 @@ export default function AddressCustomer() {
                 {
                     containerNewAddress && <Formik
                         initialValues={{
-                            zip_code: '',
-                            street: '',
-                            number: '',
-                            group: '',
-                            complement: '',
-                            city: '',
-                            country: '',
-                            type: 'home'
+                            zip_code: selectedCustomerAddress ? selectedCustomerAddress.zip_code : '',
+                            street: selectedCustomerAddress ? selectedCustomerAddress.street : '',
+                            number: selectedCustomerAddress ? selectedCustomerAddress.number : '',
+                            group: selectedCustomerAddress ? selectedCustomerAddress.group : '',
+                            complement: selectedCustomerAddress ? selectedCustomerAddress.complement : '',
+                            city: selectedCustomerAddress ? selectedCustomerAddress.city : '',
+                            country: selectedCustomerAddress ? selectedCustomerAddress.country : '',
+                            type: selectedCustomerAddress ? selectedCustomerAddress.type : 'home',
                         }}
                         onSubmit={async values => {
-                            try {
-                                customer && await api.post('customer/address', {
-                                    "zip_code": values.zip_code,
-                                    "street": values.street,
-                                    "number": values.number,
-                                    "group": values.group,
-                                    "complement": values.complement,
-                                    "city": values.city,
-                                    "country": values.country,
-                                    "type": values.type,
-                                    "client": customer.id
-                                });
+                            if (customer) {
+                                try {
+                                    if (selectedCustomerAddress) {
+                                        await api.put(`customer/address/${selectedCustomerAddress.id}`, {
+                                            "zip_code": values.zip_code,
+                                            "street": values.street,
+                                            "number": values.number,
+                                            "group": values.group,
+                                            "complement": values.complement,
+                                            "city": values.city,
+                                            "country": values.country,
+                                            "type": values.type,
+                                            "client": customer.id
+                                        });
+                                    }
+                                    else {
+                                        await api.post('customer/address', {
+                                            "zip_code": values.zip_code,
+                                            "street": values.street,
+                                            "number": values.number,
+                                            "group": values.group,
+                                            "complement": values.complement,
+                                            "city": values.city,
+                                            "country": values.country,
+                                            "type": values.type,
+                                            "client": customer.id
+                                        });
+                                    }
 
-                                setContainerNewAddress(false);
-                                setCepCustomer('');
-                                setStreetCustomer('');
-                                setNumberCustomer('');
-                                setGroupCustomer('');
-                                setAddressLine2Customer('');
-                                setCityCustomer('');
-                                setCountryCustomer('');
-                                values.type = 'home';
+                                    const res = await api.get(`clients/${customer.id}`);
+
+                                    handleCustomer(res.data);
+
+                                    setContainerNewAddress(false);
+                                    setSelectedCustomerAddress(null);
+                                }
+                                catch {
+
+                                }
                             }
-                            catch {
-
-                            }
-
                         }}
                         validationSchema={validatiionSchema}
                     >
@@ -176,7 +179,6 @@ export default function AddressCustomer() {
 
                                                 if (e.length === 8) {
                                                     if (e !== '') {
-                                                        setSpinnerCep('inline-block');
                                                         cep(e)
                                                             .then(cep => {
                                                                 const { street, neighborhood, city, state } = cep;
@@ -334,16 +336,27 @@ export default function AddressCustomer() {
                                             </View>
 
                                             <View style={{ width: '30%' }}>
+                                                {
+                                                    selectedCustomerAddress && buttonDeleteAddress ? <TouchableOpacity style={styles.buttonAction} onPress={() => { setButtonDeleteAddress(false) }}>
+                                                        <View style={{ alignItems: 'center' }}>
+                                                            <Feather name="trash-2" size={24} color="#ffffff" />
+                                                        </View>
+                                                    </TouchableOpacity> :
+                                                        selectedCustomerAddress && <TouchableOpacity
+                                                            style={styles.buttonConfirm}
+                                                            onPress={() => { selectedCustomerAddress && handleDeleteAddress(selectedCustomerAddress.id) }}
+                                                        >
+                                                            <View style={{ alignItems: 'center' }}>
+                                                                <Feather name="info" size={24} color="#ffffff" />
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                }
+                                            </View>
+
+                                            <View style={{ width: '30%' }}>
                                                 <TouchableOpacity style={styles.buttonAction} onPress={() => {
                                                     setContainerNewAddress(false);
-                                                    setCepCustomer('');
-                                                    setStreetCustomer('');
-                                                    setNumberCustomer('');
-                                                    setGroupCustomer('');
-                                                    setAddressLine2Customer('');
-                                                    setCityCustomer('');
-                                                    setCountryCustomer('');
-                                                    setFieldValue('type', 'home');
+                                                    setSelectedCustomerAddress(null);
                                                 }}
                                                 >
                                                     <View style={{ alignItems: 'center' }}>
@@ -366,7 +379,7 @@ export default function AddressCustomer() {
                                 <View style={styles.fieldsColumn}>
                                     <View style={styles.menuRow}>
                                         <View style={styles.colTitleButtonItem}>
-                                            <BorderlessButton onPress={() => { navigation.navigate('AddressCustomer') }}>
+                                            <BorderlessButton onPress={() => { handleAddressCustomer(address.id) }}>
                                                 <View style={{ flexDirection: 'row' }}>
                                                     <View style={styles.colTitleButtonItem}>
                                                         <Text style={{ color: '#8c8c8c' }}>{`${address.street} - ${address.number}`}</Text>
@@ -470,6 +483,13 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 5,
         backgroundColor: '#cc0000',
+        alignItems: 'center',
+    },
+
+    buttonConfirm: {
+        padding: 10,
+        borderRadius: 5,
+        backgroundColor: '#ffcc00',
         alignItems: 'center',
     },
 

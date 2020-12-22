@@ -6,6 +6,7 @@ import { Feather } from '@expo/vector-icons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 
+import { AuthContext } from '../../context/authContext';
 import { CustomerContext } from '../../context/customerContext';
 import Header from '../../components/PageHeader';
 import Input from '../../components/Interfaces/Inputs';
@@ -13,7 +14,8 @@ import InvalidFeedback from '../../components/Interfaces/InvalidFeedback';
 
 export default function Profile() {
     const navigation = useNavigation();
-    const { signed, customer, handleLogin, handleLogout } = useContext(CustomerContext);
+    const { signed, handleLogin, handleLogout } = useContext(AuthContext);
+    const { customer } = useContext(CustomerContext);
     const [messageErrorLogin, setMessageErrorLogin] = useState(false);
 
     const validatiionSchema = Yup.object().shape({

@@ -13,5 +13,4 @@ export interface Customer {
     paused: boolean;
     address: CustomerAddress[];
     payment: string[];
-    token: string;
 }
