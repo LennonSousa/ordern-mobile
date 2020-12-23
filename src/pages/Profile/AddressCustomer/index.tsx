@@ -50,7 +50,7 @@ export default function AddressCustomer() {
             if (customer) {
                 await api.delete(`customer/address/${id}`);
 
-                const res = await api.get(`clients/${customer.id}`);
+                const res = await api.get(`customer/${customer.id}`);
 
                 handleCustomer(res.data);
 
@@ -139,7 +139,7 @@ export default function AddressCustomer() {
                                         });
                                     }
 
-                                    const res = await api.get(`clients/${customer.id}`);
+                                    const res = await api.get(`customer/${customer.id}`);
 
                                     handleCustomer(res.data);
 

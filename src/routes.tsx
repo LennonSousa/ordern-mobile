@@ -19,6 +19,7 @@ import NewCustomer from './pages/Profile/NewCustomer';
 import CreateCustomer from './pages/Profile/NewCustomer/create';
 import CustomerUpdate from './pages/Profile/UpdateCustomer';
 import AddressCustomer from './pages/Profile/AddressCustomer';
+import PaymentsCustomer from './pages/Profile/PaymentsCustomer';
 
 function HomeTabs() {
     const { order } = useContext(ContextOrdering);
@@ -134,6 +135,15 @@ export default function Routes() {
                     options={{
                         headerShown: true,
                         header: () => <Header title="Seus endereços" showCancel={true} />
+                    }}
+                />
+
+                <Stack.Screen
+                    name="PaymentsCustomer"
+                    component={PaymentsCustomer}
+                    options={{
+                        headerShown: true,
+                        header: () => <Header title="Formas de pagamento" showCancel={true} />
                     }}
                 />
             </Stack.Navigator>

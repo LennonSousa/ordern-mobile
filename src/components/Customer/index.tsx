@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { CustomerAddress } from '../CustomerAddress';
+import { CustomerPayment } from '../CustomerPayments';
 
 export interface Customer {
     id: number;
@@ -12,5 +13,5 @@ export interface Customer {
     active: boolean;
     paused: boolean;
     address: CustomerAddress[];
-    payment: string[];
+    payment: CustomerPayment[];
 }

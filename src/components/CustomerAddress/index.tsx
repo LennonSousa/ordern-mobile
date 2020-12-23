@@ -1,5 +1,3 @@
-import React from 'react';
-
 export interface CustomerAddress{
     id: number;
     zip_code: string;

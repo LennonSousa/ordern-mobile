@@ -81,7 +81,9 @@ export default function Profile() {
 
                         <View style={styles.fieldsRow}>
                             <View style={styles.fieldsColumn}>
-                                <BorderlessButton>
+                            <BorderlessButton onPress={() => {
+                                    navigation.navigate('PaymentsCustomer');
+                                }}>
                                     <View style={styles.menuRow}>
                                         <View style={styles.menuColumn}>
                                             <Text>Formas de pagamento</Text>

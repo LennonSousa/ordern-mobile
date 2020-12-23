@@ -44,7 +44,7 @@ const AuthProvider: React.FC = ({ children }) => {
 
     async function handleLogin(emailLogin: string, password: string) {
         try {
-            const res = await api.post('clients/authenticate', {
+            const res = await api.post('customer/authenticate', {
                 email: emailLogin,
                 password
             });
