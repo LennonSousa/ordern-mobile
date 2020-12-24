@@ -12,6 +12,7 @@ import { ContextOrdering } from './context/orderingContext';
 import Header from './components/PageHeader';
 import LandingPage from './pages/LandingPage';
 import Cart from './pages/Cart';
+import Payment from './pages/Payment';
 import Profile from './pages/Profile';
 import ProductDetails from './pages/ProductDetails';
 import CategoryAdditionals from './components/ProductCategories';
@@ -144,6 +145,15 @@ export default function Routes() {
                     options={{
                         headerShown: true,
                         header: () => <Header title="Formas de pagamento" showCancel={true} />
+                    }}
+                />
+
+                <Stack.Screen
+                    name="Payment"
+                    component={Payment}
+                    options={{
+                        headerShown: true,
+                        header: () => <Header title="Pagamento" showCancel={true} />
                     }}
                 />
             </Stack.Navigator>

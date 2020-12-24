@@ -48,7 +48,7 @@ export default function PaymentsCustomer() {
             if (customer) {
                 await api.delete(`customer/payments/${id}`);
 
-                const res = await api.get(`clients/${customer.id}`);
+                const res = await api.get(`customer/${customer.id}`);
 
                 handleCustomer(res.data);
 
@@ -69,7 +69,7 @@ export default function PaymentsCustomer() {
                     <View style={styles.fieldsColumn}>
                         <View style={styles.menuRow}>
                             <View style={styles.menuColumn}>
-                                <Text>Endereços</Text>
+                                <Text>Formas de pagamento</Text>
                             </View>
                             <View style={styles.menuIconColumn}>
                                 <TouchableHighlight
@@ -89,7 +89,7 @@ export default function PaymentsCustomer() {
                         </View>
                         <View style={styles.menuDescriptionRow}>
                             <View style={styles.menuDescriptionColumn}>
-                                <Text style={styles.textsDescriptionMenu}>Seus endereços para entrega.</Text>
+                                <Text style={styles.textsDescriptionMenu}>Seus cartões para pagamento.</Text>
                             </View>
                         </View>
                     </View>
@@ -125,7 +125,7 @@ export default function PaymentsCustomer() {
                                         });
                                     }
 
-                                    const res = await api.get(`payments/${customer.id}`);
+                                    const res = await api.get(`customer/${customer.id}`);
 
                                     handleCustomer(res.data);
 
