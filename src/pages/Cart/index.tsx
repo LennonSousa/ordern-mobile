@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import { ScrollView, StyleSheet, Text, View, TouchableHighlight } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 import { ContextOrdering } from '../../context/orderingContext';
 import OrderItems from '../../components/OrderItems';
@@ -7,6 +8,7 @@ import Header from '../../components/PageHeader';
 
 export default function Cart() {
     const { order } = useContext(ContextOrdering);
+    const navigation = useNavigation();
 
     return (
         <View style={styles.container}>
@@ -61,7 +63,7 @@ export default function Cart() {
             }
 
             <View>
-                <TouchableHighlight style={styles.footerButton}>
+                <TouchableHighlight style={styles.footerButton} onPress={() => { navigation.navigate('Payment') }}>
                     <Text style={styles.footerButtonText}>Fazer pedido</Text>
                 </TouchableHighlight>
             </View>
