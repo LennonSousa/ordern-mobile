@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View, TouchableHighlight } from 'react-native';
 
-const STRIPE_PUBLISHABLE_KEY = 'pk_test_51I1cqjKzYHbNMhs91n4GYeyeo5VMe27LlB0X93C3UUUrKIrfADPDRmWqOyf9W8DZeyXShWP10CKik9cVdm7zmcUF005zn84KY5';
+import api from '../../services/api';
+import stripeapi from '../../services/stripeapi';
 
 interface Card {
     [key: string]: string;
@@ -18,27 +19,48 @@ export default function Payment() {
     async function requestPayment() {
         const creditCardToken = await getCreditCardToken(card);
 
-        console.log(creditCardToken);
+        console.log('Token gerado', creditCardToken);
+
+        console.log('Enviando requisição ao backend...');
+
+        api.post('dopayments', {
+            "amount": 1560,
+            "tokenId": creditCardToken.data.id
+        }).then(() => {
+            console.warn('Payment succeeded!');
+        })
+            .catch(error => {
+                console.warn('Payment failed', { error });
+            })
+            .finally(() => {
+                console.warn('Payment finished!');
+            });
     }
 
     const getCreditCardToken = (creditCardData: Card) => {
-        return fetch('https://api.stripe.com/v1/tokens', {
-            headers: {
-                // Use the correct MIME type for your server
-                Accept: 'application/json',
-                // Use the correct Content Type to send data in request body
-                'Content-Type': 'application/x-www-form-urlencoded',
-                // Use the Stripe publishable key as Bearer
-                Authorization: `Bearer ${STRIPE_PUBLISHABLE_KEY}`
-            },
-            // Use a proper HTTP method
-            method: 'post',
-            // Format the credit card data to a string of key-value pairs
-            // divided by &
-            body: Object.keys(creditCardData)
+        return stripeapi.post('tokens',
+            Object.keys(creditCardData)
                 .map(key => key + '=' + creditCardData[key])
                 .join('&')
-        }).then(response => response.json());
+        ).then(response => response);
+
+        // return fetch('https://api.stripe.com/v1/tokens', {
+        //     headers: {
+        //         // Use the correct MIME type for your server
+        //         Accept: 'application/json',
+        //         // Use the correct Content Type to send data in request body
+        //         'Content-Type': 'application/x-www-form-urlencoded',
+        //         // Use the Stripe publishable key as Bearer
+        //         Authorization: `Bearer ${STRIPE_PUBLISHABLE_KEY}`
+        //     },
+        //     // Use a proper HTTP method
+        //     method: 'post',
+        //     // Format the credit card data to a string of key-value pairs
+        //     // divided by &
+        //     body: Object.keys(creditCardData)
+        //         .map(key => key + '=' + creditCardData[key])
+        //         .join('&')
+        // }).then(response => response.json());
     }
 
     return (
