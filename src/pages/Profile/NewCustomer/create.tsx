@@ -10,7 +10,7 @@ import * as Yup from 'yup';
 
 import api from '../../../services/api';
 
-import { CustomerContext } from '../../../context/customerContext';
+import { AuthContext } from '../../../context/authContext';
 import Input from '../../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
 
@@ -23,7 +23,7 @@ interface NewCustomerRouteParams {
 export default function NewClient() {
     const route = useRoute();
     const navigation = useNavigation();
-    const { handleLogin } = useContext(CustomerContext);
+    const { handleLogin } = useContext(AuthContext);
     const params = route.params as NewCustomerRouteParams;
 
     const [show, setShow] = useState(false);

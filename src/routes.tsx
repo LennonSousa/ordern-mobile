@@ -12,6 +12,7 @@ import { ContextOrdering } from './context/orderingContext';
 import Header from './components/PageHeader';
 import LandingPage from './pages/LandingPage';
 import Cart from './pages/Cart';
+import Shipment from './pages/Shipment';
 import Payment from './pages/Payment';
 import Profile from './pages/Profile';
 import ProductDetails from './pages/ProductDetails';
@@ -145,6 +146,15 @@ export default function Routes() {
                     options={{
                         headerShown: true,
                         header: () => <Header title="Formas de pagamento" showCancel={true} />
+                    }}
+                />
+
+                <Stack.Screen
+                    name="Shipment"
+                    component={Shipment}
+                    options={{
+                        headerShown: true,
+                        header: () => <Header title="Envio" showCancel={true} />
                     }}
                 />
 

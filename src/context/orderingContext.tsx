@@ -3,7 +3,8 @@ import { Order } from '../components/Orders';
 
 interface orderingContextData {
     order: Order | undefined;
-    handleOrder(product: Order): void;
+    handleOrder(order: Order): void;
+    handleTotalOrder(product: Order): void;
     handleClearOrder(): void;
 }
 
@@ -13,6 +14,10 @@ const OrderingProvider: React.FC = ({ children }) => {
     const [order, setOrder] = useState<Order>();
 
     function handleOrder(order: Order) {
+        setOrder(order);
+    }
+
+    function handleTotalOrder(order: Order) {
         let totalOrder = 0;
 
         order.orderItems.forEach(item => {
@@ -42,7 +47,7 @@ const OrderingProvider: React.FC = ({ children }) => {
     }
 
     return (
-        <ContextOrdering.Provider value={{ order, handleOrder, handleClearOrder }}>
+        <ContextOrdering.Provider value={{ order, handleOrder, handleTotalOrder, handleClearOrder }}>
             {children}
         </ContextOrdering.Provider>
     );

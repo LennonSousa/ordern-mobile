@@ -24,7 +24,7 @@ export default function ProductDetails() {
     const params = route.params as ProductDetailsRouteParams;
 
     const { selectedProduct, handleSelectedProduct } = useContext(ContextSelectedProduct);
-    const { order, handleOrder } = useContext(ContextOrdering);
+    const { order, handleTotalOrder } = useContext(ContextOrdering);
 
     useEffect(() => {
         if (params.product) {
@@ -111,12 +111,12 @@ export default function ProductDetails() {
             });
 
             if (order) {
-                handleOrder({
+                handleTotalOrder({
                     ...order, orderItems: [...order.orderItems, itemsToOrder]
                 });
             }
             else {
-                handleOrder({
+                handleTotalOrder({
                     id: 0,
                     client_id: 0,
                     client: '',

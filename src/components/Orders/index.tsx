@@ -16,7 +16,7 @@ export interface Order {
     delivery_tax: number;
     fee: number;
     total: number;
-    payment: string;
+    payment: string | number;
     address: string;
     reason_cancellation: string;
     orderStatus: OrderStatus | string;

@@ -1,10 +1,9 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState } from 'react';
 import { StyleSheet, View, Text, TouchableHighlight, ScrollView } from 'react-native';
 import { BorderlessButton, TouchableOpacity } from 'react-native-gesture-handler';
 import { Feather } from '@expo/vector-icons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import cep from 'cep-promise';
 
 import api from '../../../services/api';
 
