@@ -23,7 +23,8 @@ export default function PaymentsCustomer() {
 
     const validatiionSchema = Yup.object().shape({
         card_number: Yup.string().required('Obrigatório!').max(16, 'Deve conter no máximo 16 caracteres!'),
-        valid: Yup.string().required('Obigatório!'),
+        exp_month: Yup.number().required('Obigatório!').min(2, 'Mês inválido!'),
+        exp_year: Yup.number().required('Obigatório!').min(4, 'Ano inválido!'),
         name: Yup.string().required('Obigatório!'),
         cpf: Yup.string().required('Obigatório!')
     });
@@ -98,7 +99,8 @@ export default function PaymentsCustomer() {
                     containerNewPayment && <Formik
                         initialValues={{
                             card_number: selectedCustomerPayment ? selectedCustomerPayment.card_number : '',
-                            valid: selectedCustomerPayment ? selectedCustomerPayment.valid : '',
+                            exp_month: selectedCustomerPayment ? selectedCustomerPayment.exp_month : '',
+                            exp_year: selectedCustomerPayment ? selectedCustomerPayment.exp_year : '',
                             name: selectedCustomerPayment ? selectedCustomerPayment.name : '',
                             cpf: selectedCustomerPayment ? selectedCustomerPayment.cpf : ''
                         }}
@@ -108,19 +110,21 @@ export default function PaymentsCustomer() {
                                     if (selectedCustomerPayment) {
                                         await api.put(`customer/payments/${selectedCustomerPayment.id}`, {
                                             "card_number": values.card_number,
-                                            "valid": values.valid,
+                                            "exp_month": values.exp_month,
+                                            "exp_year": values.exp_year,
                                             "name": values.name,
                                             "cpf": values.cpf,
-                                            "client": customer.id
+                                            "customer": customer.id
                                         });
                                     }
                                     else {
                                         await api.post('customer/payments', {
                                             "card_number": values.card_number,
-                                            "valid": values.valid,
+                                            "exp_month": values.exp_month,
+                                            "exp_year": values.exp_year,
                                             "name": values.name,
                                             "cpf": values.cpf,
-                                            "client": customer.id
+                                            "customer": customer.id
                                         });
                                     }
 
@@ -159,7 +163,7 @@ export default function PaymentsCustomer() {
                                             textContentType='creditCardNumber'
                                             keyboardType='numeric'
                                             onBlur={handleBlur('card_number')}
-                                            onChangeText={e => {setFieldValue('card_number', e)}}
+                                            onChangeText={e => { setFieldValue('card_number', e) }}
                                             value={values.card_number}
                                         />
                                         <InvalidFeedback message={errors.card_number}></InvalidFeedback>
@@ -167,16 +171,29 @@ export default function PaymentsCustomer() {
                                 </View>
 
                                 <View style={styles.fieldsRow}>
-                                    <View style={styles.fieldsColumn}>
+                                    <View style={{ flex: 0.3 }}>
                                         <Input
                                             style={styles.fieldsLogIn}
-                                            title='Validade'
+                                            title='Mês'
                                             keyboardType='numeric'
-                                            onChangeText={handleChange('valid')}
-                                            onBlur={handleBlur('valid')}
-                                            value={values.valid}
+                                            maxLength={2}
+                                            onChangeText={handleChange('exp_month')}
+                                            onBlur={handleBlur('exp_month')}
+                                            value={values.exp_month}
                                         />
-                                        <InvalidFeedback message={errors.valid}></InvalidFeedback>
+                                        <InvalidFeedback message={errors.exp_month}></InvalidFeedback>
+                                    </View>
+                                    <View style={{ flex: 0.3, marginHorizontal: 10 }}>
+                                        <Input
+                                            style={styles.fieldsLogIn}
+                                            title='Ano'
+                                            keyboardType='numeric'
+                                            maxLength={4}
+                                            onChangeText={handleChange('exp_year')}
+                                            onBlur={handleBlur('exp_year')}
+                                            value={values.exp_year}
+                                        />
+                                        <InvalidFeedback message={errors.exp_year}></InvalidFeedback>
                                     </View>
                                 </View>
 
@@ -267,7 +284,7 @@ export default function PaymentsCustomer() {
                                             <BorderlessButton onPress={() => { handleAddressCustomer(payment.id) }}>
                                                 <View style={{ flexDirection: 'row' }}>
                                                     <View style={styles.colTitleButtonItem}>
-                                                        <Text style={{ color: '#8c8c8c' }}>{`${payment.card_number} - ${payment.valid}`}</Text>
+                                                        <Text style={{ color: '#8c8c8c' }}>{`${payment.name} - ${payment.card_number}`}</Text>
                                                     </View>
                                                     <View style={styles.colIconButtonItem}>
                                                         <Feather name="chevron-right" size={24} color="#cc0000" />

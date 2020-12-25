@@ -142,7 +142,7 @@ export default function Payment() {
                                             <BorderlessButton onPress={() => { setSelectedCard(payment) }}>
                                                 <View style={{ flexDirection: 'row' }}>
                                                     <View style={styles.colTitleButtonItem}>
-                                                        <Text style={{ color: '#8c8c8c' }}>{`${payment.card_number} - ${payment.valid}`}</Text>
+                                                        <Text style={{ color: '#8c8c8c' }}>{`${payment.name} - ${payment.card_number}`}</Text>
                                                     </View>
                                                     <View style={styles.colIconButtonItem}>
                                                         {       
@@ -171,8 +171,8 @@ export default function Payment() {
                         if (selectedCard) {
                             requestPayment({
                                 'card[number]': selectedCard.card_number,
-                                'card[exp_month]': selectedCard.valid.substring(0, 1),
-                                'card[exp_year]': selectedCard.valid.substring(2, 3),
+                                'card[exp_month]': selectedCard.exp_month.substring(0, 2),
+                                'card[exp_year]': selectedCard.exp_year.substring(2, 4),
                                 'card[cvc]': values.cvc,
                                 'card[name]': selectedCard.name
                             });

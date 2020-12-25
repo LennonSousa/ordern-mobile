@@ -1,7 +1,8 @@
 export interface CustomerPayment{
     id: number;
     card_number: string;
-    valid: string;
+    exp_month: string;
+    exp_year: string;
     name: string;
     cpf: string;
 }
