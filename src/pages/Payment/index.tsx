@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View, TouchableHighlight, ActivityIndicator } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { useNavigation } from '@react-navigation/native';
@@ -9,10 +9,13 @@ import api from '../../services/api';
 import stripeapi from '../../services/stripeapi';
 
 import { CustomerContext } from '../../context/customerContext';
+import { ContextOrdering } from '../../context/orderingContext';
 import { CustomerPayment } from '../../components/CustomerPayments';
 import Input from '../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../components/Interfaces/InvalidFeedback';
 import { BorderlessButton } from 'react-native-gesture-handler';
+
+import globalStyles, { colorPrimaryLight, colorPrimaryDark } from '../../assets/styles/global';
 
 interface Card {
     [key: string]: string;
@@ -24,68 +27,69 @@ const validatiionSchema = Yup.object().shape({
 
 export default function Payment() {
     const navigation = useNavigation();
-    const { customer, handleCustomer } = useContext(CustomerContext);
+    const { customer } = useContext(CustomerContext);
+    const { order } = useContext(ContextOrdering);
 
     const [selectedCard, setSelectedCard] = useState<CustomerPayment>();
+    const [selectedPaymentType, setSelectedPaymentType] = useState('money');
     const [pendingPayment, setPendingPayment] = useState(false);
 
     async function requestPayment(card: Card) {
-        const creditCardToken = await getCreditCardToken(card);
+        if (customer && order) {
+            setPendingPayment(true);
 
-        console.log('Token gerado', creditCardToken);
+            const creditCardToken = await getCreditCardToken(card);
 
-        console.log('Enviando requisição ao backend...');
+            const orderTotal = order.total.toString().replace('.', '').replace(',', '');
 
-        api.post('dopayments', {
-            "amount": 1560,
-            "tokenId": creditCardToken.data.id
-        }).then(() => {
-            console.warn('Payment succeeded!');
-        })
-            .catch(error => {
-                console.warn('Payment failed', { error });
-            })
-            .finally(() => {
-                console.warn('Payment finished!');
-            });
+            if (creditCardToken.status === 200) {
+
+
+                api.post('dopayments', {
+                    "amount": orderTotal,
+                    "tokenId": creditCardToken.data.id,
+                    "description": `Pedido: `,
+                    "email": customer.email
+                }).then(res => {
+                    console.log('Payment aproved: ', res);
+                })
+                    .catch(error => {
+                        console.warn('Payment failed', { error });
+                    })
+                    .finally(() => {
+                        setPendingPayment(false);
+                    });
+            }
+            else {
+                console.log('Token card error', creditCardToken.data.error);
+            }
+        }
     }
 
     const getCreditCardToken = async (creditCardData: Card) => {
         const response = await stripeapi.post('tokens',
             Object.keys(creditCardData)
                 .map(key => key + '=' + creditCardData[key])
-                .join('&')
+                .join('&'),
+            {
+                validateStatus: function (status) {
+                    return status < 500; // Resolve only if the status code is less than 500
+                }
+            }
         );
-        return response;
 
-        // return fetch('https://api.stripe.com/v1/tokens', {
-        //     headers: {
-        //         // Use the correct MIME type for your server
-        //         Accept: 'application/json',
-        //         // Use the correct Content Type to send data in request body
-        //         'Content-Type': 'application/x-www-form-urlencoded',
-        //         // Use the Stripe publishable key as Bearer
-        //         Authorization: `Bearer ${STRIPE_PUBLISHABLE_KEY}`
-        //     },
-        //     // Use a proper HTTP method
-        //     method: 'post',
-        //     // Format the credit card data to a string of key-value pairs
-        //     // divided by &
-        //     body: Object.keys(creditCardData)
-        //         .map(key => key + '=' + creditCardData[key])
-        //         .join('&')
-        // }).then(response => response.json());
+        return response;
     }
 
     return (
-        <View style={styles.container}>
-            <View style={styles.fieldsRow}>
-                <View style={styles.fieldsColumn}>
-                    <View style={styles.menuRow}>
-                        <View style={styles.menuColumn}>
-                            <Text>Pagamento</Text>
+        <View style={globalStyles.container}>
+            <View style={globalStyles.fieldsRow}>
+                <View style={globalStyles.fieldsColumn}>
+                    <View style={globalStyles.menuRow}>
+                        <View style={globalStyles.menuColumn}>
+                            <Text style={globalStyles.textDescription}>Escolha uma forma de pagamento ou adicione uma nova.</Text>
                         </View>
-                        <View style={styles.menuIconColumn}>
+                        <View style={globalStyles.menuIconColumn}>
                             <TouchableHighlight
                                 style={styles.buttonNewItem}
                                 underlayColor="#e8e8e8"
@@ -99,29 +103,52 @@ export default function Payment() {
                             </TouchableHighlight>
                         </View>
                     </View>
-                    <View style={styles.menuDescriptionRow}>
-                        <View style={styles.menuDescriptionColumn}>
-                            <Text style={styles.textsDescriptionMenu}>Escolha uma forma de pagamento ou adicione uma nova.</Text>
-                        </View>
-                    </View>
                 </View>
             </View>
 
-            <ScrollView style={styles.containerMenu}>
-                <View style={styles.containerItem}>
-                    <View style={styles.fieldsRow}>
-                        <View style={styles.fieldsColumn}>
-                            <View style={styles.menuRow}>
-                                <View style={styles.colTitleButtonItem}>
-                                    <BorderlessButton onPress={() => { setSelectedCard(undefined) }}>
+            <ScrollView style={globalStyles.containerMenu}>
+                <View style={globalStyles.containerItem}>
+                    <View style={globalStyles.fieldsRow}>
+                        <View style={globalStyles.fieldsColumn}>
+                            <View style={globalStyles.menuRow}>
+                                <View style={globalStyles.colTitleButtonItem}>
+                                    <BorderlessButton onPress={() => { setSelectedCard(undefined); setSelectedPaymentType('money'); }}>
                                         <View style={{ flexDirection: 'row' }}>
-                                            <View style={styles.colTitleButtonItem}>
-                                                <Feather name="dollar-sign" size={24} color="#cc0000" />
-                                                <Text style={{ color: '#8c8c8c' }}>Dinheiro</Text>
+                                            <View style={{ flex: 0.1, marginHorizontal: 10 }}>
+                                                <FontAwesome5 name="money-bill" size={18} color="#8c8c8c" />
                                             </View>
-                                            <View style={styles.colIconButtonItem}>
+                                            <View style={globalStyles.colTitleButtonItem}>
+                                                <Text style={globalStyles.textsButtonBorderMenu}>Dinheiro</Text>
+                                            </View>
+                                            <View style={globalStyles.colIconButtonItem}>
                                                 {
-                                                    !selectedCard && <Feather name="check" size={24} color="#cc0000" />
+                                                    !selectedCard && selectedPaymentType === 'money' && <FontAwesome5 name="check" size={18} color={colorPrimaryLight} />
+                                                }
+                                            </View>
+                                        </View>
+                                    </BorderlessButton>
+                                </View>
+                            </View>
+                        </View>
+                    </View>
+                </View>
+
+                <View style={globalStyles.containerItem}>
+                    <View style={globalStyles.fieldsRow}>
+                        <View style={globalStyles.fieldsColumn}>
+                            <View style={globalStyles.menuRow}>
+                                <View style={globalStyles.colTitleButtonItem}>
+                                    <BorderlessButton onPress={() => { setSelectedCard(undefined); setSelectedPaymentType('debit'); }}>
+                                        <View style={{ flexDirection: 'row' }}>
+                                            <View style={{ flex: 0.1, marginHorizontal: 10 }}>
+                                                <FontAwesome5 name="money-bill" size={18} color="#8c8c8c" />
+                                            </View>
+                                            <View style={globalStyles.colTitleButtonItem}>
+                                                <Text style={globalStyles.textsButtonBorderMenu}>Débito na entrega</Text>
+                                            </View>
+                                            <View style={globalStyles.colIconButtonItem}>
+                                                {
+                                                    !selectedCard && selectedPaymentType === 'debit' && <FontAwesome5 name="check" size={18} color={colorPrimaryLight} />
                                                 }
                                             </View>
                                         </View>
@@ -134,19 +161,19 @@ export default function Payment() {
 
                 {
                     customer && customer.payment && customer.payment.map((payment, index) => {
-                        return <View key={index} style={styles.containerItem}>
-                            <View style={styles.fieldsRow}>
-                                <View style={styles.fieldsColumn}>
-                                    <View style={styles.menuRow}>
-                                        <View style={styles.colTitleButtonItem}>
+                        return <View key={index} style={globalStyles.containerItem}>
+                            <View style={globalStyles.fieldsRow}>
+                                <View style={globalStyles.fieldsColumn}>
+                                    <View style={globalStyles.menuRow}>
+                                        <View style={globalStyles.colTitleButtonItem}>
                                             <BorderlessButton onPress={() => { setSelectedCard(payment) }}>
                                                 <View style={{ flexDirection: 'row' }}>
-                                                    <View style={styles.colTitleButtonItem}>
-                                                        <Text style={{ color: '#8c8c8c' }}>{`${payment.name} - ${payment.card_number}`}</Text>
+                                                    <View style={globalStyles.colTitleButtonItem}>
+                                                        <Text style={{ color: '#8c8c8c' }}>{`****${payment.card_number.slice(payment.card_number.length - 4)} - ${payment.brand}`}</Text>
                                                     </View>
-                                                    <View style={styles.colIconButtonItem}>
-                                                        {       
-                                                            selectedCard && selectedCard.id === payment.id && <Feather name="check" size={24} color="#cc0000" />
+                                                    <View style={globalStyles.colIconButtonItem}>
+                                                        {
+                                                            selectedCard && selectedCard.id === payment.id && <FontAwesome5 name="check" size={18} color={colorPrimaryLight} />
                                                         }
                                                     </View>
                                                 </View>
@@ -183,7 +210,7 @@ export default function Payment() {
                 >
                     {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
                         <View>
-                            <View style={styles.fieldsRow}>
+                            <View style={globalStyles.fieldsRow}>
                                 <View style={{ flex: 0.5 }}>
                                     <Input
                                         style={styles.fieldsLogIn}
@@ -197,11 +224,11 @@ export default function Payment() {
                                 </View>
                             </View>
 
-                            <TouchableHighlight style={styles.footerButton} onPress={handleSubmit as any}>
+                            <TouchableHighlight underlayColor={colorPrimaryDark} style={globalStyles.footerButton} onPress={handleSubmit as any}>
                                 <View style={{ flexDirection: 'row' }}>
-                                    <Text style={styles.footerButtonText}>Continuar</Text>
+                                    <Text style={globalStyles.footerButtonText}>{pendingPayment ? 'Aguarde...' : 'Continuar'}</Text>
                                     {
-                                        !pendingPayment ? <ActivityIndicator size="large" color="#ffffff" /> :
+                                        pendingPayment ? <ActivityIndicator size="large" color="#ffffff" /> :
                                             <Feather name="chevron-right" size={24} color="#cc0000" />
                                     }
                                 </View>
@@ -210,12 +237,11 @@ export default function Payment() {
                     )}
                 </Formik> :
                     <View>
-                        <TouchableHighlight style={styles.footerButton} >
+                        <TouchableHighlight underlayColor={colorPrimaryDark} style={globalStyles.footerButton} >
                             <View style={{ flexDirection: 'row' }}>
-                                <Text style={styles.footerButtonText}>Continuar</Text>
+                                <Text style={globalStyles.footerButtonText}>Continuar</Text>
                                 {
-                                    !pendingPayment ? <ActivityIndicator size="large" color="#ffffff" /> :
-                                        <Feather name="chevron-right" size={24} color="#cc0000" />
+                                    pendingPayment && <ActivityIndicator size="large" color="#ffffff" />
                                 }
                             </View>
                         </TouchableHighlight>
@@ -226,80 +252,9 @@ export default function Payment() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-
-    containerMenu: {
-        paddingHorizontal: 15,
-    },
-
-    menuRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-
-    menuColumn: {
-        flex: 0.8,
-    },
-
-    menuDescriptionRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-
-    menuDescriptionColumn: {
-        flex: 1,
-    },
-
-    textsDescriptionMenu: {
-        fontFamily: 'Nunito_300Light',
-        fontSize: 14,
-        color: '#8c8c8c'
-    },
-
-    menuIconColumn: {
-        flex: 0.2,
-        alignItems: 'flex-end',
-    },
-
-    fieldsRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginVertical: 10,
-    },
-
-    fieldsColumn: {
-        flex: 1,
-    },
-
     buttonNewItem: {
         padding: 10,
         borderRadius: 5,
-    },
-
-    colTitleButtonItem: {
-        flex: 0.9,
-    },
-
-    colIconButtonItem: {
-        flex: 0.1,
-    },
-
-    containerItem: {
-        marginVertical: 5,
-        padding: 10,
-        borderColor: '#e8e8e8',
-        borderWidth: 1,
-        borderRadius: 8
-    },
-
-    buttonTypeAddressCustomer: {
-        padding: 10,
-        borderRadius: 5,
-        backgroundColor: '#e8e8e8',
-        alignItems: 'center',
     },
 
     buttonAction: {
@@ -318,20 +273,5 @@ const styles = StyleSheet.create({
 
     fieldsLogIn: {
         marginVertical: 8,
-    },
-
-    footerButton: {
-        backgroundColor: '#cc0000',
-        borderRadius: 5,
-        marginVertical: 15,
-        height: 50,
-        justifyContent: 'center'
-    },
-
-    footerButtonText: {
-        color: '#ffffff',
-        alignSelf: 'center',
-        fontFamily: 'Nunito_600SemiBold',
-        fontSize: 16,
     },
 });

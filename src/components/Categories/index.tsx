@@ -3,6 +3,8 @@ import { StyleSheet, Text, View, Dimensions } from 'react-native';
 
 import ProductItem, { Product } from '../Products';
 
+import globalStyles from '../../assets/styles/global';
+
 export interface Category {
     id: number;
     title: string;
@@ -19,7 +21,7 @@ export default function Categories({ category }: CategoryProps) {
     return (
         !category.paused ? <View style={styles.categoryItem}>
             <View>
-                <Text style={styles.categoryTitle}>{category.title}</Text>
+                <Text style={globalStyles.titlePrimaryLight}>{category.title}</Text>
             </View>
             <View>
                 {

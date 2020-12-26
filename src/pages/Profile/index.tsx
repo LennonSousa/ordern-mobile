@@ -12,6 +12,8 @@ import Header from '../../components/PageHeader';
 import Input from '../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../components/Interfaces/InvalidFeedback';
 
+import globalStyles from '../../assets/styles/global';
+
 export default function Profile() {
     const navigation = useNavigation();
     const { signed, handleLogin, handleLogout } = useContext(AuthContext);
@@ -81,7 +83,7 @@ export default function Profile() {
 
                         <View style={styles.fieldsRow}>
                             <View style={styles.fieldsColumn}>
-                            <BorderlessButton onPress={() => {
+                                <BorderlessButton onPress={() => {
                                     navigation.navigate('PaymentsCustomer');
                                 }}>
                                     <View style={styles.menuRow}>
@@ -162,7 +164,7 @@ export default function Profile() {
                             <ScrollView style={styles.containerLogIn}>
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
-                                        <Text style={styles.textsLogIn}>Entrar</Text>
+                                        <Text style={[globalStyles.titlePrimaryLight, { textAlign: 'center' }]}>Entrar</Text>
                                     </View>
                                 </View>
 

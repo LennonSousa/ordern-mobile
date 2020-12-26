@@ -17,6 +17,7 @@
     "@react-navigation/stack": "^5.12.8",
     "axios": "^0.21.0",
     "cep-promise": "^4.0.3",
+    "credit-card-type": "^9.1.0",
     "date-fns": "^2.16.1",
     "expo": "~39.0.2",
     "expo-font": "~8.3.0",

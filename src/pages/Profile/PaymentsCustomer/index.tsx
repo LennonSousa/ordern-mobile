@@ -4,6 +4,10 @@ import { BorderlessButton, TouchableOpacity } from 'react-native-gesture-handler
 import { Feather } from '@expo/vector-icons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+import creditCardType, {
+    getTypeInfo,
+    types as CardType,
+  } from "credit-card-type";
 
 import api from '../../../services/api';
 
@@ -98,7 +102,8 @@ export default function PaymentsCustomer() {
                 {
                     containerNewPayment && <Formik
                         initialValues={{
-                            card_number: selectedCustomerPayment ? selectedCustomerPayment.card_number : '',
+                            card_number: selectedCustomerPayment ? `************${selectedCustomerPayment.card_number.slice(selectedCustomerPayment.card_number.length - 4)}` : '',
+                            brand: selectedCustomerPayment ? selectedCustomerPayment.brand : '',
                             exp_month: selectedCustomerPayment ? selectedCustomerPayment.exp_month : '',
                             exp_year: selectedCustomerPayment ? selectedCustomerPayment.exp_year : '',
                             name: selectedCustomerPayment ? selectedCustomerPayment.name : '',
@@ -110,6 +115,7 @@ export default function PaymentsCustomer() {
                                     if (selectedCustomerPayment) {
                                         await api.put(`customer/payments/${selectedCustomerPayment.id}`, {
                                             "card_number": values.card_number,
+                                            "brand": values.brand,
                                             "exp_month": values.exp_month,
                                             "exp_year": values.exp_year,
                                             "name": values.name,
@@ -120,6 +126,7 @@ export default function PaymentsCustomer() {
                                     else {
                                         await api.post('customer/payments', {
                                             "card_number": values.card_number,
+                                            "brand": values.brand,
                                             "exp_month": values.exp_month,
                                             "exp_year": values.exp_year,
                                             "name": values.name,
@@ -141,6 +148,7 @@ export default function PaymentsCustomer() {
                             }
                         }}
                         validationSchema={validatiionSchema}
+                        validateOnChange={false}
                     >
                         {({ handleChange, handleBlur, handleSubmit, values, errors, setFieldValue }) => (
                             <View style={styles.containerItem}>
@@ -155,7 +163,7 @@ export default function PaymentsCustomer() {
                                 </View>
 
                                 <View style={styles.fieldsRow}>
-                                    <View style={styles.fieldsColumn}>
+                                    <View style={{ flex: 0.7 }}>
                                         <Input
                                             style={styles.fieldsLogIn}
                                             title='Número do cartão'
@@ -163,10 +171,16 @@ export default function PaymentsCustomer() {
                                             textContentType='creditCardNumber'
                                             keyboardType='numeric'
                                             onBlur={handleBlur('card_number')}
-                                            onChangeText={e => { setFieldValue('card_number', e) }}
+                                            onChangeText={e => {
+                                                setFieldValue('card_number', e);
+                                                setFieldValue('brand', values.card_number.length >= 15 ? creditCardType(values.card_number).length !== 0 ? (creditCardType(values.card_number)[0].niceType) : '' : '')
+                                        }}
                                             value={values.card_number}
                                         />
                                         <InvalidFeedback message={errors.card_number}></InvalidFeedback>
+                                    </View>
+                                    <View style={{ flex: 0.2, marginHorizontal: 10 }}>
+                                        <InvalidFeedback message={values.brand}></InvalidFeedback>
                                     </View>
                                 </View>
 
@@ -284,7 +298,7 @@ export default function PaymentsCustomer() {
                                             <BorderlessButton onPress={() => { handleAddressCustomer(payment.id) }}>
                                                 <View style={{ flexDirection: 'row' }}>
                                                     <View style={styles.colTitleButtonItem}>
-                                                        <Text style={{ color: '#8c8c8c' }}>{`${payment.name} - ${payment.card_number}`}</Text>
+                                                        <Text style={{ color: '#8c8c8c' }}>{`****${payment.card_number.slice(payment.card_number.length - 4)} - ${payment.brand}`}</Text>
                                                     </View>
                                                     <View style={styles.colIconButtonItem}>
                                                         <Feather name="chevron-right" size={24} color="#cc0000" />
