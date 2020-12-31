@@ -22,6 +22,7 @@ import CreateCustomer from './pages/Profile/NewCustomer/create';
 import CustomerUpdate from './pages/Profile/UpdateCustomer';
 import AddressCustomer from './pages/Profile/AddressCustomer';
 import PaymentsCustomer from './pages/Profile/PaymentsCustomer';
+import OrderDetails from './pages/OrderDetails';
 
 function HomeTabs() {
     const { order } = useContext(ContextOrdering);
@@ -164,6 +165,15 @@ export default function Routes() {
                     options={{
                         headerShown: true,
                         header: () => <Header title="Pagamento" showCancel={true} />
+                    }}
+                />
+
+                <Stack.Screen
+                    name="OrderDetails"
+                    component={OrderDetails}
+                    options={{
+                        headerShown: true,
+                        header: () => <Header title="Pedido" showCancel={true} />
                     }}
                 />
             </Stack.Navigator>

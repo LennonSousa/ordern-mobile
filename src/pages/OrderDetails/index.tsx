@@ -8,11 +8,11 @@ import { format } from 'date-fns';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 
-import api from '../../../services/api';
+import api from '../../services/api';
 
-import { CustomerContext } from '../../../context/customerContext';
-import Input from '../../../components/Interfaces/Inputs';
-import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
+import { CustomerContext } from '../../context/customerContext';
+import Input from '../../components/Interfaces/Inputs';
+import InvalidFeedback from '../../components/Interfaces/InvalidFeedback';
 
 
 export default function CustomerUpdate() {

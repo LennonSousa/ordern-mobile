@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View, TouchableHighlight, ActivityIndicator } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, TouchableHighlight, ActivityIndicator, Modal } from 'react-native';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -32,36 +32,97 @@ export default function Payment() {
 
     const [selectedCard, setSelectedCard] = useState<CustomerPayment>();
     const [selectedPaymentType, setSelectedPaymentType] = useState('money');
-    const [pendingPayment, setPendingPayment] = useState(false);
+
+    const [modalWaiting, setModalWaiting] = useState(false);
+    const [circleWaiting, setCircleWaiting] = useState(true);
+    const [successWaiting, setSuccessWaiting] = useState(false);
+    const [errorWaiting, setErrorWaiting] = useState(false);
 
     async function requestPayment(card: Card) {
         if (customer && order) {
-            setPendingPayment(true);
+            setCircleWaiting(true);
+            setSuccessWaiting(false);
+            setErrorWaiting(false);
+
+            setModalWaiting(true);
 
             const creditCardToken = await getCreditCardToken(card);
 
             const orderTotal = order.total.toString().replace('.', '').replace(',', '');
 
             if (creditCardToken.status === 200) {
+                try {
+                    const paymentResponde = await api.post('dopayments', {
+                        "amount": orderTotal,
+                        "tokenId": creditCardToken.data.id,
+                        "description": `Pedido: `,
+                        "email": customer.email
+                    },
+                        {
+                            validateStatus: function (status) {
+                                return status < 500; // Resolve only if the status code is less than 500
+                            }
+                        });
 
+                    if (paymentResponde.status === 200) {
+                        setCircleWaiting(false);
+                        setSuccessWaiting(true);
 
-                api.post('dopayments', {
-                    "amount": orderTotal,
-                    "tokenId": creditCardToken.data.id,
-                    "description": `Pedido: `,
-                    "email": customer.email
-                }).then(res => {
-                    console.log('Payment aproved: ', res);
-                })
-                    .catch(error => {
-                        console.warn('Payment failed', { error });
-                    })
-                    .finally(() => {
-                        setPendingPayment(false);
-                    });
+                        setTimeout(() => {
+                            setModalWaiting(false);
+
+                            setCircleWaiting(true);
+                            setSuccessWaiting(false);
+                            setErrorWaiting(false);
+
+                            navigation.navigate('OrderDetails');
+                        }, 1500);
+
+                        console.log('Payment aproved: ');
+                    }
+                    else {
+                        setCircleWaiting(false);
+                        setErrorWaiting(true);
+
+                        setTimeout(() => {
+                            setModalWaiting(false);
+
+                            setCircleWaiting(true);
+                            setSuccessWaiting(false);
+                            setErrorWaiting(false);
+                        }, 1500);
+
+                        console.log('Payment failed');
+                    }
+                }
+                catch {
+                    setCircleWaiting(false);
+                    setErrorWaiting(true);
+
+                    setTimeout(() => {
+                        setModalWaiting(false);
+
+                        setCircleWaiting(true);
+                        setSuccessWaiting(false);
+                        setErrorWaiting(false);
+                    }, 1500);
+
+                    console.log('Payment failed');
+                }
             }
             else {
-                console.log('Token card error', creditCardToken.data.error);
+                setCircleWaiting(false);
+                setErrorWaiting(true);
+
+                setTimeout(() => {
+                    setModalWaiting(false);
+
+                    setCircleWaiting(true);
+                    setSuccessWaiting(false);
+                    setErrorWaiting(false);
+                }, 1500);
+
+                console.log('Token card error');
             }
         }
     }
@@ -83,8 +144,8 @@ export default function Payment() {
 
     return (
         <View style={globalStyles.container}>
-            <View style={globalStyles.fieldsRow}>
-                <View style={globalStyles.fieldsColumn}>
+            <View style={globalStyles.row}>
+                <View style={globalStyles.column}>
                     <View style={globalStyles.menuRow}>
                         <View style={globalStyles.menuColumn}>
                             <Text style={globalStyles.textDescription}>Escolha uma forma de pagamento ou adicione uma nova.</Text>
@@ -108,8 +169,8 @@ export default function Payment() {
 
             <ScrollView style={globalStyles.containerMenu}>
                 <View style={globalStyles.containerItem}>
-                    <View style={globalStyles.fieldsRow}>
-                        <View style={globalStyles.fieldsColumn}>
+                    <View style={globalStyles.row}>
+                        <View style={globalStyles.column}>
                             <View style={globalStyles.menuRow}>
                                 <View style={globalStyles.colTitleButtonItem}>
                                     <BorderlessButton onPress={() => { setSelectedCard(undefined); setSelectedPaymentType('money'); }}>
@@ -134,8 +195,8 @@ export default function Payment() {
                 </View>
 
                 <View style={globalStyles.containerItem}>
-                    <View style={globalStyles.fieldsRow}>
-                        <View style={globalStyles.fieldsColumn}>
+                    <View style={globalStyles.row}>
+                        <View style={globalStyles.column}>
                             <View style={globalStyles.menuRow}>
                                 <View style={globalStyles.colTitleButtonItem}>
                                     <BorderlessButton onPress={() => { setSelectedCard(undefined); setSelectedPaymentType('debit'); }}>
@@ -159,11 +220,37 @@ export default function Payment() {
                     </View>
                 </View>
 
+                <View style={globalStyles.containerItem}>
+                    <View style={globalStyles.row}>
+                        <View style={globalStyles.column}>
+                            <View style={globalStyles.menuRow}>
+                                <View style={globalStyles.colTitleButtonItem}>
+                                    <BorderlessButton onPress={() => { setSelectedCard(undefined); setSelectedPaymentType('credit'); }}>
+                                        <View style={{ flexDirection: 'row' }}>
+                                            <View style={{ flex: 0.1, marginHorizontal: 10 }}>
+                                                <FontAwesome5 name="money-check-alt" size={18} color="#8c8c8c" />
+                                            </View>
+                                            <View style={globalStyles.colTitleButtonItem}>
+                                                <Text style={globalStyles.textsButtonBorderMenu}>Crédito na entrega</Text>
+                                            </View>
+                                            <View style={globalStyles.colIconButtonItem}>
+                                                {
+                                                    !selectedCard && selectedPaymentType === 'credit' && <FontAwesome5 name="check" size={18} color={colorPrimaryLight} />
+                                                }
+                                            </View>
+                                        </View>
+                                    </BorderlessButton>
+                                </View>
+                            </View>
+                        </View>
+                    </View>
+                </View>
+
                 {
                     customer && customer.payment && customer.payment.map((payment, index) => {
                         return <View key={index} style={globalStyles.containerItem}>
-                            <View style={globalStyles.fieldsRow}>
-                                <View style={globalStyles.fieldsColumn}>
+                            <View style={globalStyles.row}>
+                                <View style={globalStyles.column}>
                                     <View style={globalStyles.menuRow}>
                                         <View style={globalStyles.colTitleButtonItem}>
                                             <BorderlessButton onPress={() => { setSelectedCard(payment) }}>
@@ -186,6 +273,36 @@ export default function Payment() {
                     })
                 }
             </ScrollView>
+
+            <View style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+            }}>
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalWaiting}
+                >
+                    <View style={{
+                        flex: 1,
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}>
+                        <View style={styles.modalView}>
+                            {
+                                circleWaiting && <ActivityIndicator size="large" color="#8c8c8c" />
+                            }
+                            {
+                                successWaiting && <FontAwesome5 name="check-circle" size={48} color="#33cc33" />
+                            }
+                            {
+                                errorWaiting && <FontAwesome5 name="times-circle" size={48} color="#fe3807" />
+                            }
+                        </View>
+                    </View>
+                </Modal>
+            </View>
 
             {
                 selectedCard ? <Formik
@@ -210,7 +327,7 @@ export default function Payment() {
                 >
                     {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
                         <View>
-                            <View style={globalStyles.fieldsRow}>
+                            <View style={globalStyles.row}>
                                 <View style={{ flex: 0.5 }}>
                                     <Input
                                         style={styles.fieldsLogIn}
@@ -226,11 +343,7 @@ export default function Payment() {
 
                             <TouchableHighlight underlayColor={colorPrimaryDark} style={globalStyles.footerButton} onPress={handleSubmit as any}>
                                 <View style={{ flexDirection: 'row' }}>
-                                    <Text style={globalStyles.footerButtonText}>{pendingPayment ? 'Aguarde...' : 'Continuar'}</Text>
-                                    {
-                                        pendingPayment ? <ActivityIndicator size="large" color="#ffffff" /> :
-                                            <Feather name="chevron-right" size={24} color="#cc0000" />
-                                    }
+                                    <Text style={globalStyles.footerButtonText}>Pagar</Text>
                                 </View>
                             </TouchableHighlight>
                         </View>
@@ -239,10 +352,7 @@ export default function Payment() {
                     <View>
                         <TouchableHighlight underlayColor={colorPrimaryDark} style={globalStyles.footerButton} >
                             <View style={{ flexDirection: 'row' }}>
-                                <Text style={globalStyles.footerButtonText}>Continuar</Text>
-                                {
-                                    pendingPayment && <ActivityIndicator size="large" color="#ffffff" />
-                                }
+                                <Text style={globalStyles.footerButtonText}>Fazer o pedido</Text>
                             </View>
                         </TouchableHighlight>
                     </View>
@@ -255,6 +365,22 @@ const styles = StyleSheet.create({
     buttonNewItem: {
         padding: 10,
         borderRadius: 5,
+    },
+
+    modalView: {
+        margin: 20,
+        backgroundColor: "white",
+        borderRadius: 20,
+        padding: 35,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5
     },
 
     buttonAction: {

@@ -27,6 +27,16 @@ const globalStyles = StyleSheet.create({
         paddingHorizontal: 15
     },
 
+    row: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 10,
+    },
+
+    column: {
+        flex: 1,
+    },
+
     divider: {
         borderTopColor: colorBorder,
         borderTopWidth: 1,
@@ -107,16 +117,6 @@ const globalStyles = StyleSheet.create({
     },
 
     menuDescriptionColumn: {
-        flex: 1,
-    },
-
-    fieldsRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginVertical: 10,
-    },
-
-    fieldsColumn: {
         flex: 1,
     },
 
