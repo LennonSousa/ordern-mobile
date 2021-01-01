@@ -1,173 +1,189 @@
-import React, { useContext, useState } from 'react';
-import { StyleSheet, View, Text, TouchableHighlight, ScrollView } from 'react-native';
-import { BorderlessButton } from 'react-native-gesture-handler';
-import { Feather } from '@expo/vector-icons';
+import React, { useContext, useEffect, useState } from 'react';
+import { ScrollView, StyleSheet, Text, View, TouchableHighlight, ActivityIndicator, Modal } from 'react-native';
+import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
 import { CustomerContext } from '../../context/customerContext';
-import { CustomerAddress } from '../../components/CustomerAddress';
 import { ContextOrdering } from '../../context/orderingContext';
+import { CustomerAddress } from '../../components/CustomerAddress';
+import { RestaurantDeliveryGroups } from '../../components/DeliveryGroups';
+import Input from '../../components/Interfaces/Inputs';
+import InvalidFeedback from '../../components/Interfaces/InvalidFeedback';
+import { BorderlessButton } from 'react-native-gesture-handler';
 
-export default function AddressCustomer() {
+import globalStyles, { colorPrimaryLight, colorPrimaryDark } from '../../assets/styles/global';
+import api from '../../services/api';
+
+export default function Shipment() {
     const navigation = useNavigation();
-    const { order } = useContext(ContextOrdering);
     const { customer } = useContext(CustomerContext);
+    const { order } = useContext(ContextOrdering);
 
-    // Customer address
-    const [selectedCustomerAddress, setSelectedCustomerAddress] = useState<CustomerAddress | null>();
+    const [selectedAddress, setSelectedAddress] = useState<CustomerAddress>();
+    const [restaurantDeliveryGroups, setRestaurantDeliveryGroups] = useState<RestaurantDeliveryGroups[]>([]);
+    const [selectedDeliveryGroup, setSelectedDeliveryGroup] = useState<RestaurantDeliveryGroups>();
 
-    function handleAddressOrder(id: number) {
-        if (customer) {
-            customer.address.forEach(address => {
-                if (address.id === id) {
-                    setSelectedCustomerAddress(address);
-                }
-            })
-        }
-    }
+    useEffect(() => {
+        api.get('restaurant/delivery-groups').then(res => {
+            setRestaurantDeliveryGroups(res.data);
+        })
+            .catch(err => {
+                console.log(err);
+            });
+    }, []);
 
     return (
-        <View style={styles.container}>
-            <ScrollView style={styles.containerMenu}>
-                <View style={styles.fieldsRow}>
-                    <View style={styles.fieldsColumn}>
-                        <View style={styles.menuRow}>
-                            <View style={styles.menuColumn}>
-                                <Text>Endereço para entrega</Text>
-                            </View>
-                            <View style={styles.menuIconColumn}>
-                                <TouchableHighlight
-                                    style={styles.buttonNewItem}
-                                    underlayColor="#e8e8e8"
-                                    onPress={() => {
-                                        navigation.navigate('AddressCustomer');
-                                    }}
-                                >
-                                    <View>
-                                        <Feather name="plus" size={24} color="#cc0000" />
-                                    </View>
-                                </TouchableHighlight>
-                            </View>
+        <ScrollView style={globalStyles.container}>
+            <View style={globalStyles.row}>
+                <View style={globalStyles.column}>
+                    <View style={globalStyles.menuRow}>
+                        <View style={globalStyles.menuColumn}>
+                            <Text style={globalStyles.textsMenu}>Endereço para entrega</Text>
                         </View>
-                        <View style={styles.menuDescriptionRow}>
-                            <View style={styles.menuDescriptionColumn}>
-                                <Text style={styles.textsDescriptionMenu}>Escolha um endereço ou adicione um novo.</Text>
-                            </View>
+                        <View style={globalStyles.menuIconColumn}>
+                            <TouchableHighlight
+                                style={styles.buttonNewItem}
+                                underlayColor="#e8e8e8"
+                                onPress={() => {
+                                    navigation.navigate('AddressCustomer');
+                                }}
+                            >
+                                <View>
+                                    <Feather name="plus" size={24} color="#cc0000" />
+                                </View>
+                            </TouchableHighlight>
+                        </View>
+                    </View>
+                    <View style={globalStyles.menuDescriptionRow}>
+                        <View style={globalStyles.menuDescriptionColumn}>
+                            <Text style={globalStyles.textsDescriptionMenu}>
+                                Escolha um endereço para entrega ou adicione um novo.
+                            </Text>
                         </View>
                     </View>
                 </View>
+            </View>
 
+
+
+            <View style={globalStyles.containerMenu}>
                 {
                     customer && customer.address && customer.address.map((address, index) => {
-                        return <View key={index} style={styles.containerItem}>
-                            <View style={styles.fieldsRow}>
-                                <View style={styles.fieldsColumn}>
-                                    <View style={styles.menuRow}>
-                                        <View style={styles.colTitleButtonItem}>
-                                            <BorderlessButton onPress={() => { handleAddressOrder(address.id) }}>
+                        return <View key={index} style={globalStyles.containerItem}>
+                            <View style={globalStyles.row}>
+                                <View style={globalStyles.column}>
+                                    <View style={globalStyles.menuRow}>
+                                        <View style={globalStyles.colTitleButtonItem}>
+                                            <BorderlessButton onPress={() => { setSelectedAddress(address) }}>
                                                 <View style={{ flexDirection: 'row' }}>
-                                                    <View style={styles.colTitleButtonItem}>
+                                                    <View style={globalStyles.colTitleButtonItem}>
                                                         <Text style={{ color: '#8c8c8c' }}>{`${address.street} - ${address.number}`}</Text>
                                                     </View>
-                                                    <View style={styles.colIconButtonItem}>
-                                                        <Feather name="chevron-right" size={24} color="#cc0000" />
+                                                    <View style={globalStyles.colIconButtonItem}>
+                                                        {
+                                                            selectedAddress && selectedAddress.id === address.id && <FontAwesome5 name="check" size={18} color={colorPrimaryLight} />
+                                                        }
                                                     </View>
                                                 </View>
                                             </BorderlessButton>
                                         </View>
-
                                     </View>
                                 </View>
                             </View>
                         </View>
                     })
                 }
+            </View>
 
-                <View>
-                    <TouchableHighlight style={styles.footerButton} onPress={() => { navigation.navigate('Payment') }}>
-                        <Text style={styles.footerButtonText}>Continuar</Text>
-                    </TouchableHighlight>
+            {/* Divider*/}
+            <View style={globalStyles.divider}></View>
+
+            <View style={globalStyles.row}>
+                <View style={globalStyles.column}>
+                    <View style={globalStyles.menuRow}>
+                        <View style={globalStyles.menuColumn}>
+                            <Text style={globalStyles.textsMenu} >Taxa de entrega</Text>
+                        </View>
+                        <View style={globalStyles.menuIconColumn}>
+                            <Feather name="truck" size={24} color="#fe3807" />
+                        </View>
+                    </View>
+                    <View style={globalStyles.menuDescriptionRow}>
+                        <View style={globalStyles.menuDescriptionColumn}>
+                            <Text style={globalStyles.textsDescriptionMenu}>
+                                Nossa entrega é cobrada por grupo de bairros. Escolha um grupo em que o seu bairro se enquadra.
+                            </Text>
+                        </View>
+                    </View>
                 </View>
-            </ScrollView>
-        </View>
+            </View>
+
+            <View style={globalStyles.containerMenu}>
+                {
+                    restaurantDeliveryGroups && restaurantDeliveryGroups.map((deliveryGroup, index) => {
+                        return <View key={index} style={globalStyles.containerItem}>
+                            <View style={globalStyles.row}>
+                                <View style={globalStyles.column}>
+                                    <View style={globalStyles.menuRow}>
+                                        <View style={globalStyles.colTitleButtonItem}>
+                                            <BorderlessButton onPress={() => { setSelectedDeliveryGroup(deliveryGroup) }}>
+                                                <View style={{ flexDirection: 'row' }}>
+                                                    <View style={{ flex: 0.6 }}>
+                                                        <Text style={{ color: '#8c8c8c' }}>{deliveryGroup.description}</Text>
+                                                    </View>
+                                                    <View style={{ flex: 0.3, alignItems: 'center' }}>
+                                                        <Text style={{ color: colorPrimaryLight }}>{`R$ ${deliveryGroup.price.toString().replace('.', ',')}`}</Text>
+                                                    </View>
+                                                    <View style={{ flex: 0.1 }}>
+                                                        {
+                                                            selectedDeliveryGroup && selectedDeliveryGroup.id === deliveryGroup.id && <FontAwesome5 name="check" size={18} color={colorPrimaryLight} style={{ textAlign: 'center' }} />
+                                                        }
+                                                    </View>
+                                                </View>
+                                            </BorderlessButton>
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
+                        </View>
+                    })
+                }
+            </View>
+
+            <View>
+                <TouchableHighlight
+                    underlayColor={colorPrimaryDark}
+                    style={globalStyles.footerButton}
+                    disabled={selectedAddress && selectedDeliveryGroup ? false : true}
+                    onPress={() => { navigation.navigate('Payment') }}
+                >
+                    <Text style={globalStyles.footerButtonText}>Avançar</Text>
+                </TouchableHighlight>
+            </View>
+        </ScrollView>
     )
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-
-    containerMenu: {
-        paddingHorizontal: 15,
-    },
-
-    menuRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-
-    menuColumn: {
-        flex: 0.8,
-    },
-
-    menuDescriptionRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-
-    menuDescriptionColumn: {
-        flex: 1,
-    },
-
-    textsDescriptionMenu: {
-        fontFamily: 'Nunito_300Light',
-        fontSize: 14,
-        color: '#8c8c8c'
-    },
-
-    menuIconColumn: {
-        flex: 0.2,
-        alignItems: 'flex-end',
-    },
-
-    fieldsRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginVertical: 10,
-    },
-
-    fieldsColumn: {
-        flex: 1,
-    },
-
     buttonNewItem: {
         padding: 10,
         borderRadius: 5,
     },
 
-    colTitleButtonItem: {
-        flex: 0.9,
-    },
-
-    colIconButtonItem: {
-        flex: 0.1,
-    },
-
-    containerItem: {
-        marginVertical: 5,
-        padding: 10,
-        borderColor: '#e8e8e8',
-        borderWidth: 1,
-        borderRadius: 8
-    },
-
-    buttonTypeAddressCustomer: {
-        padding: 10,
-        borderRadius: 5,
-        backgroundColor: '#e8e8e8',
-        alignItems: 'center',
+    modalView: {
+        margin: 20,
+        backgroundColor: "white",
+        borderRadius: 20,
+        padding: 35,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5
     },
 
     buttonAction: {
@@ -186,20 +202,5 @@ const styles = StyleSheet.create({
 
     fieldsLogIn: {
         marginVertical: 8,
-    },
-
-    footerButton: {
-        backgroundColor: '#cc0000',
-        borderRadius: 5,
-        marginVertical: 15,
-        height: 50,
-        justifyContent: 'center'
-    },
-
-    footerButtonText: {
-        color: '#ffffff',
-        alignSelf: 'center',
-        fontFamily: 'Nunito_600SemiBold',
-        fontSize: 16,
     },
 });

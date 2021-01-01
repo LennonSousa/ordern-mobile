@@ -57,25 +57,6 @@ export default function Cart() {
                             <Text style={styles.totalTitleValue}>{`R$ ${Number(order.total).toFixed(2).replace('.', ',')}`}</Text>
                         </View>
                     </View>
-
-                    <View style={styles.fieldsRow}>
-                            <View style={styles.fieldsColumn}>
-                                <BorderlessButton onPress={() => {
-                                    navigation.navigate('Payments');
-                                }}>
-                                    <View style={styles.menuRow}>
-                                        <View style={styles.menuColumn}>
-                                            <Text>Forma de pagamento</Text>
-                                        </View>
-                                    </View>
-                                    <View style={styles.menuDescriptionRow}>
-                                        <View style={styles.menuDescriptionColumn}>
-                                            <Text style={styles.textsDescriptionMenu}>Escolha a forma que você irá pagar.</Text>
-                                        </View>
-                                    </View>
-                                </BorderlessButton>
-                            </View>
-                        </View>
                 </ScrollView> :
                     <Text>Sacola vaiza!</Text>
             }
@@ -109,7 +90,7 @@ const styles = StyleSheet.create(
             alignItems: 'center',
             marginVertical: 15,
         },
-    
+
         fieldsColumn: {
             flex: 1,
         },
@@ -118,7 +99,7 @@ const styles = StyleSheet.create(
             flexDirection: 'row',
             alignItems: 'center',
         },
-    
+
         menuColumn: {
             flex: 0.8,
         },
@@ -127,22 +108,22 @@ const styles = StyleSheet.create(
             flex: 0.2,
             alignItems: 'flex-end',
         },
-    
+
         textsMenu: {
             fontFamily: 'Nunito_600SemiBold',
             fontSize: 22,
             color: '#262626'
         },
-    
+
         menuDescriptionRow: {
             flexDirection: 'row',
             alignItems: 'center',
         },
-    
+
         menuDescriptionColumn: {
             flex: 1,
         },
-    
+
         textsDescriptionMenu: {
             fontFamily: 'Nunito_300Light',
             fontSize: 14,

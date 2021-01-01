@@ -48,7 +48,7 @@ export default function Payment() {
 
             const creditCardToken = await getCreditCardToken(card);
 
-            const orderTotal = order.total.toString().replace('.', '').replace(',', '');
+            const orderTotal = order.total.toFixed(2).replace('.', '').replace(',', '');
 
             if (creditCardToken.status === 200) {
                 try {
@@ -202,7 +202,7 @@ export default function Payment() {
                                     <BorderlessButton onPress={() => { setSelectedCard(undefined); setSelectedPaymentType('debit'); }}>
                                         <View style={{ flexDirection: 'row' }}>
                                             <View style={{ flex: 0.1, marginHorizontal: 10 }}>
-                                                <FontAwesome5 name="money-bill" size={18} color="#8c8c8c" />
+                                                <FontAwesome5 name="money-check-alt" size={18} color="#8c8c8c" />
                                             </View>
                                             <View style={globalStyles.colTitleButtonItem}>
                                                 <Text style={globalStyles.textsButtonBorderMenu}>Débito na entrega</Text>
@@ -291,7 +291,7 @@ export default function Payment() {
                     }}>
                         <View style={styles.modalView}>
                             {
-                                circleWaiting && <ActivityIndicator size="large" color="#8c8c8c" />
+                                circleWaiting && <ActivityIndicator size="large" color="#fe3807" />
                             }
                             {
                                 successWaiting && <FontAwesome5 name="check-circle" size={48} color="#33cc33" />
@@ -342,18 +342,14 @@ export default function Payment() {
                             </View>
 
                             <TouchableHighlight underlayColor={colorPrimaryDark} style={globalStyles.footerButton} onPress={handleSubmit as any}>
-                                <View style={{ flexDirection: 'row' }}>
-                                    <Text style={globalStyles.footerButtonText}>Pagar</Text>
-                                </View>
+                                <Text style={globalStyles.footerButtonText}>Pagar</Text>
                             </TouchableHighlight>
                         </View>
                     )}
                 </Formik> :
                     <View>
                         <TouchableHighlight underlayColor={colorPrimaryDark} style={globalStyles.footerButton} >
-                            <View style={{ flexDirection: 'row' }}>
-                                <Text style={globalStyles.footerButtonText}>Fazer o pedido</Text>
-                            </View>
+                            <Text style={globalStyles.footerButtonText}>Fazer o pedido</Text>
                         </TouchableHighlight>
                     </View>
             }
