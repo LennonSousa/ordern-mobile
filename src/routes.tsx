@@ -60,7 +60,7 @@ function HomeTabs() {
                     tabBarIcon: ({ color, size }) => (
                         <Feather name="shopping-bag" size={size} color={color} />
                     ),
-                    tabBarBadge: amountOrderItems > 0 ? amountOrderItems : undefined,
+                    tabBarBadge: order ? amountOrderItems : undefined,
                 }}
             />
 

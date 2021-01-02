@@ -15,7 +15,8 @@ import Input from '../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../components/Interfaces/InvalidFeedback';
 import { BorderlessButton } from 'react-native-gesture-handler';
 
-import globalStyles, { colorPrimaryLight, colorPrimaryDark } from '../../assets/styles/global';
+import globalStyles, { colorPrimaryLight, colorPrimaryDark, colorBackground } from '../../assets/styles/global';
+import PageFooter from '../../components/PageFooter';
 
 interface Card {
     [key: string]: string;
@@ -55,7 +56,7 @@ export default function Payment() {
                     const paymentResponde = await api.post('dopayments', {
                         "amount": orderTotal,
                         "tokenId": creditCardToken.data.id,
-                        "description": `Pedido: `,
+                        "description": `Pedido: ${order.tracker}`,
                         "email": customer.email
                     },
                         {
@@ -67,6 +68,25 @@ export default function Payment() {
                     if (paymentResponde.status === 200) {
                         setCircleWaiting(false);
                         setSuccessWaiting(true);
+
+                        api.post('orders', {
+                            "tracker": order.tracker,
+                            "client_id": customer.id,
+                            "client": customer.name,
+                            "ordered": new Date(),
+                            "delivery": new Date(),
+                            "delivered": new Date(),
+                            "sub_total": order.sub_total,
+                            "cupom": order.cupom,
+                            "delivery_tax": order.delivery_tax,
+                            "fee": order.fee,
+                            "total": order.total,
+                            "payment": `****${selectedCard?.card_number.slice(selectedCard.card_number.length - 4)} - ${selectedCard?.brand}`,
+                            "paid": true,
+                            "address": order.address,
+                            "reason_cancellation": "",
+                            "order_status_id": 1
+                        });
 
                         setTimeout(() => {
                             setModalWaiting(false);
@@ -143,31 +163,31 @@ export default function Payment() {
     }
 
     return (
-        <View style={globalStyles.container}>
-            <View style={globalStyles.row}>
-                <View style={globalStyles.column}>
-                    <View style={globalStyles.menuRow}>
-                        <View style={globalStyles.menuColumn}>
-                            <Text style={globalStyles.textDescription}>Escolha uma forma de pagamento ou adicione uma nova.</Text>
-                        </View>
-                        <View style={globalStyles.menuIconColumn}>
-                            <TouchableHighlight
-                                style={styles.buttonNewItem}
-                                underlayColor="#e8e8e8"
-                                onPress={() => {
-                                    navigation.navigate('PaymentsCustomer');
-                                }}
-                            >
-                                <View>
-                                    <Feather name="plus" size={24} color="#cc0000" />
-                                </View>
-                            </TouchableHighlight>
+        <>
+            <ScrollView style={globalStyles.container}>
+                <View style={globalStyles.row}>
+                    <View style={globalStyles.column}>
+                        <View style={globalStyles.menuRow}>
+                            <View style={globalStyles.menuColumn}>
+                                <Text style={globalStyles.textDescription}>Escolha uma forma de pagamento ou adicione uma nova.</Text>
+                            </View>
+                            <View style={globalStyles.menuIconColumn}>
+                                <TouchableHighlight
+                                    style={styles.buttonNewItem}
+                                    underlayColor="#e8e8e8"
+                                    onPress={() => {
+                                        navigation.navigate('PaymentsCustomer');
+                                    }}
+                                >
+                                    <View>
+                                        <Feather name="plus" size={24} color="#cc0000" />
+                                    </View>
+                                </TouchableHighlight>
+                            </View>
                         </View>
                     </View>
                 </View>
-            </View>
 
-            <ScrollView style={globalStyles.containerMenu}>
                 <View style={globalStyles.containerItem}>
                     <View style={globalStyles.row}>
                         <View style={globalStyles.column}>
@@ -272,37 +292,37 @@ export default function Payment() {
                         </View>
                     })
                 }
-            </ScrollView>
 
-            <View style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-            }}>
-                <Modal
-                    animationType="slide"
-                    transparent={true}
-                    visible={modalWaiting}
-                >
-                    <View style={{
-                        flex: 1,
-                        justifyContent: "center",
-                        alignItems: "center",
-                    }}>
-                        <View style={styles.modalView}>
-                            {
-                                circleWaiting && <ActivityIndicator size="large" color="#fe3807" />
-                            }
-                            {
-                                successWaiting && <FontAwesome5 name="check-circle" size={48} color="#33cc33" />
-                            }
-                            {
-                                errorWaiting && <FontAwesome5 name="times-circle" size={48} color="#fe3807" />
-                            }
+                <View style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                }}>
+                    <Modal
+                        animationType="slide"
+                        transparent={true}
+                        visible={modalWaiting}
+                    >
+                        <View style={{
+                            flex: 1,
+                            justifyContent: "center",
+                            alignItems: "center",
+                        }}>
+                            <View style={styles.modalView}>
+                                {
+                                    circleWaiting && <ActivityIndicator size="large" color="#fe3807" />
+                                }
+                                {
+                                    successWaiting && <FontAwesome5 name="check-circle" size={48} color="#33cc33" />
+                                }
+                                {
+                                    errorWaiting && <FontAwesome5 name="times-circle" size={48} color="#fe3807" />
+                                }
+                            </View>
                         </View>
-                    </View>
-                </Modal>
-            </View>
+                    </Modal>
+                </View>
+            </ScrollView>
 
             {
                 selectedCard ? <Formik
@@ -326,8 +346,14 @@ export default function Payment() {
                     validationSchema={validatiionSchema}
                 >
                     {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
-                        <View>
-                            <View style={globalStyles.row}>
+                        <>
+                            <View style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                height: 70,
+                                backgroundColor: colorBackground,
+                                paddingHorizontal: 15
+                            }}>
                                 <View style={{ flex: 0.5 }}>
                                     <Input
                                         style={styles.fieldsLogIn}
@@ -341,19 +367,40 @@ export default function Payment() {
                                 </View>
                             </View>
 
-                            <TouchableHighlight underlayColor={colorPrimaryDark} style={globalStyles.footerButton} onPress={handleSubmit as any}>
-                                <Text style={globalStyles.footerButtonText}>Pagar</Text>
-                            </TouchableHighlight>
-                        </View>
+                            <PageFooter>
+                                <View style={{ flex: 0.5 }} >
+                                    <Text style={[globalStyles.textsMenu, { textAlign: 'center' }]}>{`Total: R$ ${order?.total.toFixed(2).replace('.', ',')}`}</Text>
+                                </View>
+
+                                <View style={{ flex: 0.5 }} >
+                                    <TouchableHighlight
+                                        underlayColor={colorPrimaryDark}
+                                        style={globalStyles.footerButton}
+                                        onPress={handleSubmit as any}
+                                    >
+                                        <Text style={globalStyles.footerButtonText}>Pagar</Text>
+                                    </TouchableHighlight>
+                                </View>
+                            </PageFooter>
+                        </>
                     )}
                 </Formik> :
-                    <View>
-                        <TouchableHighlight underlayColor={colorPrimaryDark} style={globalStyles.footerButton} >
-                            <Text style={globalStyles.footerButtonText}>Fazer o pedido</Text>
-                        </TouchableHighlight>
-                    </View>
+                    <PageFooter>
+                        <View style={{ flex: 0.5 }} >
+                            <Text style={[globalStyles.textsMenu, { textAlign: 'center' }]}>{`Total: R$ ${order?.total.toFixed(2).replace('.', ',')}`}</Text>
+                        </View>
+
+                        <View style={{ flex: 0.5 }} >
+                            <TouchableHighlight
+                                underlayColor={colorPrimaryDark}
+                                style={globalStyles.footerButton}
+                            >
+                                <Text style={globalStyles.footerButtonText}>Fazer o pedido</Text>
+                            </TouchableHighlight>
+                        </View>
+                    </PageFooter>
             }
-        </View>
+        </>
     )
 }
 

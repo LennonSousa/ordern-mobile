@@ -6,6 +6,7 @@ import { OrderItem } from '../OrderItems';
 
 export interface Order {
     id: number;
+    tracker: string;
     client_id: number;
     client: string;
     ordered: Date;

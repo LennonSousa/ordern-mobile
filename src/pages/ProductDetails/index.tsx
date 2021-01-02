@@ -118,6 +118,7 @@ export default function ProductDetails() {
             else {
                 handleTotalOrder({
                     id: 0,
+                    tracker: '',
                     client_id: 0,
                     client: '',
                     ordered: new Date(),

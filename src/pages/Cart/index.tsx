@@ -1,26 +1,53 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { ScrollView, StyleSheet, Text, View, TouchableHighlight } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
+import { CustomerContext } from '../../context/customerContext';
 import { ContextOrdering } from '../../context/orderingContext';
 import OrderItems from '../../components/OrderItems';
 import Header from '../../components/PageHeader';
-import { BorderlessButton } from 'react-native-gesture-handler';
+import PageFooter from '../../components/PageFooter';
+import globalStyles, { colorPrimaryDark } from '../../assets/styles/global';
 
 export default function Cart() {
-    const { order } = useContext(ContextOrdering);
+    const { customer } = useContext(CustomerContext);
+    const { order, handleOrder, handleTotalOrder } = useContext(ContextOrdering);
     const navigation = useNavigation();
 
+    useEffect(() => {
+        if (order) {
+            handleTotalOrder(
+                {
+                    ...order,
+                    delivery_tax: 0
+                }
+            );
+        }
+    }, []);
+
+    function handleOrdertoShipment() {
+        if (order) {
+            handleOrder(
+                {
+                    ...order,
+                    tracker: `${Date.now()}${order.total.toFixed(2).replace('.', '').replace(',', '')}`
+                }
+            );
+
+            if (customer)
+                navigation.navigate('Shipment');
+            else
+                navigation.navigate('Profile');
+        }
+    }
+
     return (
-        <View style={styles.container}>
-            <Header title="Sacola" showCancel={false} showClearBag={true} />
+        <>
+            <Header title="Sacola" showCancel={false} showClearBag={order ? true : false} />
             {
-                order ? <ScrollView>
+                order ? <ScrollView style={globalStyles.container}>
                     <View>
-                        <Text style={styles.titles}>Entrega</Text>
-                    </View>
-                    <View>
-                        <Text style={styles.titles}>Itens</Text>
+                        <Text style={globalStyles.titlePrimaryLight}>Itens</Text>
                         {
                             order.orderItems.map(item => {
                                 return <OrderItems key={item.id} orderItem={item} />
@@ -28,45 +55,34 @@ export default function Cart() {
                         }
                     </View>
 
-                    {/* Divider*/}
-                    <View style={styles.divider}></View>
-
-                    <View style={styles.totalRow}>
-                        <View style={styles.totalColumnText}>
-                            <Text style={styles.totalSubTitleText}>Subtotal</Text>
-                        </View>
-                        <View style={styles.totalColumnValue}>
-                            <Text style={styles.totalSubTitleValue}>{`R$ ${Number(order.sub_total).toFixed(2).replace('.', ',')}`}</Text>
-                        </View>
-                    </View>
-
-                    <View style={styles.totalRow}>
-                        <View style={styles.totalColumnText}>
-                            <Text style={styles.totalSubTitleText}>Taxa de entrega</Text>
-                        </View>
-                        <View style={styles.totalColumnValue}>
-                            <Text style={styles.totalSubTitleValue}>{`R$ ${Number(order.delivery_tax).toFixed(2).replace('.', ',')}`}</Text>
-                        </View>
-                    </View>
-
-                    <View style={styles.totalRow}>
-                        <View style={styles.totalColumnText}>
-                            <Text style={styles.totalTitleText}>Total</Text>
-                        </View>
-                        <View style={styles.totalColumnValue}>
-                            <Text style={styles.totalTitleValue}>{`R$ ${Number(order.total).toFixed(2).replace('.', ',')}`}</Text>
+                    <View style={globalStyles.row}>
+                        <View style={globalStyles.column}>
+                            <Text style={globalStyles.textsMenu}>{`Taxa de engreta: R$ ${Number(order.delivery_tax).toFixed(2).replace('.', ',')}`}</Text>
                         </View>
                     </View>
                 </ScrollView> :
                     <Text>Sacola vaiza!</Text>
             }
 
-            <View>
-                <TouchableHighlight style={styles.footerButton} onPress={() => { navigation.navigate('Shipment') }}>
-                    <Text style={styles.footerButtonText}>Continuar</Text>
-                </TouchableHighlight>
-            </View>
-        </View>
+            {
+                order && <PageFooter>
+                    <View style={{ flex: 0.5 }} >
+                        <Text style={[globalStyles.textsMenu, { textAlign: 'center' }]}>{`Total: R$ ${order?.total.toFixed(2).replace('.', ',')}`}</Text>
+                    </View>
+
+                    <View style={{ flex: 0.5 }} >
+                        <TouchableHighlight
+                            underlayColor={colorPrimaryDark}
+                            style={globalStyles.footerButton}
+                            disabled={order ? false : true}
+                            onPress={handleOrdertoShipment}
+                        >
+                            <Text style={globalStyles.footerButtonText}>Avançar</Text>
+                        </TouchableHighlight>
+                    </View>
+                </PageFooter>
+            }
+        </>
     )
 }
 

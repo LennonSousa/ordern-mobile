@@ -32,12 +32,12 @@ const OrderingProvider: React.FC = ({ children }) => {
             const amountProduct = item.amount;
             const subTotal = Number(priceProduct) + Number(totalAdditionals);
 
-
-
             const total = Number(subTotal) * Number(amountProduct);
 
             totalOrder = totalOrder + total;
         });
+
+        totalOrder = totalOrder + Number(order.delivery_tax);
 
         setOrder({ ...order, total: totalOrder });
     }
