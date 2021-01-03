@@ -15,9 +15,12 @@ export interface Order {
     sub_total: number;
     cupom: string;
     delivery_tax: number;
+    delivery_type: string;
+    discount: number;
     fee: number;
     total: number;
     payment: string | number;
+    paid: boolean;
     address: string;
     reason_cancellation: string;
     orderStatus: OrderStatus | string;

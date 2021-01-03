@@ -122,7 +122,7 @@ export default function AddressCustomer() {
                                             "city": values.city,
                                             "country": values.country,
                                             "type": values.type,
-                                            "client": customer.id
+                                            "customer": customer.id
                                         });
                                     }
                                     else {
@@ -135,7 +135,7 @@ export default function AddressCustomer() {
                                             "city": values.city,
                                             "country": values.country,
                                             "type": values.type,
-                                            "client": customer.id
+                                            "customer": customer.id
                                         });
                                     }
 

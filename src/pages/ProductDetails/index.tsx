@@ -77,12 +77,12 @@ export default function ProductDetails() {
     function handleAddProductToCart() {
         if (product && selectedProduct) {
             let itemsToOrder = {
-                id: order ? order.orderItems.length : 0,
+                id: product.id,
                 amount: selectedProduct.amount,
                 name: product.title,
                 value: selectedProduct.price,
                 additional: false,
-                additional_item: 0,
+                additional_item: product.id,
                 additionals: [{
                     id: 0,
                     amount: 1,
@@ -104,7 +104,7 @@ export default function ProductDetails() {
                         name: additional.title,
                         value: additional.price,
                         additional: true,
-                        additional_item: itemsToOrder.id,
+                        additional_item: product.id,
                         additionals: []
                     });
                 });
@@ -127,9 +127,12 @@ export default function ProductDetails() {
                     sub_total: 0,
                     cupom: '',
                     delivery_tax: 0,
+                    delivery_type: '',
+                    discount: 0,
                     fee: 0,
                     total: 0,
                     payment: '',
+                    paid: false,
                     address: '',
                     reason_cancellation: '',
                     orderStatus: '',

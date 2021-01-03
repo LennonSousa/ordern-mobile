@@ -57,7 +57,8 @@ export default function Shipment() {
                     ${selectedAddress.city} - 
                     ${selectedAddress.country}, 
                     ${selectedAddress.zip_code}`,
-                    delivery_tax: selectedDeliveryGroup.price
+                    delivery_tax: selectedDeliveryGroup.price,
+                    delivery_type: selectedDeliveryGroup.description
                 }
             );
 

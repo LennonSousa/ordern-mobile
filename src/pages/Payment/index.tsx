@@ -69,6 +69,28 @@ export default function Payment() {
                         setCircleWaiting(false);
                         setSuccessWaiting(true);
 
+                        let itemsToOrder = order.orderItems.map(item => {
+                            return {
+                                "amount": item.amount,
+                                "name": item.name,
+                                "value": item.value,
+                                "additional": item.additional,
+                                "additional_item": item.additional_item
+                            };
+                        });
+
+                        order.orderItems.forEach(item => {
+                            item.additionals.forEach(additional => {
+                                itemsToOrder.push({
+                                    "amount": additional.amount,
+                                    "name": additional.name,
+                                    "value": additional.value,
+                                    "additional": additional.additional,
+                                    "additional_item": additional.additional_item
+                                });
+                            })
+                        });
+
                         api.post('orders', {
                             "tracker": order.tracker,
                             "client_id": customer.id,
@@ -79,13 +101,16 @@ export default function Payment() {
                             "sub_total": order.sub_total,
                             "cupom": order.cupom,
                             "delivery_tax": order.delivery_tax,
+                            "delivery_type": order.delivery_type,
+                            "discount": order.discount,
                             "fee": order.fee,
                             "total": order.total,
                             "payment": `****${selectedCard?.card_number.slice(selectedCard.card_number.length - 4)} - ${selectedCard?.brand}`,
                             "paid": true,
                             "address": order.address,
                             "reason_cancellation": "",
-                            "order_status_id": 1
+                            "orderStatus": 1,
+                            "orderItems": itemsToOrder
                         });
 
                         setTimeout(() => {

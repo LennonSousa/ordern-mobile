@@ -19,6 +19,7 @@ const OrderingProvider: React.FC = ({ children }) => {
 
     function handleTotalOrder(order: Order) {
         let totalOrder = 0;
+        let subTotalOrder = 0;
 
         order.orderItems.forEach(item => {
             const priceProduct = item.value;
@@ -30,16 +31,18 @@ const OrderingProvider: React.FC = ({ children }) => {
             });
 
             const amountProduct = item.amount;
-            const subTotal = Number(priceProduct) + Number(totalAdditionals);
+            const subTotalItem = Number(priceProduct) + Number(totalAdditionals);
 
-            const total = Number(subTotal) * Number(amountProduct);
+            const total = Number(subTotalItem) * Number(amountProduct);
 
             totalOrder = totalOrder + total;
         });
 
+        subTotalOrder = totalOrder;
+
         totalOrder = totalOrder + Number(order.delivery_tax);
 
-        setOrder({ ...order, total: totalOrder });
+        setOrder({ ...order, sub_total: subTotalOrder, total: totalOrder });
     }
 
     function handleClearOrder() {
