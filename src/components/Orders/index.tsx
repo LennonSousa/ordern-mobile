@@ -23,7 +23,7 @@ export interface Order {
     paid: boolean;
     address: string;
     reason_cancellation: string;
-    orderStatus: OrderStatus | string;
+    orderStatus: OrderStatus;
     orderItems: OrderItem[];
 }
 

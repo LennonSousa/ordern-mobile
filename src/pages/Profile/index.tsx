@@ -62,6 +62,28 @@ export default function Profile() {
                         <View style={styles.fieldsRow}>
                             <View style={styles.fieldsColumn}>
                                 <BorderlessButton onPress={() => {
+                                    navigation.navigate('OrdersList');
+                                }}>
+                                    <View style={styles.menuRow}>
+                                        <View style={styles.menuColumn}>
+                                            <Text>Pedidos</Text>
+                                        </View>
+                                        <View style={styles.menuIconColumn}>
+                                            <Feather name="shopping-bag" size={24} color="#fe3807" />
+                                        </View>
+                                    </View>
+                                    <View style={styles.menuDescriptionRow}>
+                                        <View style={styles.menuDescriptionColumn}>
+                                            <Text style={styles.textsDescriptionMenu}>Seus pedidos no aplicativo</Text>
+                                        </View>
+                                    </View>
+                                </BorderlessButton>
+                            </View>
+                        </View>
+
+                        <View style={styles.fieldsRow}>
+                            <View style={styles.fieldsColumn}>
+                                <BorderlessButton onPress={() => {
                                     navigation.navigate('AddressCustomer');
                                 }}>
                                     <View style={styles.menuRow}>

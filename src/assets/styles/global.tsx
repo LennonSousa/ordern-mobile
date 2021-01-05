@@ -44,6 +44,15 @@ const globalStyles = StyleSheet.create({
         marginVertical: 15
     },
 
+    fieldsRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 10,
+    },
+
+    fieldsColumn: {
+        flex: 1,
+    },
 
     containerMenu: {
         paddingHorizontal: 15,

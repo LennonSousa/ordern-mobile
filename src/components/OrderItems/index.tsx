@@ -20,7 +20,7 @@ export default function OrderItems({ orderItem }: OrderItemProps) {
 
     let totalAdditionals = 0;
 
-    orderItem.additionals.forEach(additional => {
+    orderItem.additionals && orderItem.additionals.forEach(additional => {
         totalAdditionals = Number(totalAdditionals) + Number(additional.value);
     });
 
@@ -48,7 +48,7 @@ export default function OrderItems({ orderItem }: OrderItemProps) {
             </View>
             <View style={styles.additionalContainer}>
                 {
-                    orderItem.additionals.map(additional => {
+                    orderItem.additionals && orderItem.additionals.map(additional => {
                         return <View key={additional.id} style={styles.additionalRow}>
                             <View style={styles.additionalColumnAmount}>
                                 <Text style={styles.additionalTextAmount}>{additional.amount}</Text>

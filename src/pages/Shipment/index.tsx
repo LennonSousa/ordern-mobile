@@ -62,7 +62,7 @@ export default function Shipment() {
                 }
             );
 
-            navigation.navigate('Payment');
+            navigation.navigate('OrderReview');
         }
     }
 

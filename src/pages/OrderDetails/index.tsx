@@ -1,193 +1,220 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { StyleSheet, View, Text, TouchableHighlight, ScrollView, Platform } from 'react-native';
-import { BorderlessButton } from 'react-native-gesture-handler';
-import { useNavigation } from '@react-navigation/native';
+import { StyleSheet, View, Text, TouchableHighlight, ScrollView } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { format } from 'date-fns';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 
 import api from '../../services/api';
 
 import { CustomerContext } from '../../context/customerContext';
+import { OrderStatus } from '../../components/OrderStatus';
+import { Order } from '../../components/Orders';
+import OrderItems from '../../components/OrderItems';
 import Input from '../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../components/Interfaces/InvalidFeedback';
 
+import globalStyles, { colorPrimaryLight } from '../../assets/styles/global';
 
-export default function CustomerUpdate() {
+interface OrderDetailsRouteParams {
+    id: number;
+}
+
+export default function OrderDetails() {
+    const route = useRoute();
     const navigation = useNavigation();
     const { customer } = useContext(CustomerContext);
 
-    const [show, setShow] = useState(false);
+    const params = route.params as OrderDetailsRouteParams;
 
-    const [birth, setBirth] = useState(new Date());
-
-    useEffect(() => {
-        customer && setBirth(new Date(customer.birth));
-    }, []);
+    const [orderStatus, setOrderStatus] = useState<OrderStatus[]>([]);
+    const [selectedOrder, setSelectedOrder] = useState<Order>();
 
     const validatiionSchema = Yup.object().shape({
-        name: Yup.string().required('Você precisa preencher o seu nome!'),
-        cpf: Yup.number().notRequired().positive('CPF inválido'),
-        phone: Yup.string().notRequired(),
-        password: Yup.string().required('Obrigatório!').min(8, 'Deve conter no mínimo 8 caracteres!').max(22, 'Deve ser menor que 22!')
+        reasonCancellation: Yup.string().required('Obrigatório!')
     });
 
+    useEffect(() => {
+        if (params.id) {
+            api.get('order-status').then(res => {
+                setOrderStatus(res.data);
+            })
+                .catch(() => {
+
+                });
+
+            api.get(`orders/${params.id}`).then(res => {
+                setSelectedOrder(res.data);
+            })
+                .catch(() => {
+
+                });
+        }
+    }, [params.id]);
+
     return (
-        <View style={styles.container}>
+        <ScrollView style={globalStyles.container}>
             {
-                customer && <Formik
-                    initialValues={{
-                        name: customer.name,
-                        cpf: customer.cpf,
-                        phone: customer.phone,
-                        password: ''
-                    }}
-                    onSubmit={async values => {
-                        try {
-                            await api.post('clients', {
-                                "name": values.name,
-                                "cpf": values.cpf,
-                                "birth": birth,
-                                "phone": values.phone,
-                                "email": customer.email,
-                                "password": values.password,
-                                "active": true,
-                                "paused": false,
-                            });
+                selectedOrder && <><View style={globalStyles.fieldsRow}>
+                    <View style={globalStyles.fieldsColumn}>
+                        <View style={globalStyles.menuRow}>
+                            <View style={globalStyles.menuColumn}>
+                                <Text style={globalStyles.subTitlePrimary}>Revise o seu pedido</Text>
+                            </View>
+                            <View style={globalStyles.menuIconColumn}>
+                                <Feather name="file-text" size={24} color={colorPrimaryLight} />
+                            </View>
+                        </View>
+                    </View>
+                </View>
 
-                            navigation.navigate('Profile');
+                    <View>
+                        <Text style={globalStyles.textsMenu}>Itens</Text>
+                        {
+                            selectedOrder.orderItems.map(item => {
+                                return <OrderItems key={item.id} orderItem={item} />
+                            })
                         }
-                        catch {
+                    </View>
 
-                        }
+                    <View style={globalStyles.fieldsRow}>
+                        <View style={globalStyles.fieldsColumn}>
+                            <View style={globalStyles.menuRow}>
+                                <View style={globalStyles.menuColumn}>
+                                    <Text style={globalStyles.textsMenu}>Sub total</Text>
+                                </View>
+                                <View style={globalStyles.menuIconColumn}>
+                                    <Feather name="tag" size={24} color={colorPrimaryLight} />
+                                </View>
+                            </View>
+                            <View style={globalStyles.menuDescriptionRow}>
+                                <View style={globalStyles.menuDescriptionColumn}>
+                                    <Text style={globalStyles.textsDescriptionMenu}>{`R$ ${Number(selectedOrder.sub_total).toFixed(2).replace('.', ',')}`}</Text>
+                                </View>
+                            </View>
+                        </View>
+                    </View>
 
-                    }}
-                    validationSchema={validatiionSchema}
-                >
-                    {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
-                        <ScrollView style={styles.containerMenu}>
-                            <View style={styles.fieldsRow}>
-                                <View style={styles.fieldsColumn}>
-                                    <View style={styles.menuRow}>
-                                        <View style={styles.menuColumn}>
-                                            <Text>Informações pessoais</Text>
-                                        </View>
-                                        <View style={styles.menuIconColumn}>
-                                            <Feather name="smile" size={24} color="#cc0000" />
+                    <View style={globalStyles.fieldsRow}>
+                        <View style={globalStyles.fieldsColumn}>
+                            <View style={globalStyles.menuRow}>
+                                <View style={globalStyles.menuColumn}>
+                                    <Text style={globalStyles.textsMenu}>Entrega</Text>
+                                </View>
+                                <View style={globalStyles.menuIconColumn}>
+                                    <Feather name="map" size={24} color={colorPrimaryLight} />
+                                </View>
+                            </View>
+                            <View style={globalStyles.menuDescriptionRow}>
+                                <View style={globalStyles.menuDescriptionColumn}>
+                                    <Text style={globalStyles.textsDescriptionMenu}>{selectedOrder.address}</Text>
+                                </View>
+                            </View>
+                        </View>
+                    </View>
+
+                    <View style={globalStyles.fieldsRow}>
+                        <View style={globalStyles.fieldsColumn}>
+                            <View style={globalStyles.menuRow}>
+                                <View style={globalStyles.menuColumn}>
+                                    <Text style={globalStyles.textsMenu}>Taxa de entrega</Text>
+                                </View>
+                                <View style={globalStyles.menuIconColumn}>
+                                    <Feather name="truck" size={24} color={colorPrimaryLight} />
+                                </View>
+                            </View>
+                            <View style={globalStyles.menuDescriptionRow}>
+                                <View style={globalStyles.menuDescriptionColumn}>
+                                    <Text
+                                        style={globalStyles.textsDescriptionMenu}>
+                                        {`R$ ${Number(selectedOrder.delivery_tax).toFixed(2).replace('.', ',')} (${selectedOrder.delivery_type})`}
+                                    </Text>
+                                </View>
+                            </View>
+                        </View>
+                    </View>
+
+                    <View style={globalStyles.fieldsRow}>
+                        <View style={globalStyles.fieldsColumn}>
+                            <View style={globalStyles.menuRow}>
+                                <View style={globalStyles.menuColumn}>
+                                    <Text style={globalStyles.textsMenu}>Tempo estimado</Text>
+                                </View>
+                                <View style={globalStyles.menuIconColumn}>
+                                    <Feather name="watch" size={24} color={colorPrimaryLight} />
+                                </View>
+                            </View>
+                            <View style={globalStyles.menuDescriptionColumn}>
+                                <Text
+                                    style={globalStyles.textsDescriptionMenu}>
+                                    30 minutos
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+                </>
+            }
+
+            <View style={styles.container}>
+                {
+                    customer && <Formik
+                        initialValues={{
+                            reasonCancellation: ''
+                        }}
+                        onSubmit={async values => {
+                            try {
+                                await api.post('clients', {
+                                });
+
+                                navigation.navigate('Profile');
+                            }
+                            catch {
+
+                            }
+
+                        }}
+                        validationSchema={validatiionSchema}
+                    >
+                        {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
+                            <ScrollView style={styles.containerMenu}>
+                                <View style={styles.fieldsRow}>
+                                    <View style={styles.fieldsColumn}>
+                                        <View style={styles.menuRow}>
+                                            <View style={styles.menuColumn}>
+                                                <Text>Informações pessoais</Text>
+                                            </View>
+                                            <View style={styles.menuIconColumn}>
+                                                <Feather name="smile" size={24} color={colorPrimaryLight} />
+                                            </View>
                                         </View>
                                     </View>
                                 </View>
-                            </View>
 
-                            <View style={styles.fieldsRow}>
-                                <View style={styles.fieldsColumn}>
-                                    <Input
-                                        style={styles.fieldsLogIn}
-                                        title='Seu nome'
-                                        placeholder='Obrigatório'
-                                        textContentType='name'
-                                        autoCapitalize='words'
-                                        onChangeText={handleChange('name')}
-                                        onBlur={handleBlur('name')}
-                                        value={values.name}
-                                    />
-                                    <InvalidFeedback message={errors.name}></InvalidFeedback>
-                                </View>
-                            </View>
-
-                            <View style={styles.fieldsRow}>
-                                <View style={styles.fieldsColumn}>
-                                    <Input
-                                        style={styles.fieldsLogIn}
-                                        title='CPF'
-                                        placeholder='Opcional'
-                                        keyboardType='number-pad'
-                                        onChangeText={handleChange('cpf')}
-                                        onBlur={handleBlur('cpf')}
-                                        value={values.cpf}
-                                    />
-                                    <InvalidFeedback message={errors.cpf}></InvalidFeedback>
-                                </View>
-                            </View>
-
-                            <View style={styles.fieldsRow}>
-                                <View style={{ flex: 0.5 }}>
-                                    <Input
-                                        style={styles.fieldsLogIn}
-                                        title='Data de nascimento'
-                                        defaultValue={format(birth, 'dd/MM/yyyy')}
-                                        editable={false}
-                                        onChangeText={handleChange('birth')}
-                                    />
-                                </View>
-                                <View style={{ flex: 0.2, alignItems: 'center' }}>
-                                    <TouchableHighlight underlayColor="#e8e8e8" style={styles.buttonNewItem} onPress={() => { setShow(true) }}>
-                                        <Feather name="calendar" size={24} color="#cc0000" />
-                                    </TouchableHighlight>
-                                    {
-                                        show && <DateTimePicker
-                                            value={birth}
+                                <View style={styles.fieldsRow}>
+                                    <View style={styles.fieldsColumn}>
+                                        <Input
                                             style={styles.fieldsLogIn}
-                                            mode="date"
-                                            onChange={(birthDate, selectedDate) => {
-                                                setShow(Platform.OS === 'ios');
-                                                selectedDate && setBirth(selectedDate);
-                                            }}
+                                            title='Motivo do cancelamento*'
+                                            placeholder='Obrigatório'
+                                            autoCapitalize='sentences'
+                                            onChangeText={handleChange('reasonCancellation')}
+                                            onBlur={handleBlur('reasonCancellation')}
+                                            value={values.reasonCancellation}
                                         />
-                                    }
+                                        <InvalidFeedback message={errors.reasonCancellation}></InvalidFeedback>
+                                    </View>
                                 </View>
-                            </View>
-
-                            <View style={styles.fieldsRow}>
-                                <View style={styles.fieldsColumn}>
-                                    <Input
-                                        style={styles.fieldsLogIn}
-                                        title='Telefone'
-                                        placeholder='Opcional'
-                                        textContentType='telephoneNumber'
-                                        keyboardType='phone-pad'
-                                        onChangeText={handleChange('phone')}
-                                        onBlur={handleBlur('phone')}
-                                        value={values.phone}
-                                    />
-                                    <InvalidFeedback message={errors.phone}></InvalidFeedback>
+                                <View>
+                                    <TouchableHighlight underlayColor='#cc0000' style={styles.buttonLogIn} onPress={handleSubmit as any}>
+                                        <Text style={styles.footerButtonText}>Cancelar</Text>
+                                    </TouchableHighlight>
                                 </View>
-                            </View>
-
-                            <View style={styles.fieldsRow}>
-                                <View style={styles.fieldsColumn}>
-                                    <BorderlessButton onPress={() => {
-                                        navigation.navigate('CustomerUpdate');
-                                    }}>
-                                        <View style={styles.menuRow}>
-                                            <View style={styles.menuColumn}>
-                                                <Text>Senha</Text>
-                                            </View>
-                                            <View style={styles.menuIconColumn}>
-                                                <Feather name="key" size={24} color="#fe3807" />
-                                            </View>
-                                        </View>
-                                        <View style={styles.menuDescriptionRow}>
-                                            <View style={styles.menuDescriptionColumn}>
-                                                <Text style={styles.textsDescriptionMenu}>Atualizar a sua senha atual.</Text>
-                                            </View>
-                                        </View>
-                                    </BorderlessButton>
-                                </View>
-                            </View>
-
-                            <View>
-                                <TouchableHighlight underlayColor='#cc0000' style={styles.buttonLogIn} onPress={handleSubmit as any}>
-                                    <Text style={styles.footerButtonText}>Atualizar</Text>
-                                </TouchableHighlight>
-                            </View>
-                        </ScrollView>
-                    )}
-                </Formik>
-            }
-        </View>
+                            </ScrollView>
+                        )}
+                    </Formik>
+                }
+            </View>
+        </ScrollView>
     )
 }
 

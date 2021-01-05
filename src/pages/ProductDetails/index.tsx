@@ -135,7 +135,12 @@ export default function ProductDetails() {
                     paid: false,
                     address: '',
                     reason_cancellation: '',
-                    orderStatus: '',
+                    orderStatus: {
+                        id: 1,
+                        title: '',
+                        description: '',
+                        order: 0,
+                    },
                     orderItems: [itemsToOrder],
                 });
             }

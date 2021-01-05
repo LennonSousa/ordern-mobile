@@ -91,7 +91,7 @@ export default function Payment() {
                             })
                         });
 
-                        api.post('orders', {
+                        const res = await api.post('orders', {
                             "tracker": order.tracker,
                             "client_id": customer.id,
                             "client": customer.name,
@@ -120,10 +120,8 @@ export default function Payment() {
                             setSuccessWaiting(false);
                             setErrorWaiting(false);
 
-                            navigation.navigate('OrderDetails');
+                            navigation.navigate('OrderDetails', { id: res.data.id });
                         }, 1500);
-
-                        console.log('Payment aproved: ');
                     }
                     else {
                         setCircleWaiting(false);

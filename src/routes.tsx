@@ -13,6 +13,7 @@ import Header from './components/PageHeader';
 import LandingPage from './pages/LandingPage';
 import Cart from './pages/Cart';
 import Shipment from './pages/Shipment';
+import OrderReview from './pages/OrderPreview';
 import Payment from './pages/Payment';
 import Profile from './pages/Profile';
 import ProductDetails from './pages/ProductDetails';
@@ -20,6 +21,7 @@ import CategoryAdditionals from './components/ProductCategories';
 import NewCustomer from './pages/Profile/NewCustomer';
 import CreateCustomer from './pages/Profile/NewCustomer/create';
 import CustomerUpdate from './pages/Profile/UpdateCustomer';
+import OrdersList from './pages/OrdersList';
 import AddressCustomer from './pages/Profile/AddressCustomer';
 import PaymentsCustomer from './pages/Profile/PaymentsCustomer';
 import OrderDetails from './pages/OrderDetails';
@@ -124,11 +126,11 @@ export default function Routes() {
                 />
 
                 <Stack.Screen
-                    name="CreateCustomer"
-                    component={CreateCustomer}
+                    name="OrdersList"
+                    component={OrdersList}
                     options={{
                         headerShown: true,
-                        header: () => <Header title="Criar conta" showCancel={true} />
+                        header: () => <Header title="Seus pedidos" showCancel={true} />
                     }}
                 />
 
@@ -156,6 +158,15 @@ export default function Routes() {
                     options={{
                         headerShown: true,
                         header: () => <Header title="Envio" showCancel={true} />
+                    }}
+                />
+
+                <Stack.Screen
+                    name="OrderReview"
+                    component={OrderReview}
+                    options={{
+                        headerShown: true,
+                        header: () => <Header title="Pedido" showCancel={true} />
                     }}
                 />
 
