@@ -109,7 +109,9 @@ export default function Shipment() {
                                     <View style={globalStyles.column}>
                                         <View style={globalStyles.menuRow}>
                                             <View style={globalStyles.colTitleButtonItem}>
-                                                <BorderlessButton onPress={() => { setSelectedAddress(address) }}>
+                                                <BorderlessButton
+                                                    onPress={() => { setSelectedAddress(address) }}
+                                                >
                                                     <View style={{ flexDirection: 'row' }}>
                                                         <View style={globalStyles.colTitleButtonItem}>
                                                             <Text style={{ color: '#8c8c8c' }}>{`${address.street} - ${address.number}`}</Text>

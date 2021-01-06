@@ -198,6 +198,7 @@ export default function Profile() {
                                             textContentType='emailAddress'
                                             autoCapitalize='none'
                                             keyboardType='email-address'
+                                            returnKeyType='go'
                                             onChangeText={handleChange('email')}
                                             onBlur={() => { handleBlur('email'); setMessageErrorLogin(false); }}
                                             value={values.email}

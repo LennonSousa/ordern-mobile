@@ -35,7 +35,7 @@ export default function OrderItems({ orderItem }: OrderItemProps) {
         <View style={styles.container}>
             <View style={styles.itemRow}>
                 <View style={styles.itemColumnAmount}>
-                    <Text style={styles.itemAmountText}>{orderItem.amount}</Text>
+                    <Text style={styles.itemAmountText}>{Number(orderItem.amount).toFixed(0)}</Text>
                 </View>
 
                 <View style={styles.itemColumnName}>
@@ -51,7 +51,7 @@ export default function OrderItems({ orderItem }: OrderItemProps) {
                     orderItem.additionals && orderItem.additionals.map(additional => {
                         return <View key={additional.id} style={styles.additionalRow}>
                             <View style={styles.additionalColumnAmount}>
-                                <Text style={styles.additionalTextAmount}>{additional.amount}</Text>
+                                <Text style={styles.additionalTextAmount}>{Number(additional.amount).toFixed(0)}</Text>
                             </View>
 
                             <View style={styles.additionalColumnName}>

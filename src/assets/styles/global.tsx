@@ -137,9 +137,15 @@ const globalStyles = StyleSheet.create({
     containerItem: {
         marginVertical: 5,
         padding: 10,
-        borderColor: '#e8e8e8',
-        borderWidth: 1,
-        borderRadius: 8
+        borderRadius: 8,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 3,
+        },
+        shadowOpacity: 0.5,
+        shadowRadius: 8,
+        elevation: 1.5,
     },
 
     colTitleButtonItem: {

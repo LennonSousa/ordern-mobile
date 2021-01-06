@@ -19,7 +19,6 @@ import Profile from './pages/Profile';
 import ProductDetails from './pages/ProductDetails';
 import CategoryAdditionals from './components/ProductCategories';
 import NewCustomer from './pages/Profile/NewCustomer';
-import CreateCustomer from './pages/Profile/NewCustomer/create';
 import CustomerUpdate from './pages/Profile/UpdateCustomer';
 import OrdersList from './pages/OrdersList';
 import AddressCustomer from './pages/Profile/AddressCustomer';
