@@ -7,6 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import api from '../../services/api';
 import stripeapi from '../../services/stripeapi';
+import stripeErrorCodes from '../../utils/stripeErrorCodes';
 
 import { CustomerContext } from '../../context/customerContext';
 import { ContextOrdering } from '../../context/orderingContext';
@@ -38,6 +39,7 @@ export default function Payment() {
     const [circleWaiting, setCircleWaiting] = useState(true);
     const [successWaiting, setSuccessWaiting] = useState(false);
     const [errorWaiting, setErrorWaiting] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('Erro desconhecido.');
 
     async function requestPayment(card: Card) {
         if (customer && order) {
@@ -53,7 +55,7 @@ export default function Payment() {
 
             if (creditCardToken.status === 200) {
                 try {
-                    const paymentResponde = await api.post('dopayments', {
+                    const paymentResponse = await api.post('dopayments', {
                         "amount": orderTotal,
                         "tokenId": creditCardToken.data.id,
                         "description": `Pedido: ${order.tracker}`,
@@ -65,7 +67,7 @@ export default function Payment() {
                             }
                         });
 
-                    if (paymentResponde.status === 200) {
+                    if (paymentResponse.status === 200) {
                         setCircleWaiting(false);
                         setSuccessWaiting(true);
 
@@ -126,14 +128,9 @@ export default function Payment() {
                     else {
                         setCircleWaiting(false);
                         setErrorWaiting(true);
+                        setErrorMessage(stripeErrorCodes(paymentResponse.data.code));
 
-                        setTimeout(() => {
-                            setModalWaiting(false);
-
-                            setCircleWaiting(true);
-                            setSuccessWaiting(false);
-                            setErrorWaiting(false);
-                        }, 1500);
+                        console.log('stripe error code: ', stripeErrorCodes(paymentResponse.data.code));
 
                         console.log('Payment failed');
                     }
@@ -142,13 +139,7 @@ export default function Payment() {
                     setCircleWaiting(false);
                     setErrorWaiting(true);
 
-                    setTimeout(() => {
-                        setModalWaiting(false);
-
-                        setCircleWaiting(true);
-                        setSuccessWaiting(false);
-                        setErrorWaiting(false);
-                    }, 1500);
+                    setErrorMessage('Erro na transação. Tente novamente mais tarde.');
 
                     console.log('Payment failed');
                 }
@@ -157,13 +148,7 @@ export default function Payment() {
                 setCircleWaiting(false);
                 setErrorWaiting(true);
 
-                setTimeout(() => {
-                    setModalWaiting(false);
-
-                    setCircleWaiting(true);
-                    setSuccessWaiting(false);
-                    setErrorWaiting(false);
-                }, 1500);
+                setErrorMessage(stripeErrorCodes(creditCardToken.data.error.code));
 
                 console.log('Token card error');
             }
@@ -332,14 +317,34 @@ export default function Payment() {
                             alignItems: "center",
                         }}>
                             <View style={styles.modalView}>
+                                <View style={{ marginVertical: 5 }}>
+                                    {
+                                        circleWaiting && <ActivityIndicator size="large" color="#fe3807" />
+                                    }
+                                    {
+                                        successWaiting && <FontAwesome5 name="check-circle" size={48} color="#33cc33" />
+                                    }
+                                    {
+                                        errorWaiting && <FontAwesome5 name="times-circle" size={48} color="#fe3807" />
+                                    }
+                                </View>
+
                                 {
-                                    circleWaiting && <ActivityIndicator size="large" color="#fe3807" />
-                                }
-                                {
-                                    successWaiting && <FontAwesome5 name="check-circle" size={48} color="#33cc33" />
-                                }
-                                {
-                                    errorWaiting && <FontAwesome5 name="times-circle" size={48} color="#fe3807" />
+                                    errorWaiting && <View>
+                                        <View style={{ marginVertical: 5 }}>
+                                            <Text style={[globalStyles.subTitlePrimary, { textAlign: 'center' }]}>{errorMessage}</Text>
+                                        </View>
+
+                                        <View style={{ marginVertical: 5 }}>
+                                            <TouchableHighlight
+                                                underlayColor={colorPrimaryDark}
+                                                style={globalStyles.footerButton}
+                                                onPress={() => setModalWaiting(false)}
+                                            >
+                                                <Text style={globalStyles.footerButtonText}>Entendi!</Text>
+                                            </TouchableHighlight>
+                                        </View>
+                                    </View>
                                 }
                             </View>
                         </View>
