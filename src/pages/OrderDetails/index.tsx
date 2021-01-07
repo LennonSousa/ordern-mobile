@@ -8,12 +8,14 @@ import * as Yup from 'yup';
 import api from '../../services/api';
 
 import { CustomerContext } from '../../context/customerContext';
+import { ContextOrdering } from '../../context/orderingContext';
 import { Order } from '../../components/Orders';
 import OrderItems, { OrderItem } from '../../components/OrderItems';
 import Input from '../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../components/Interfaces/InvalidFeedback';
 
-import globalStyles, { colorPrimaryLight } from '../../assets/styles/global';
+import globalStyles, { colorPrimaryLight, colorHighLight } from '../../assets/styles/global';
+import Header from '../../components/PageHeader';
 
 interface OrderDetailsRouteParams {
     id: number;
@@ -23,6 +25,7 @@ export default function OrderDetails() {
     const route = useRoute();
     const navigation = useNavigation();
     const { customer } = useContext(CustomerContext);
+    const { order } = useContext(ContextOrdering);
 
     const params = route.params as OrderDetailsRouteParams;
 
@@ -69,6 +72,7 @@ export default function OrderDetails() {
 
     return (
         <>
+            <Header title="Pedido" customGoBack={'OrdersList'} />
             {
                 selectedOrder ? <ScrollView
                     style={globalStyles.container}
@@ -79,7 +83,12 @@ export default function OrderDetails() {
                             <View style={globalStyles.fieldsColumn}>
                                 <View style={globalStyles.menuRow}>
                                     <View style={globalStyles.menuColumn}>
-                                        <Text style={globalStyles.titlePrimaryLight}>{selectedOrder.orderStatus.title}</Text>
+                                        <Text style={
+                                            [globalStyles.titlePrimaryLight,
+                                            {
+                                                color: selectedOrder.orderStatus.order === 4 ? colorHighLight : colorPrimaryLight
+                                            }]
+                                        }>{selectedOrder.orderStatus.title}</Text>
                                     </View>
                                     <View style={globalStyles.menuIconColumn}>
                                         <Feather name="file-text" size={24} color={colorPrimaryLight} />

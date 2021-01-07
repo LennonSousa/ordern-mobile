@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, TouchableOpacity, View, Image, Dimensions, ImageBackground, Text, StatusBar } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { StyleSheet, View, Image, Dimensions, ImageBackground, StatusBar } from 'react-native';
 
 import api from '../../services/api';
 import { ScrollView } from 'react-native-gesture-handler';
 
 import CategoryItem, { Category } from '../../components/Categories';
+
+import globalStyles, { colorBackground } from '../../assets/styles/global';
 
 interface Restaurant {
     id: number,
@@ -48,19 +49,13 @@ export default function LandingPage() {
     }, []);
 
     return (
-        <View style={styles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+        <View style={globalStyles.container}>
+            <StatusBar barStyle="dark-content" backgroundColor={colorBackground} />
             <View style={styles.containerCover}>
                 <ImageBackground source={{ uri: restaurant?.cover }} style={styles.cover}>
                     <Image source={{ uri: restaurant?.avatar }} style={styles.avatar}></Image>
                 </ImageBackground>
             </View>
-
-            <ScrollView horizontal>
-                <TouchableOpacity >
-                    <Feather name="plus" size={20} color="#fff" />
-                </TouchableOpacity>
-            </ScrollView>
 
             <ScrollView>
                 {

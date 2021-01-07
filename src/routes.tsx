@@ -127,10 +127,6 @@ export default function Routes() {
                 <Stack.Screen
                     name="OrdersList"
                     component={OrdersList}
-                    options={{
-                        headerShown: true,
-                        header: () => <Header title="Seus pedidos" showCancel={true} />
-                    }}
                 />
 
                 <Stack.Screen
@@ -181,10 +177,6 @@ export default function Routes() {
                 <Stack.Screen
                     name="OrderDetails"
                     component={OrderDetails}
-                    options={{
-                        headerShown: true,
-                        header: () => <Header title="Pedido" showCancel={true} />
-                    }}
                 />
             </Stack.Navigator>
         </NavigationContainer>

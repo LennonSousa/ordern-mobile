@@ -8,6 +8,8 @@ import { ProductCategory } from '../ProductCategories';
 import { ProductAvailable } from '../ProductAvailables';
 import { TouchableHighlight } from 'react-native-gesture-handler';
 
+import { colorHighLight } from '../../assets/styles/global';
+
 export interface Product {
     id: number;
     title: string;
@@ -57,10 +59,10 @@ export default function Products({ product }: ProductProps) {
 
                         {
                             product.discount ? <Text style={styles.productPriceDiscount}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text> :
-                                <Text style={styles.productPrice}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text>
+                                <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text>
                         }
                         {
-                            product.discount && <Text style={styles.productPrice}>{`R$ ${product.discount_price.toString().replace('.', ',')}`}</Text>
+                            product.discount && <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.discount_price.toString().replace('.', ',')}`}</Text>
                         }
                     </View>
                 </View>

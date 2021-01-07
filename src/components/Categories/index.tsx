@@ -41,7 +41,6 @@ const styles = StyleSheet.create({
         width: Dimensions.get('window').width,
         backgroundColor: '#fff',
         paddingTop: 15,
-        paddingLeft: 10
     },
 
     categoryTitle: {

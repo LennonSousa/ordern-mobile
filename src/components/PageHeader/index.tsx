@@ -8,11 +8,13 @@ import { ContextOrdering } from '../../context/orderingContext';
 
 interface HeaderProps {
     title: string;
+    showGoBack?: boolean;
     showCancel?: boolean;
     showClearBag?: boolean;
+    customGoBack?: string;
 }
 
-export default function Header({ title, showCancel = true, showClearBag = false }: HeaderProps) {
+export default function Header({ title, showGoBack = true, showCancel = true, showClearBag = false, customGoBack }: HeaderProps) {
     const navigation = useNavigation();
 
     const { handleClearOrder } = useContext(ContextOrdering);
@@ -27,9 +29,12 @@ export default function Header({ title, showCancel = true, showClearBag = false 
 
     return (
         <View style={styles.container}>
-            <BorderlessButton onPress={navigation.goBack} style={{ flex: 0.2 }}>
-                <Feather name="arrow-left" size={24} color="#cc0000" />
-            </BorderlessButton>
+            {
+                showGoBack ? <BorderlessButton onPress={() => { customGoBack ? navigation.navigate(customGoBack) : navigation.goBack() }} style={{ flex: 0.2 }}>
+                    <Feather name="arrow-left" size={24} color="#cc0000" />
+                </BorderlessButton> :
+                    <View style={{ flex: 0.2 }}></View>
+            }
 
             <Text style={styles.title}>{title}</Text>
 

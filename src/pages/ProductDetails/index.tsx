@@ -11,6 +11,8 @@ import { ContextSelectedProduct } from '../../context/selectedProductContext';
 import { ContextOrdering } from '../../context/orderingContext';
 import ProductValues from '../../components/ProductValues';
 
+import { colorHighLight } from '../../assets/styles/global';
+
 interface ProductDetailsRouteParams {
     product: Product;
 }
@@ -165,11 +167,11 @@ export default function ProductDetails() {
                     <View style={styles.rowPrice}>
                         {
                             product.discount ? <Text style={styles.productPriceDiscount}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text> :
-                                <Text style={styles.productPrice}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text>
+                                <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text>
                         }
 
                         {
-                            product.discount && <Text style={styles.productPrice}>{`R$ ${product.discount_price.toString().replace('.', ',')}`}</Text>
+                            product.discount && <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.discount_price.toString().replace('.', ',')}`}</Text>
                         }
                     </View>
 
@@ -341,8 +343,7 @@ const styles = StyleSheet.create({
 
     productPrice: {
         fontFamily: 'Nunito_600SemiBold',
-        fontSize: 16,
-        color: '#00b300'
+        fontSize: 16
     },
 
     productPriceDiscount: {

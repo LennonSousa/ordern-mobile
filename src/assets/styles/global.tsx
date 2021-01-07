@@ -19,12 +19,13 @@ export const colorButtonBackground = '#fe3807';
 export const colorButtonText = '#FFFFFF';
 export const colorBoxBase = '#FFFFFF';
 export const colorBoxBooter = '#FAFAFC';
+export const colorHighLight = '#00b300';
 
 const globalStyles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: colorBackground,
-        paddingHorizontal: 15
+        paddingHorizontal: 10
     },
 
     row: {

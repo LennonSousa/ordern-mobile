@@ -30,7 +30,7 @@ const validatiionSchema = Yup.object().shape({
 export default function Payment() {
     const navigation = useNavigation();
     const { customer } = useContext(CustomerContext);
-    const { order } = useContext(ContextOrdering);
+    const { order, handleClearOrder } = useContext(ContextOrdering);
 
     const [selectedCard, setSelectedCard] = useState<CustomerPayment>();
     const [selectedPaymentType, setSelectedPaymentType] = useState('money');
@@ -121,6 +121,8 @@ export default function Payment() {
                             setCircleWaiting(true);
                             setSuccessWaiting(false);
                             setErrorWaiting(false);
+
+                            handleClearOrder();
 
                             navigation.navigate('OrderDetails', { id: res.data.id });
                         }, 1500);

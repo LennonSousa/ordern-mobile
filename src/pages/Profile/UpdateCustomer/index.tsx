@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { StyleSheet, View, Text, TouchableHighlight, ScrollView, Platform } from 'react-native';
+import { StyleSheet, View, Text, TouchableHighlight, ScrollView, Platform, ActivityIndicator, Modal } from 'react-native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
-import { Feather } from '@expo/vector-icons';
+import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { format } from 'date-fns';
+import { parseISO, format, addHours } from 'date-fns';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 
@@ -14,28 +14,40 @@ import { CustomerContext } from '../../../context/customerContext';
 import Input from '../../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
 
+import globalStyles, { colorPrimaryDark } from '../../../assets/styles/global';
 
 export default function CustomerUpdate() {
     const navigation = useNavigation();
-    const { customer } = useContext(CustomerContext);
+    const { customer, handleCustomer } = useContext(CustomerContext);
 
     const [show, setShow] = useState(false);
 
     const [birth, setBirth] = useState(new Date());
 
+    const [modalWaiting, setModalWaiting] = useState(false);
+    const [circleWaiting, setCircleWaiting] = useState(true);
+    const [successWaiting, setSuccessWaiting] = useState(false);
+    const [errorWaiting, setErrorWaiting] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('Erro desconhecido.');
+
     useEffect(() => {
-        customer && setBirth(new Date(customer.birth));
+        if (customer) {
+            let customerBirth = parseISO(customer.birth.toString());
+
+            customerBirth = addHours(customerBirth, 1);
+
+            setBirth(customerBirth);
+        }
     }, []);
 
     const validatiionSchema = Yup.object().shape({
         name: Yup.string().required('Você precisa preencher o seu nome!'),
         cpf: Yup.number().notRequired().positive('CPF inválido'),
-        phone: Yup.string().notRequired(),
-        password: Yup.string().required('Obrigatório!').min(8, 'Deve conter no mínimo 8 caracteres!').max(22, 'Deve ser menor que 22!')
+        phone: Yup.string().notRequired()
     });
 
     return (
-        <View style={styles.container}>
+        <ScrollView style={globalStyles.container}>
             {
                 customer && <Formik
                     initialValues={{
@@ -45,46 +57,66 @@ export default function CustomerUpdate() {
                         password: ''
                     }}
                     onSubmit={async values => {
+                        setCircleWaiting(true);
+                        setSuccessWaiting(false);
+                        setErrorWaiting(false);
+
+                        setModalWaiting(true);
+
                         try {
-                            await api.post('clients', {
+                            await api.put(`customer/${customer.id}`, {
                                 "name": values.name,
                                 "cpf": values.cpf,
                                 "birth": birth,
                                 "phone": values.phone,
-                                "email": customer.email,
-                                "password": values.password,
                                 "active": true,
                                 "paused": false,
                             });
 
-                            navigation.navigate('Profile');
-                        }
-                        catch {
+                            const updatedCustomer = await api.get(`customer/${customer.id}`);
 
+                            setCircleWaiting(false);
+                            setSuccessWaiting(true);
+
+                            handleCustomer(updatedCustomer.data);
+
+                            setTimeout(() => {
+                                setModalWaiting(false);
+
+                                setCircleWaiting(true);
+                                setSuccessWaiting(false);
+                                setErrorWaiting(false);
+                            }, 1500);
+                        }
+                        catch (err) {
+                            setCircleWaiting(false);
+                            setErrorWaiting(true);
+
+                            console.log(err);
                         }
 
                     }}
                     validationSchema={validatiionSchema}
                 >
                     {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
-                        <ScrollView style={styles.containerMenu}>
-                            <View style={styles.fieldsRow}>
-                                <View style={styles.fieldsColumn}>
-                                    <View style={styles.menuRow}>
-                                        <View style={styles.menuColumn}>
+                        <>
+                            <View style={globalStyles.fieldsRow}>
+                                <View style={globalStyles.fieldsColumn}>
+                                    <View style={globalStyles.menuRow}>
+                                        <View style={globalStyles.menuColumn}>
                                             <Text>Informações pessoais</Text>
                                         </View>
-                                        <View style={styles.menuIconColumn}>
+                                        <View style={globalStyles.menuIconColumn}>
                                             <Feather name="smile" size={24} color="#cc0000" />
                                         </View>
                                     </View>
                                 </View>
                             </View>
 
-                            <View style={styles.fieldsRow}>
-                                <View style={styles.fieldsColumn}>
+                            <View style={globalStyles.fieldsRow}>
+                                <View style={globalStyles.fieldsColumn}>
                                     <Input
-                                        style={styles.fieldsLogIn}
+                                        style={globalStyles.fieldsLogIn}
                                         title='Seu nome'
                                         placeholder='Obrigatório'
                                         textContentType='name'
@@ -97,10 +129,10 @@ export default function CustomerUpdate() {
                                 </View>
                             </View>
 
-                            <View style={styles.fieldsRow}>
-                                <View style={styles.fieldsColumn}>
+                            <View style={globalStyles.fieldsRow}>
+                                <View style={globalStyles.fieldsColumn}>
                                     <Input
-                                        style={styles.fieldsLogIn}
+                                        style={globalStyles.fieldsLogIn}
                                         title='CPF'
                                         placeholder='Opcional'
                                         keyboardType='number-pad'
@@ -112,10 +144,10 @@ export default function CustomerUpdate() {
                                 </View>
                             </View>
 
-                            <View style={styles.fieldsRow}>
+                            <View style={globalStyles.fieldsRow}>
                                 <View style={{ flex: 0.5 }}>
                                     <Input
-                                        style={styles.fieldsLogIn}
+                                        style={globalStyles.fieldsLogIn}
                                         title='Data de nascimento'
                                         defaultValue={format(birth, 'dd/MM/yyyy')}
                                         editable={false}
@@ -123,13 +155,13 @@ export default function CustomerUpdate() {
                                     />
                                 </View>
                                 <View style={{ flex: 0.2, alignItems: 'center' }}>
-                                    <TouchableHighlight underlayColor="#e8e8e8" style={styles.buttonNewItem} onPress={() => { setShow(true) }}>
+                                    <TouchableHighlight underlayColor="#e8e8e8" style={globalStyles.buttonNewItem} onPress={() => { setShow(true) }}>
                                         <Feather name="calendar" size={24} color="#cc0000" />
                                     </TouchableHighlight>
                                     {
                                         show && <DateTimePicker
                                             value={birth}
-                                            style={styles.fieldsLogIn}
+                                            style={globalStyles.fieldsLogIn}
                                             mode="date"
                                             onChange={(birthDate, selectedDate) => {
                                                 setShow(Platform.OS === 'ios');
@@ -140,10 +172,10 @@ export default function CustomerUpdate() {
                                 </View>
                             </View>
 
-                            <View style={styles.fieldsRow}>
-                                <View style={styles.fieldsColumn}>
+                            <View style={globalStyles.fieldsRow}>
+                                <View style={globalStyles.fieldsColumn}>
                                     <Input
-                                        style={styles.fieldsLogIn}
+                                        style={globalStyles.fieldsLogIn}
                                         title='Telefone'
                                         placeholder='Opcional'
                                         textContentType='telephoneNumber'
@@ -156,22 +188,22 @@ export default function CustomerUpdate() {
                                 </View>
                             </View>
 
-                            <View style={styles.fieldsRow}>
-                                <View style={styles.fieldsColumn}>
+                            <View style={globalStyles.fieldsRow}>
+                                <View style={globalStyles.fieldsColumn}>
                                     <BorderlessButton onPress={() => {
                                         navigation.navigate('CustomerUpdate');
                                     }}>
-                                        <View style={styles.menuRow}>
-                                            <View style={styles.menuColumn}>
+                                        <View style={globalStyles.menuRow}>
+                                            <View style={globalStyles.menuColumn}>
                                                 <Text>Senha</Text>
                                             </View>
-                                            <View style={styles.menuIconColumn}>
+                                            <View style={globalStyles.menuIconColumn}>
                                                 <Feather name="key" size={24} color="#fe3807" />
                                             </View>
                                         </View>
-                                        <View style={styles.menuDescriptionRow}>
-                                            <View style={styles.menuDescriptionColumn}>
-                                                <Text style={styles.textsDescriptionMenu}>Atualizar a sua senha atual.</Text>
+                                        <View style={globalStyles.menuDescriptionRow}>
+                                            <View style={globalStyles.menuDescriptionColumn}>
+                                                <Text style={globalStyles.textsDescriptionMenu}>Atualizar a sua senha atual.</Text>
                                             </View>
                                         </View>
                                     </BorderlessButton>
@@ -179,146 +211,81 @@ export default function CustomerUpdate() {
                             </View>
 
                             <View>
-                                <TouchableHighlight underlayColor='#cc0000' style={styles.buttonLogIn} onPress={handleSubmit as any}>
-                                    <Text style={styles.footerButtonText}>Atualizar</Text>
+                                <TouchableHighlight underlayColor='#cc0000' style={globalStyles.buttonLogIn} onPress={handleSubmit as any}>
+                                    <Text style={globalStyles.footerButtonText}>Atualizar</Text>
                                 </TouchableHighlight>
                             </View>
-                        </ScrollView>
+                        </>
                     )}
                 </Formik>
             }
-        </View>
+            <View style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+            }}>
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalWaiting}
+                >
+                    <View style={{
+                        flex: 1,
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}>
+                        <View style={styles.modalView}>
+                            <View style={{ marginVertical: 5 }}>
+                                {
+                                    circleWaiting && <ActivityIndicator size="large" color="#fe3807" />
+                                }
+                                {
+                                    successWaiting && <FontAwesome5 name="check-circle" size={48} color="#33cc33" />
+                                }
+                                {
+                                    errorWaiting && <FontAwesome5 name="times-circle" size={48} color="#fe3807" />
+                                }
+                            </View>
+
+                            {
+                                errorWaiting && <View>
+                                    <View style={{ marginVertical: 5 }}>
+                                        <Text style={[globalStyles.subTitlePrimary, { textAlign: 'center' }]}>{errorMessage}</Text>
+                                    </View>
+
+                                    <View style={{ marginVertical: 5 }}>
+                                        <TouchableHighlight
+                                            underlayColor={colorPrimaryDark}
+                                            style={globalStyles.footerButton}
+                                            onPress={() => setModalWaiting(false)}
+                                        >
+                                            <Text style={globalStyles.footerButtonText}>Entendi!</Text>
+                                        </TouchableHighlight>
+                                    </View>
+                                </View>
+                            }
+                        </View>
+                    </View>
+                </Modal>
+            </View>
+        </ScrollView>
     )
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-
-    divider: {
-        borderTopColor: '#e6e6e6',
-        borderTopWidth: 1,
-        marginHorizontal: 15,
-        marginVertical: 15
-    },
-
-    containerLogIn: {
-        paddingHorizontal: 15,
-    },
-
-    containerMenu: {
-        paddingHorizontal: 15,
-    },
-
-    menuRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-
-    menuColumn: {
-        flex: 0.8,
-    },
-
-    menuIconColumn: {
-        flex: 0.2,
-        alignItems: 'flex-end',
-    },
-
-    textsMenu: {
-        fontFamily: 'Nunito_600SemiBold',
-        fontSize: 16,
-        color: '#262626'
-    },
-
-    menuDescriptionRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-
-    menuDescriptionColumn: {
-        flex: 1,
-    },
-
-    textsDescriptionMenu: {
-        fontFamily: 'Nunito_300Light',
-        fontSize: 14,
-        color: '#8c8c8c'
-    },
-
-    fieldsRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginVertical: 10,
-    },
-
-    fieldsColumn: {
-        flex: 1,
-    },
-
-    buttonNewItem: {
-        padding: 10,
-        borderRadius: 5,
-    },
-
-    containerItem: {
-        marginVertical: 5,
-        padding: 10,
-        borderColor: '#e8e8e8',
-        borderWidth: 1,
-        borderRadius: 8
-    },
-
-    colTitleButtonItem: {
-        flex: 0.9,
-    },
-
-    colIconButtonItem: {
-        flex: 0.1,
-    },
-
-    fieldsLogIn: {
-        marginVertical: 8,
-    },
-
-    buttonLogIn: {
-        backgroundColor: '#fe3807',
-        borderRadius: 5,
-        marginVertical: 15,
-        height: 50,
-        justifyContent: 'center',
-        width: '100%',
-        alignItems: 'center',
-        padding: 20,
-    },
-
-    buttonTextLogIn: {
-        color: '#ffffff',
-        alignSelf: 'center',
-        fontFamily: 'Nunito_600SemiBold',
-        fontSize: 16,
-    },
-
-    buttonTextSignIn: {
-        color: '#fe3807',
-        alignSelf: 'center',
-        fontFamily: 'Nunito_600SemiBold',
-        fontSize: 16,
-    },
-
-    footerButton: {
-        backgroundColor: '#cc0000',
-        borderRadius: 5,
-        marginVertical: 15,
-        height: 50,
-        justifyContent: 'center'
-    },
-
-    footerButtonText: {
-        color: '#ffffff',
-        alignSelf: 'center',
-        fontFamily: 'Nunito_600SemiBold',
-        fontSize: 16,
+    modalView: {
+        margin: 20,
+        backgroundColor: "white",
+        borderRadius: 20,
+        padding: 35,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5
     },
 });

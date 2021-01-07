@@ -27,10 +27,10 @@ export default function Profile() {
 
     return (
         <View style={styles.container}>
-            <Header title="Perfil" showCancel={false} />
+            <Header title="Perfil" showGoBack={false} showCancel={false} />
             {
                 signed && customer ?
-                    <View style={styles.containerMenu}>
+                    <ScrollView style={styles.containerMenu}>
                         <View style={styles.fieldsRow}>
                             <View style={styles.fieldsColumn}>
                                 <Text style={styles.textsLogIn}>{customer.name}</Text>
@@ -164,7 +164,7 @@ export default function Profile() {
                                 </BorderlessButton>
                             </View>
                         </View>
-                    </View> :
+                    </ScrollView> :
                     <Formik
                         initialValues={{ email: '', password: '' }}
                         onSubmit={async values => {
