@@ -2,6 +2,7 @@ import React from 'react';
 import { Nunito_300Light, Nunito_300Light_Italic, Nunito_600SemiBold, Nunito_700Bold, Nunito_800ExtraBold, useFonts } from '@expo-google-fonts/nunito';
 
 import Routes from './src/routes';
+import { CategoriesProvider } from './src/context/categoriesContext';
 import { AuthProvider } from './src/context/authContext';
 import { CustomerProvider } from './src/context/customerContext';
 
@@ -22,14 +23,16 @@ export default function App() {
   }
 
   return (
-    <CustomerProvider>
-      <AuthProvider>
-        <OrderingProvider>
-          <ProductSelectedProvider>
-            <Routes />
-          </ProductSelectedProvider>
-        </OrderingProvider>
-      </AuthProvider>
-    </CustomerProvider>
+    <CategoriesProvider>
+      <CustomerProvider>
+        <AuthProvider>
+          <OrderingProvider>
+            <ProductSelectedProvider>
+              <Routes />
+            </ProductSelectedProvider>
+          </OrderingProvider>
+        </AuthProvider>
+      </CustomerProvider>
+    </CategoriesProvider>
   );
 }

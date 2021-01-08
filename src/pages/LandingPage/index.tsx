@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { StyleSheet, View, Image, Dimensions, ImageBackground, StatusBar } from 'react-native';
 
 import api from '../../services/api';
 import { ScrollView } from 'react-native-gesture-handler';
 
+import { CategoriesContext } from '../../context/categoriesContext';
 import CategoryItem, { Category } from '../../components/Categories';
 
 import globalStyles, { colorBackground } from '../../assets/styles/global';
@@ -25,6 +26,8 @@ interface Restaurant {
 }
 
 export default function LandingPage() {
+    const { handleCategories } = useContext(CategoriesContext);
+
     const [restaurant, setRestaurant] = useState<Restaurant>();
     const [categories, setCategories] = useState<Category[]>()
 
@@ -35,6 +38,7 @@ export default function LandingPage() {
 
                 api.get('categories')
                     .then(res => {
+                        handleCategories(res.data);
                         setCategories(res.data);
                     })
                     .catch(err => {

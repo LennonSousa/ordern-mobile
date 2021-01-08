@@ -8,14 +8,14 @@ import * as Yup from 'yup';
 import api from '../../services/api';
 
 import { CustomerContext } from '../../context/customerContext';
-import { ContextOrdering } from '../../context/orderingContext';
+import Header from '../../components/PageHeader';
 import { Order } from '../../components/Orders';
+import OrderDetailsShimmer from '../../components/Shimmers/OrderDetails';
 import OrderItems, { OrderItem } from '../../components/OrderItems';
 import Input from '../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../components/Interfaces/InvalidFeedback';
 
 import globalStyles, { colorPrimaryLight, colorHighLight } from '../../assets/styles/global';
-import Header from '../../components/PageHeader';
 
 interface OrderDetailsRouteParams {
     id: number;
@@ -25,7 +25,6 @@ export default function OrderDetails() {
     const route = useRoute();
     const navigation = useNavigation();
     const { customer } = useContext(CustomerContext);
-    const { order } = useContext(ContextOrdering);
 
     const params = route.params as OrderDetailsRouteParams;
 
@@ -68,6 +67,7 @@ export default function OrderDetails() {
 
     const onRefresh = React.useCallback(() => {
         setRefreshing(true);
+        setSelectedOrder(undefined);
     }, []);
 
     return (
@@ -79,28 +79,30 @@ export default function OrderDetails() {
                     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
                 >
                     {
-                        selectedOrder && <><View style={globalStyles.fieldsRow}>
-                            <View style={globalStyles.fieldsColumn}>
-                                <View style={globalStyles.menuRow}>
-                                    <View style={globalStyles.menuColumn}>
-                                        <Text style={
-                                            [globalStyles.titlePrimaryLight,
-                                            {
-                                                color: selectedOrder.orderStatus.order === 4 ? colorHighLight : colorPrimaryLight
-                                            }]
-                                        }>{selectedOrder.orderStatus.title}</Text>
+                        selectedOrder &&
+                        <View style={{ marginBottom: 20 }}>
+                            <View style={globalStyles.fieldsRow}>
+                                <View style={globalStyles.fieldsColumn}>
+                                    <View style={globalStyles.menuRow}>
+                                        <View style={globalStyles.menuColumn}>
+                                            <Text style={
+                                                [globalStyles.titlePrimaryLight,
+                                                {
+                                                    color: selectedOrder.orderStatus.order === 4 ? colorHighLight : colorPrimaryLight
+                                                }]
+                                            }>{selectedOrder.orderStatus.title}</Text>
+                                        </View>
+                                        <View style={globalStyles.menuIconColumn}>
+                                            <Feather name="file-text" size={24} color={colorPrimaryLight} />
+                                        </View>
                                     </View>
-                                    <View style={globalStyles.menuIconColumn}>
-                                        <Feather name="file-text" size={24} color={colorPrimaryLight} />
-                                    </View>
-                                </View>
-                                <View style={globalStyles.menuRow}>
-                                    <View style={globalStyles.menuColumn}>
-                                        <Text style={globalStyles.textDescription}>{selectedOrder.orderStatus.description}</Text>
+                                    <View style={globalStyles.menuRow}>
+                                        <View style={globalStyles.menuColumn}>
+                                            <Text style={globalStyles.textDescription}>{selectedOrder.orderStatus.description}</Text>
+                                        </View>
                                     </View>
                                 </View>
                             </View>
-                        </View>
 
                             <View>
                                 <Text style={globalStyles.textsMenu}>Itens</Text>
@@ -204,65 +206,57 @@ export default function OrderDetails() {
                                     </View>
                                 </View>
                             </View>
-                        </>
+                        </View>
                     }
 
-                    <View style={globalStyles.container}>
-                        {
-                            customer && <Formik
-                                initialValues={{
-                                    reasonCancellation: ''
-                                }}
-                                onSubmit={async values => {
-                                    try {
-                                        await api.post('clients', {
-                                        });
+                    {
+                        customer && selectedOrder.orderStatus.order !== 4 && <Formik
+                            initialValues={{
+                                reasonCancellation: selectedOrder.reason_cancellation
+                            }}
+                            onSubmit={async values => {
+                                try {
+                                    await api.post('clients', {
+                                    });
 
-                                        navigation.navigate('Profile');
-                                    }
-                                    catch {
+                                    navigation.navigate('Profile');
+                                }
+                                catch {
 
-                                    }
+                                }
 
-                                }}
-                                validationSchema={validatiionSchema}
-                            >
-                                {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
-                                    <ScrollView style={globalStyles.containerMenu}>
-                                        <View style={globalStyles.fieldsRow}>
-                                            <View style={globalStyles.fieldsColumn}>
-                                                <Input
-                                                    style={globalStyles.fieldsLogIn}
-                                                    title='Motivo do cancelamento*'
-                                                    placeholder='Obrigatório'
-                                                    autoCapitalize='sentences'
-                                                    onChangeText={handleChange('reasonCancellation')}
-                                                    onBlur={handleBlur('reasonCancellation')}
-                                                    value={values.reasonCancellation}
-                                                />
-                                                <InvalidFeedback message={errors.reasonCancellation}></InvalidFeedback>
-                                            </View>
+                            }}
+                            validationSchema={validatiionSchema}
+                        >
+                            {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
+                                <View>
+                                    <View style={globalStyles.fieldsRow}>
+                                        <View style={globalStyles.fieldsColumn}>
+                                            <Input
+                                                style={globalStyles.fieldsLogIn}
+                                                title='Motivo do cancelamento*'
+                                                placeholder='Obrigatório'
+                                                autoCapitalize='sentences'
+                                                onChangeText={handleChange('reasonCancellation')}
+                                                onBlur={handleBlur('reasonCancellation')}
+                                                value={values.reasonCancellation}
+                                            />
+                                            <InvalidFeedback message={errors.reasonCancellation}></InvalidFeedback>
                                         </View>
-                                        <View>
+                                    </View>
+                                    {
+                                        selectedOrder.orderStatus.order !== 5 && <View>
                                             <TouchableHighlight underlayColor='#cc0000' style={globalStyles.buttonLogIn} onPress={handleSubmit as any}>
-                                                <Text style={globalStyles.footerButtonText}>Cancelar</Text>
+                                                <Text style={globalStyles.footerButtonText}>Cancelar o pedido</Text>
                                             </TouchableHighlight>
                                         </View>
-                                    </ScrollView>
-                                )}
-                            </Formik>
-                        }
-                    </View>
+                                    }
+                                </View>
+                            )}
+                        </Formik>
+                    }
                 </ScrollView> :
-                    <View style={{
-                        flex: 1,
-                        justifyContent: "center",
-                        alignItems: "center",
-                    }}>
-                        <View style={styles.modalView}>
-                            <ActivityIndicator size="large" color="#fe3807" />
-                        </View>
-                    </View>
+                    <OrderDetailsShimmer />
             }
         </>
     )

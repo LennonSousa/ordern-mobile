@@ -1,5 +1,9 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { BorderlessButton } from 'react-native-gesture-handler';
+import { useNavigation } from '@react-navigation/native';
+
+import { CategoriesContext } from '../../context/categoriesContext';
 
 export interface OrderItem {
     id: number;
@@ -16,6 +20,9 @@ interface OrderItemProps {
 }
 
 export default function OrderItems({ orderItem }: OrderItemProps) {
+    const navigation = useNavigation();
+    const { categories } = useContext(CategoriesContext);
+
     const priceProduct = orderItem.value;
 
     let totalAdditionals = 0;
@@ -27,25 +34,37 @@ export default function OrderItems({ orderItem }: OrderItemProps) {
     const amountProduct = orderItem.amount;
     const subTotal = Number(priceProduct) + Number(totalAdditionals);
 
-
-
     const total = Number(subTotal) * Number(amountProduct);
+
+    function handleNavigateToProductDetails(id: number) {
+        if (categories) {
+            categories.forEach(category => {
+                category.products.forEach(product => {
+                    if (product.id === id) {
+                        navigation.navigate('ProductDetails', { product });
+                    }
+                })
+            });
+        }
+    }
 
     return (
         <View style={styles.container}>
-            <View style={styles.itemRow}>
-                <View style={styles.itemColumnAmount}>
-                    <Text style={styles.itemAmountText}>{Number(orderItem.amount).toFixed(0)}</Text>
-                </View>
+            <BorderlessButton onPress={() => { handleNavigateToProductDetails(orderItem.id) }}>
+                <View style={styles.itemRow}>
+                    <View style={styles.itemColumnAmount}>
+                        <Text style={styles.itemAmountText}>{Number(orderItem.amount).toFixed(0)}</Text>
+                    </View>
 
-                <View style={styles.itemColumnName}>
-                    <Text style={styles.itemTexts}>{orderItem.name}</Text>
-                </View>
+                    <View style={styles.itemColumnName}>
+                        <Text style={styles.itemTexts}>{orderItem.name}</Text>
+                    </View>
 
-                <View style={styles.itemColumnValue}>
-                    <Text style={styles.itemValueTexts}>{`R$ ${Number(orderItem.value).toFixed(2).replace('.', ',')}`}</Text>
+                    <View style={styles.itemColumnValue}>
+                        <Text style={styles.itemValueTexts}>{`R$ ${Number(orderItem.value).toFixed(2).replace('.', ',')}`}</Text>
+                    </View>
                 </View>
-            </View>
+            </BorderlessButton>
             <View style={styles.additionalContainer}>
                 {
                     orderItem.additionals && orderItem.additionals.map(additional => {

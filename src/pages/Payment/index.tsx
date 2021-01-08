@@ -1,9 +1,10 @@
 import React, { useContext, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View, TouchableHighlight, ActivityIndicator, Modal } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { BorderlessButton } from 'react-native-gesture-handler';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { useNavigation } from '@react-navigation/native';
 
 import api from '../../services/api';
 import stripeapi from '../../services/stripeapi';
@@ -14,7 +15,7 @@ import { ContextOrdering } from '../../context/orderingContext';
 import { CustomerPayment } from '../../components/CustomerPayments';
 import Input from '../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../components/Interfaces/InvalidFeedback';
-import { BorderlessButton } from 'react-native-gesture-handler';
+import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingModal';
 
 import globalStyles, { colorPrimaryLight, colorPrimaryDark, colorBackground } from '../../assets/styles/global';
 import PageFooter from '../../components/PageFooter';
@@ -35,19 +36,12 @@ export default function Payment() {
     const [selectedCard, setSelectedCard] = useState<CustomerPayment>();
     const [selectedPaymentType, setSelectedPaymentType] = useState('money');
 
-    const [modalWaiting, setModalWaiting] = useState(false);
-    const [circleWaiting, setCircleWaiting] = useState(true);
-    const [successWaiting, setSuccessWaiting] = useState(false);
-    const [errorWaiting, setErrorWaiting] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('Erro desconhecido.');
+    const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
+    const [errorMessage, setErrorMessage] = useState('');
 
     async function requestPayment(card: Card) {
         if (customer && order) {
-            setCircleWaiting(true);
-            setSuccessWaiting(false);
-            setErrorWaiting(false);
-
-            setModalWaiting(true);
+            setModalWaiting("waiting");
 
             const creditCardToken = await getCreditCardToken(card);
 
@@ -68,8 +62,7 @@ export default function Payment() {
                         });
 
                     if (paymentResponse.status === 200) {
-                        setCircleWaiting(false);
-                        setSuccessWaiting(true);
+                        setModalWaiting("success");
 
                         let itemsToOrder = order.orderItems.map(item => {
                             return {
@@ -116,20 +109,14 @@ export default function Payment() {
                         });
 
                         setTimeout(() => {
-                            setModalWaiting(false);
-
-                            setCircleWaiting(true);
-                            setSuccessWaiting(false);
-                            setErrorWaiting(false);
-
+                            setModalWaiting("hidden");
                             handleClearOrder();
 
                             navigation.navigate('OrderDetails', { id: res.data.id });
                         }, 1500);
                     }
                     else {
-                        setCircleWaiting(false);
-                        setErrorWaiting(true);
+                        setModalWaiting("error");
                         setErrorMessage(stripeErrorCodes(paymentResponse.data.code));
 
                         console.log('stripe error code: ', stripeErrorCodes(paymentResponse.data.code));
@@ -138,8 +125,7 @@ export default function Payment() {
                     }
                 }
                 catch {
-                    setCircleWaiting(false);
-                    setErrorWaiting(true);
+                    setModalWaiting("error");
 
                     setErrorMessage('Erro na transação. Tente novamente mais tarde.');
 
@@ -147,8 +133,8 @@ export default function Payment() {
                 }
             }
             else {
-                setCircleWaiting(false);
-                setErrorWaiting(true);
+                setModalWaiting("error");
+
 
                 setErrorMessage(stripeErrorCodes(creditCardToken.data.error.code));
 
@@ -308,49 +294,7 @@ export default function Payment() {
                     justifyContent: "center",
                     alignItems: "center",
                 }}>
-                    <Modal
-                        animationType="slide"
-                        transparent={true}
-                        visible={modalWaiting}
-                    >
-                        <View style={{
-                            flex: 1,
-                            justifyContent: "center",
-                            alignItems: "center",
-                        }}>
-                            <View style={styles.modalView}>
-                                <View style={{ marginVertical: 5 }}>
-                                    {
-                                        circleWaiting && <ActivityIndicator size="large" color="#fe3807" />
-                                    }
-                                    {
-                                        successWaiting && <FontAwesome5 name="check-circle" size={48} color="#33cc33" />
-                                    }
-                                    {
-                                        errorWaiting && <FontAwesome5 name="times-circle" size={48} color="#fe3807" />
-                                    }
-                                </View>
-
-                                {
-                                    errorWaiting && <View>
-                                        <View style={{ marginVertical: 5 }}>
-                                            <Text style={[globalStyles.subTitlePrimary, { textAlign: 'center' }]}>{errorMessage}</Text>
-                                        </View>
-
-                                        <View style={{ marginVertical: 5 }}>
-                                            <TouchableHighlight
-                                                underlayColor={colorPrimaryDark}
-                                                style={globalStyles.footerButton}
-                                                onPress={() => setModalWaiting(false)}
-                                            >
-                                                <Text style={globalStyles.footerButtonText}>Entendi!</Text>
-                                            </TouchableHighlight>
-                                        </View>
-                                    </View>
-                                }
-                            </View>
-                        </View>
-                    </Modal>
+                    <WaitingModal message={errorMessage} status={modalWaiting} />
                 </View>
             </ScrollView>
 

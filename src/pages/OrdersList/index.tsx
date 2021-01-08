@@ -10,9 +10,9 @@ import api from '../../services/api';
 import { CustomerContext } from '../../context/customerContext';
 import { Order } from '../../components/Orders';
 import OrdersListShimmer from '../../components/Shimmers/OrdersList';
+import Header from '../../components/PageHeader';
 
 import globalStyles, { colorPrimaryLight, colorHighLight } from '../../assets/styles/global';
-import Header from '../../components/PageHeader';
 
 export default function OrdersList() {
     const navigation = useNavigation();
@@ -31,7 +31,7 @@ export default function OrdersList() {
                     setOrdersList(res.data);
                 })
                     .catch(() => {
-
+                        setOrdersList(undefined);
                     });
             });
 
@@ -45,7 +45,7 @@ export default function OrdersList() {
                 setOrdersList(res.data);
             })
                 .catch(() => {
-
+                    setOrdersList(undefined);
                 });
 
             setRefreshing(false);
