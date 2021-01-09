@@ -99,11 +99,6 @@ export default function WaitingModal({ status, message }: WaitingModalProps) {
 }
 
 const styles = StyleSheet.create({
-    buttonNewItem: {
-        padding: 10,
-        borderRadius: 5,
-    },
-
     modalView: {
         margin: 20,
         backgroundColor: "white",
@@ -118,23 +113,5 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
         elevation: 5
-    },
-
-    buttonAction: {
-        padding: 10,
-        borderRadius: 5,
-        backgroundColor: '#cc0000',
-        alignItems: 'center',
-    },
-
-    buttonConfirm: {
-        padding: 10,
-        borderRadius: 5,
-        backgroundColor: '#ffcc00',
-        alignItems: 'center',
-    },
-
-    fieldsLogIn: {
-        marginVertical: 8,
     },
 });

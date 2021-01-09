@@ -44,7 +44,7 @@ export default function Cart() {
     async function handleOrdertoShipment() {
         if (order) {
             setModalWaiting("waiting");
-            
+
             try {
                 const res = await api.get('categories');
 
@@ -174,6 +174,5 @@ const styles = StyleSheet.create(
         imageEmptyCart: {
             height: `${(22 * Dimensions.get('window').width) / 100}%`,
             resizeMode: 'contain'
-        }
-    }
-)
+        },
+    });

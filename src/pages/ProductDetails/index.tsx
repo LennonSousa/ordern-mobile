@@ -67,7 +67,7 @@ export default function ProductDetails() {
         navigation.navigate('CategoryAdditionals', { productCategory: categoryAdditional });
     }
 
-    async function handleAmount(operation: string) {
+    function handleAmount(operation: string) {
         if (selectedProduct) {
             if (operation === "plus")
                 handleSelectedProduct(
@@ -115,7 +115,7 @@ export default function ProductDetails() {
                             }
 
                             let itemsToOrder = {
-                                id: order ? order.orderItems.length : 0,
+                                id: 0,
                                 amount: selectedProduct.amount,
                                 name: product.title,
                                 value: selectedProduct.price,
@@ -152,8 +152,13 @@ export default function ProductDetails() {
                             });
 
                             if (order) {
+                                const newItemnsToOrder = [...order.orderItems, itemsToOrder];
+
                                 handleTotalOrder({
-                                    ...order, orderItems: [...order.orderItems, itemsToOrder]
+                                    ...order, orderItems: newItemnsToOrder.map((item, index) => {
+
+                                        return { ...item, id: index };
+                                    })
                                 });
                             }
                             else {
