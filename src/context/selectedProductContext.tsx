@@ -1,8 +1,10 @@
 import React, { createContext, useState } from 'react';
+
 import { ProductValue } from '../components/ProductValues';
 
 interface SelectedAdditionals {
     id: number;
+    additional_id: number;
     title: string;
     price: number;
     enabled: boolean;
@@ -31,9 +33,9 @@ interface SelectedProductContextData {
     handleSelectedProduct(product: SelectedProduct): void;
 }
 
-const ContextSelectedProduct = createContext<SelectedProductContextData>({} as SelectedProductContextData);
+const SelectedProductContext = createContext<SelectedProductContextData>({} as SelectedProductContextData);
 
-const ProductSelectedProvider: React.FC = ({ children }) => {
+const SelectedProductProvider: React.FC = ({ children }) => {
     const [selectedProduct, setSelectedProduct] = useState<SelectedProduct>();
 
     function handleSelectedProduct(product: SelectedProduct) {
@@ -58,10 +60,10 @@ const ProductSelectedProvider: React.FC = ({ children }) => {
     }
 
     return (
-        <ContextSelectedProduct.Provider value={{ selectedProduct, handleSelectedProduct }}>
+        <SelectedProductContext.Provider value={{ selectedProduct, handleSelectedProduct }}>
             {children}
-        </ContextSelectedProduct.Provider>
+        </SelectedProductContext.Provider>
     );
 }
 
-export { ContextSelectedProduct, ProductSelectedProvider };
+export { SelectedProductContext, SelectedProductProvider };

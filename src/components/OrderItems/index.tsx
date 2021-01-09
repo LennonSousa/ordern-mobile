@@ -11,6 +11,7 @@ export interface OrderItem {
     name: string;
     value: number;
     additional: boolean;
+    additional_id: number;
     additional_item: number;
     additionals: OrderItem[];
 }

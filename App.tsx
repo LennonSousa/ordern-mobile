@@ -7,7 +7,7 @@ import { AuthProvider } from './src/context/authContext';
 import { CustomerProvider } from './src/context/customerContext';
 
 import { OrderingProvider } from './src/context/orderingContext';
-import { ProductSelectedProvider } from './src/context/selectedProductContext';
+import { SelectedProductProvider } from './src/context/selectedProductContext';
 
 export default function App() {
   const [fonstLoaded] = useFonts({
@@ -27,9 +27,9 @@ export default function App() {
       <CustomerProvider>
         <AuthProvider>
           <OrderingProvider>
-            <ProductSelectedProvider>
+            <SelectedProductProvider>
               <Routes />
-            </ProductSelectedProvider>
+            </SelectedProductProvider>
           </OrderingProvider>
         </AuthProvider>
       </CustomerProvider>

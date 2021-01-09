@@ -4,17 +4,18 @@ import { useNavigation } from '@react-navigation/native';
 import { Dimensions, ImageBackground, StyleSheet, Text, TextInput, View } from 'react-native';
 import { ScrollView, TouchableHighlight, TouchableOpacity } from 'react-native-gesture-handler';
 import { Feather } from '@expo/vector-icons';
-import { getDay, getHours, getMinutes, getTime } from 'date-fns';
 
-import api from '../../services/api';
-
+import { Category } from '../../components/Categories';
 import { Product } from '../../components/Products';
 import { ProductCategory } from '../../components/ProductCategories';
-import { ContextSelectedProduct } from '../../context/selectedProductContext';
+import { SelectedProductContext } from '../../context/selectedProductContext';
+import { CategoriesContext } from '../../context/categoriesContext';
 import { ContextOrdering } from '../../context/orderingContext';
 import ProductValues from '../../components/ProductValues';
-import { convertHourToMinutes } from '../../utils/convertHourToMinutes';
+import verifyProductAvailable from '../../utils/verifyProductAvailable';
 import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingModal';
+
+import api from '../../services/api';
 
 import { colorHighLight } from '../../assets/styles/global';
 
@@ -26,15 +27,16 @@ export default function ProductDetails() {
     const route = useRoute();
     const navigation = useNavigation();
 
+    const { handleCategories } = useContext(CategoriesContext);
+    const { selectedProduct, handleSelectedProduct } = useContext(SelectedProductContext);
+    const { order, handleTotalOrder } = useContext(ContextOrdering);
+
     const [product, setProduct] = useState<Product>();
 
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
     const [errorMessage, setErrorMessage] = useState('');
 
     const params = route.params as ProductDetailsRouteParams;
-
-    const { selectedProduct, handleSelectedProduct } = useContext(ContextSelectedProduct);
-    const { order, handleTotalOrder } = useContext(ContextOrdering);
 
     useEffect(() => {
         if (params.product) {
@@ -65,7 +67,7 @@ export default function ProductDetails() {
         navigation.navigate('CategoryAdditionals', { productCategory: categoryAdditional });
     }
 
-    function handleAmount(operation: string) {
+    async function handleAmount(operation: string) {
         if (selectedProduct) {
             if (operation === "plus")
                 handleSelectedProduct(
@@ -89,157 +91,113 @@ export default function ProductDetails() {
             setModalWaiting("waiting");
 
             try {
-                const productItem: Product = (await api.get(`products/${product.id}`)).data;
+                const res = await api.get('categories');
 
-                let paused = true;
-                let available = false;
+                handleCategories(res.data);
+                const categories: Category[] = res.data;
 
-                if (!productItem.paused) {
-                    // Not paused!
-                    console.log('Not paused!');
+                categories.forEach(category => {
+                    category.products.forEach(productItem => {
+                        if (productItem.id === product.id) {
+                            const verify = verifyProductAvailable(productItem);
 
-                    paused = false;
-
-                    if (!productItem.available_all) {
-                        const weekDay = getDay(new Date());
-
-                        const todayAvailable = productItem.availables.find(item => { item.week_day === weekDay && item.available });
-
-                        if (todayAvailable) { // Available today
-                            console.log('Available today!');
-
-                            if (todayAvailable.all_day) {
-                                // Available through all today
-                                console.log('Available through all today!');
-
-                                available = true;
+                            if (verify === "paused") {
+                                setModalWaiting("error");
+                                setErrorMessage("Desculpe, mas esse produto acabou de ficar sem estoque.");
 
                                 return;
                             }
-                            else {
-                                const now = new Date();
-                                const minutesNow = convertHourToMinutes(`${getHours(now)}:${getMinutes(now)}`);
+                            else if (verify === "not-available") {
+                                setModalWaiting("error");
+                                setErrorMessage("Desculpe, mas esse produto não está mais disponível nesse horário.");
 
-                                if (todayAvailable.shift_01) {
-                                    if (minutesNow >= todayAvailable.shift_01_from
-                                        && minutesNow <= todayAvailable.shift_01_to) {
-                                        // Available today in first shift time
-                                        console.log('Available today in first shift time!');
-
-                                        available = true;
-
-                                        return;
-                                    }
-                                }
-                                else if (todayAvailable.shift_02) {
-                                    if (minutesNow >= todayAvailable.shift_02_from
-                                        && minutesNow <= todayAvailable.shift_02_to) {
-                                        // Available today in second shift time
-                                        console.log('Available today in second shift time');
-
-                                        available = true;
-
-                                        return;
-                                    }
-                                }
+                                return;
                             }
+
+                            let itemsToOrder = {
+                                id: order ? order.orderItems.length : 0,
+                                amount: selectedProduct.amount,
+                                name: product.title,
+                                value: selectedProduct.price,
+                                additional: false,
+                                additional_item: product.id,
+                                additional_id: 0,
+                                additionals: [{
+                                    id: 0,
+                                    amount: 1,
+                                    name: "",
+                                    value: 0,
+                                    additional: true,
+                                    additional_id: 0,
+                                    additional_item: 0,
+                                    additionals: []
+                                }]
+                            };
+
+                            itemsToOrder.additionals = [];
+
+                            selectedProduct.categoiesAdditional.forEach(category => {
+                                category.selectedAdditionals.forEach(additional => {
+                                    itemsToOrder.additionals.push({
+                                        id: itemsToOrder.additionals.length,
+                                        amount: 1,
+                                        name: additional.title,
+                                        value: additional.price,
+                                        additional: true,
+                                        additional_id: additional.additional_id,
+                                        additional_item: product.id,
+                                        additionals: []
+                                    });
+                                });
+                            });
+
+                            if (order) {
+                                handleTotalOrder({
+                                    ...order, orderItems: [...order.orderItems, itemsToOrder]
+                                });
+                            }
+                            else {
+                                handleTotalOrder({
+                                    id: 0,
+                                    tracker: '',
+                                    client_id: 0,
+                                    client: '',
+                                    ordered: new Date(),
+                                    delivery: new Date(),
+                                    delivered: new Date(),
+                                    sub_total: 0,
+                                    cupom: '',
+                                    delivery_tax: 0,
+                                    delivery_type: '',
+                                    discount: 0,
+                                    fee: 0,
+                                    total: 0,
+                                    payment: '',
+                                    paid: false,
+                                    address: '',
+                                    reason_cancellation: '',
+                                    orderStatus: {
+                                        id: 1,
+                                        title: '',
+                                        description: '',
+                                        order: 0,
+                                    },
+                                    orderItems: [itemsToOrder],
+                                });
+                            }
+
+                            setTimeout(() => {
+                                setModalWaiting("hidden");
+
+                                navigation.navigate('Cart');
+                            }, 1500);
                         }
-                    }
-                    else
-                        available = true; // Not paused and always available!
-
-                    console.log('Not paused and always available!');
-                }
-
-                if (paused) {
-                    setModalWaiting("error");
-                    setErrorMessage("Desculpe, mas esse produto acabou de ficar sem estoque.");
-                }
-
-                if (!available) {
-                    setModalWaiting("error");
-                    setErrorMessage("Desculpe, mas esse produto não está mais disponível nesse horário.");
-                }
-
-                let itemsToOrder = {
-                    id: product.id,
-                    amount: selectedProduct.amount,
-                    name: product.title,
-                    value: selectedProduct.price,
-                    additional: false,
-                    additional_item: product.id,
-                    additionals: [{
-                        id: 0,
-                        amount: 1,
-                        name: "",
-                        value: 0,
-                        additional: true,
-                        additional_item: 0,
-                        additionals: []
-                    }]
-                };
-
-                itemsToOrder.additionals = [];
-
-                selectedProduct.categoiesAdditional.forEach(category => {
-                    category.selectedAdditionals.forEach(additional => {
-                        itemsToOrder.additionals.push({
-                            id: itemsToOrder.additionals.length,
-                            amount: 1,
-                            name: additional.title,
-                            value: additional.price,
-                            additional: true,
-                            additional_item: product.id,
-                            additionals: []
-                        });
                     });
                 });
-
-                if (order) {
-                    handleTotalOrder({
-                        ...order, orderItems: [...order.orderItems, itemsToOrder]
-                    });
-                }
-                else {
-                    handleTotalOrder({
-                        id: 0,
-                        tracker: '',
-                        client_id: 0,
-                        client: '',
-                        ordered: new Date(),
-                        delivery: new Date(),
-                        delivered: new Date(),
-                        sub_total: 0,
-                        cupom: '',
-                        delivery_tax: 0,
-                        delivery_type: '',
-                        discount: 0,
-                        fee: 0,
-                        total: 0,
-                        payment: '',
-                        paid: false,
-                        address: '',
-                        reason_cancellation: '',
-                        orderStatus: {
-                            id: 1,
-                            title: '',
-                            description: '',
-                            order: 0,
-                        },
-                        orderItems: [itemsToOrder],
-                    });
-                }
-
-                setModalWaiting("success");
-
-                setTimeout(() => {
-                    setModalWaiting("hidden");
-
-                    navigation.navigate('Cart');
-                }, 1500);
             }
             catch {
-
+                setModalWaiting("error");
+                setErrorMessage("Por favor, verifique a sua conexão com a internet.");
             }
         }
     }
@@ -332,6 +290,14 @@ export default function ProductDetails() {
                             <Text style={styles.titleNotes}>  Alguma observação?</Text>
                         </View>
                         <TextInput multiline={true} numberOfLines={3} maxLength={140} style={styles.inputNotes} />
+                    </View>
+
+                    <View style={{
+                        flex: 1,
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}>
+                        <WaitingModal message={errorMessage} status={modalWaiting} />
                     </View>
                 </ScrollView>
             }

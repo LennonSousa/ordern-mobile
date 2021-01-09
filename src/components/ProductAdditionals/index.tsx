@@ -3,7 +3,7 @@ import { View, Text, Switch, StyleSheet } from 'react-native';
 
 import { Additional } from '../Additionals';
 import { ProductCategory } from '../ProductCategories';
-import { ContextSelectedProduct } from '../../context/selectedProductContext';
+import { SelectedProductContext } from '../../context/selectedProductContext';
 import { useNavigation } from '@react-navigation/native';
 
 export interface ProductAdditional {
@@ -23,7 +23,7 @@ interface ProductAdditionalProps {
 export default function ProductAdditionals({ productAdditional, idCategory }: ProductAdditionalProps) {
     const navigation = useNavigation();
 
-    const { selectedProduct, handleSelectedProduct } = useContext(ContextSelectedProduct);
+    const { selectedProduct, handleSelectedProduct } = useContext(SelectedProductContext);
 
     const [isEnabled, setIsEnabled] = useState(false);
 
@@ -72,6 +72,7 @@ export default function ProductAdditionals({ productAdditional, idCategory }: Pr
                                     selectedAdditionals: [
                                         ...category.selectedAdditionals, {
                                             id: productAdditional.id,
+                                            additional_id: productAdditional.additional.id, // Additional id to verify on page cart if paused
                                             title: productAdditional.additional.title,
                                             enabled: true,
                                             price: productAdditional.price
@@ -91,6 +92,7 @@ export default function ProductAdditionals({ productAdditional, idCategory }: Pr
                                     selectedAdditionals: [
                                         ...additionalsUpdated, {
                                             id: productAdditional.id,
+                                            additional_id: productAdditional.additional.id, // Additional id to verify on page cart if paused
                                             title: productAdditional.additional.title,
                                             enabled: true,
                                             price: productAdditional.price

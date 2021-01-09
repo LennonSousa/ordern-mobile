@@ -1,12 +1,13 @@
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { Image, StyleSheet, Text, View } from 'react-native';
+import { TouchableHighlight } from 'react-native-gesture-handler';
 
 import { Category } from '../Categories';
 import { ProductValue } from '../ProductValues';
 import { ProductCategory } from '../ProductCategories';
 import { ProductAvailable } from '../ProductAvailables';
-import { TouchableHighlight } from 'react-native-gesture-handler';
+import VerifyProductAvailable from '../../utils/verifyProductAvailable';
 
 import { colorHighLight } from '../../assets/styles/global';
 
@@ -37,12 +38,14 @@ interface ProductProps {
 export default function Products({ product }: ProductProps) {
     const navigation = useNavigation();
 
+    const verify = VerifyProductAvailable(product);
+
     function handleNavigateToProductDetails(productObject: Product) {
         navigation.navigate('ProductDetails', { product: productObject });
     }
 
     return (
-        <TouchableHighlight style={styles.button} underlayColor='#e6e6e6' onPress={() => { handleNavigateToProductDetails(product) }}>
+        verify === "available" ? <TouchableHighlight style={styles.button} underlayColor='#e6e6e6' onPress={() => { handleNavigateToProductDetails(product) }}>
             <View style={styles.productRow} >
                 <View style={styles.productCol}>
                     <View style={styles.rowTop}>
@@ -67,7 +70,7 @@ export default function Products({ product }: ProductProps) {
                     </View>
                 </View>
             </View>
-        </TouchableHighlight>
+        </TouchableHighlight> : null
     )
 }
 

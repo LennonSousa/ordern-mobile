@@ -5,7 +5,7 @@ import api from '../../services/api';
 import { ScrollView } from 'react-native-gesture-handler';
 
 import { CategoriesContext } from '../../context/categoriesContext';
-import CategoryItem, { Category } from '../../components/Categories';
+import CategoryItem from '../../components/Categories';
 
 import globalStyles, { colorBackground } from '../../assets/styles/global';
 
@@ -26,10 +26,9 @@ interface Restaurant {
 }
 
 export default function LandingPage() {
-    const { handleCategories } = useContext(CategoriesContext);
+    const { categories, handleCategories } = useContext(CategoriesContext);
 
     const [restaurant, setRestaurant] = useState<Restaurant>();
-    const [categories, setCategories] = useState<Category[]>()
 
     useEffect(() => {
         api.get('restaurants')
@@ -39,7 +38,6 @@ export default function LandingPage() {
                 api.get('categories')
                     .then(res => {
                         handleCategories(res.data);
-                        setCategories(res.data);
                     })
                     .catch(err => {
                         console.log('error get categories');
@@ -50,6 +48,7 @@ export default function LandingPage() {
                 console.log('error get restaurants');
                 console.log(err);
             });
+
     }, []);
 
     return (

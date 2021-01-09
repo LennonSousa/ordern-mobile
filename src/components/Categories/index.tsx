@@ -18,6 +18,7 @@ interface CategoryProps {
 }
 
 export default function Categories({ category }: CategoryProps) {
+
     return (
         !category.paused ? <View style={styles.categoryItem}>
             <View>
@@ -26,9 +27,7 @@ export default function Categories({ category }: CategoryProps) {
             <View>
                 {
                     category.products.map((product, index) => {
-                        return (
-                            !product.paused && <ProductItem key={index} product={product} />
-                        )
+                        return <ProductItem key={index} product={product} />
                     })
                 }
             </View>
