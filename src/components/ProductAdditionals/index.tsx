@@ -60,7 +60,7 @@ export default function ProductAdditionals({ productAdditional, idCategory }: Pr
                             }
                         }
                         // If item don't exists on list
-                        else {
+                        else if (category.max !== 0) {
                             // If category got max additionals
                             if (category.selectedAdditionals.length + 1 <= category.max) {
                                 setIsEnabled(!isEnabled);
@@ -101,6 +101,20 @@ export default function ProductAdditionals({ productAdditional, idCategory }: Pr
                                 }
                             }
                         }
+                        else {
+                            return {
+                                ...category,
+                                selectedAdditionals: [
+                                    ...category.selectedAdditionals, {
+                                        id: productAdditional.id,
+                                        additional_id: productAdditional.additional.id, // Additional id to verify on page cart if paused
+                                        title: productAdditional.additional.title,
+                                        enabled: true,
+                                        price: productAdditional.price
+                                    }
+                                ]
+                            }
+                        }
                     }
 
                     return category;
@@ -108,7 +122,7 @@ export default function ProductAdditionals({ productAdditional, idCategory }: Pr
             }
         )
 
-        if (maxChoices === selectedAdditionals)
+        if (maxChoices !== 0 && maxChoices === selectedAdditionals)
             navigation.goBack();
     }
 

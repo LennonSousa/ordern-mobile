@@ -9,7 +9,6 @@ export default function verifyProductAvailable(product: Product) {
         return "paused";
 
     // Not paused!
-    console.log('Not paused!');
 
     if (product.available_all)
         return "available"; // Not paused and always available!
@@ -21,40 +20,24 @@ export default function verifyProductAvailable(product: Product) {
     if (!todayAvailable) // Not available today
         return "not-available";
 
-    console.log('Available today!');
-
-    // Not available today
-    if (todayAvailable.all_day) {
-        // Available through all today
-        console.log('Available through all today!');
-
+    // Available today
+    if (todayAvailable.all_day) // Available through all today
         return "available";
-    }
     else {
         const now = Date.now();
         const minutesNow = convertHourToMinutes(`${getHours(now)}:${getMinutes(now)}`);
 
         if (todayAvailable.shift_01) {
             if (minutesNow >= todayAvailable.shift_01_from
-                && minutesNow <= todayAvailable.shift_01_to) {
-                // Available today in first shift time
-                console.log('Available today in first shift time!');
-
+                && minutesNow <= todayAvailable.shift_01_to) // Available today in first shift time
                 return "available";
-            }
         }
 
         if (todayAvailable.shift_02) {
             if (minutesNow >= todayAvailable.shift_02_from
-                && minutesNow <= todayAvailable.shift_02_to) {
-                // Available today in second shift time
-                console.log('Available today in second shift time');
-
+                && minutesNow <= todayAvailable.shift_02_to) // Available today in second shift time
                 return "available";
-            }
         }
-
-        console.log('Not available in any shift');
 
         return "not-available";
     }

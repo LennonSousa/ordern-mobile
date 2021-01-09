@@ -17,7 +17,9 @@ import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingMo
 
 import api from '../../services/api';
 
-import { colorHighLight } from '../../assets/styles/global';
+import { colorHighLight, colorPrimaryLight, colorTextMenuDescription } from '../../assets/styles/global';
+import { OrderItem } from '../../components/OrderItems';
+import _ from 'lodash';
 
 interface ProductDetailsRouteParams {
     product: Product;
@@ -90,119 +92,207 @@ export default function ProductDetails() {
         if (product && selectedProduct) {
             setModalWaiting("waiting");
 
-            try {
-                const res = await api.get('categories');
+            let itemsToOrder: OrderItem = {
+                id: 0,
+                amount: selectedProduct.amount,
+                name: `${product.title} (${product.category.title})`,
+                value: selectedProduct.price,
+                additional: false,
+                additional_item: product.id,
+                additional_id: 0,
+                additionals: [{
+                    id: 0,
+                    amount: 1,
+                    name: "",
+                    value: 0,
+                    additional: true,
+                    additional_id: 0,
+                    additional_item: 0,
+                    additionals: []
+                }]
+            };
 
-                handleCategories(res.data);
-                const categories: Category[] = res.data;
+            itemsToOrder.additionals = [];
 
-                categories.forEach(category => {
-                    category.products.forEach(productItem => {
-                        if (productItem.id === product.id) {
-                            const verify = verifyProductAvailable(productItem);
+            selectedProduct.categoiesAdditional.forEach(category => {
+                category.selectedAdditionals.forEach(additional => {
+                    itemsToOrder.additionals.push({
+                        id: itemsToOrder.additionals.length,
+                        amount: 1,
+                        name: additional.title,
+                        value: additional.price,
+                        additional: true,
+                        additional_id: additional.additional_id,
+                        additional_item: product.id,
+                        additionals: []
+                    });
+                });
+            });
 
-                            if (verify === "paused") {
-                                setModalWaiting("error");
-                                setErrorMessage("Desculpe, mas esse produto acabou de ficar sem estoque.");
+            if (order) {
+                const orderItemsFound = order.orderItems.filter(item => { return item.additional_item === selectedProduct.id });
+                let identicFound = false;
 
-                                return;
-                            }
-                            else if (verify === "not-available") {
-                                setModalWaiting("error");
-                                setErrorMessage("Desculpe, mas esse produto não está mais disponível nesse horário.");
+                if (orderItemsFound.length > 0) {
+                    console.log('function findOne');
 
-                                return;
-                            }
+                    orderItemsFound.forEach((listItem: OrderItem) => { // Searching for each one.
+                        let searchItem: OrderItem = { ...itemsToOrder, id: listItem.id };
 
-                            let itemsToOrder = {
-                                id: 0,
-                                amount: selectedProduct.amount,
-                                name: product.title,
-                                value: selectedProduct.price,
-                                additional: false,
-                                additional_item: product.id,
-                                additional_id: 0,
-                                additionals: [{
-                                    id: 0,
-                                    amount: 1,
-                                    name: "",
-                                    value: 0,
-                                    additional: true,
-                                    additional_id: 0,
-                                    additional_item: 0,
-                                    additionals: []
-                                }]
-                            };
+                        if (itemsToOrder.additionals.length === 0 && listItem.additionals.length === 0) { // No addiciontals, means that are identicals.
+                            identicFound = true;
 
-                            itemsToOrder.additionals = [];
+                            console.log('Idêntico!');
 
-                            selectedProduct.categoiesAdditional.forEach(category => {
-                                category.selectedAdditionals.forEach(additional => {
-                                    itemsToOrder.additionals.push({
-                                        id: itemsToOrder.additionals.length,
-                                        amount: 1,
-                                        name: additional.title,
-                                        value: additional.price,
-                                        additional: true,
-                                        additional_id: additional.additional_id,
-                                        additional_item: product.id,
-                                        additionals: []
-                                    });
-                                });
-                            });
+                            handleTotalOrder(
+                                {
+                                    ...order, orderItems: order.orderItems.map((item, index) => {
+                                        if (index === listItem.id) {
+                                            return {
+                                                ...item, amount: item.amount + selectedProduct.amount
+                                            };
+                                        }
 
-                            if (order) {
-                                const newItemnsToOrder = [...order.orderItems, itemsToOrder];
-
-                                handleTotalOrder({
-                                    ...order, orderItems: newItemnsToOrder.map((item, index) => {
-
-                                        return { ...item, id: index };
+                                        return item;
                                     })
-                                });
-                            }
-                            else {
-                                handleTotalOrder({
-                                    id: 0,
-                                    tracker: '',
-                                    client_id: 0,
-                                    client: '',
-                                    ordered: new Date(),
-                                    delivery: new Date(),
-                                    delivered: new Date(),
-                                    sub_total: 0,
-                                    cupom: '',
-                                    delivery_tax: 0,
-                                    delivery_type: '',
-                                    discount: 0,
-                                    fee: 0,
-                                    total: 0,
-                                    payment: '',
-                                    paid: false,
-                                    address: '',
-                                    reason_cancellation: '',
-                                    orderStatus: {
-                                        id: 1,
-                                        title: '',
-                                        description: '',
-                                        order: 0,
-                                    },
-                                    orderItems: [itemsToOrder],
-                                });
-                            }
+                                }
+                            );
 
                             setTimeout(() => {
                                 setModalWaiting("hidden");
 
                                 navigation.navigate('Cart');
-                            }, 1500);
+                            }, 1000);
+                        }
+                        else if (itemsToOrder.additionals.length === listItem.additionals.length) { // Same additionals amount.
+                            let allAdditionalsIdentcials = true;
+
+                            itemsToOrder.additionals.forEach(additionalToOrder => {
+                                const itemFound = listItem.additionals.find(orderItemAdditionals => { return additionalToOrder.additional_id === orderItemAdditionals.additional_id });
+
+                                console.log('itemFound: ', itemFound);
+
+                                if (!itemFound)
+                                    allAdditionalsIdentcials = false;
+
+                                if (!allAdditionalsIdentcials)
+                                    return;
+                            });
+
+                            if (allAdditionalsIdentcials) {
+                                identicFound = true;
+
+                                console.log('Idêntico com adicionais!');
+
+                                handleTotalOrder(
+                                    {
+                                        ...order, orderItems: order.orderItems.map((item, index) => {
+                                            if (index === listItem.id) {
+                                                return {
+                                                    ...item, amount: item.amount + selectedProduct.amount
+                                                };
+                                            }
+
+                                            return item;
+                                        })
+                                    }
+                                );
+
+                                setTimeout(() => {
+                                    setModalWaiting("hidden");
+
+                                    navigation.navigate('Cart');
+                                }, 1000);
+                            }
                         }
                     });
-                });
+                }
+
+                if (!identicFound) {
+                    // Not identic product on cart, create a new.
+                    try {
+                        const res = await api.get('categories');
+
+                        handleCategories(res.data);
+                        const categories: Category[] = res.data;
+
+                        categories.forEach(category => {
+                            category.products.forEach(productItem => {
+                                if (productItem.id === product.id) {
+                                    const verify = verifyProductAvailable(productItem);
+
+                                    if (verify === "paused") {
+                                        setModalWaiting("error");
+                                        setErrorMessage("Desculpe, mas esse produto acabou de ficar sem estoque.");
+
+                                        return;
+                                    }
+                                    else if (verify === "not-available") {
+                                        setModalWaiting("error");
+                                        setErrorMessage("Desculpe, mas esse produto não está mais disponível nesse horário.");
+
+                                        return;
+                                    }
+
+                                    const newItemnsToOrder = [...order.orderItems, itemsToOrder];
+
+                                    handleTotalOrder({
+                                        ...order, orderItems: newItemnsToOrder.map((item, index) => {
+
+                                            return { ...item, id: index };
+                                        })
+                                    });
+
+                                    setTimeout(() => {
+                                        setModalWaiting("hidden");
+
+                                        navigation.navigate('Cart');
+                                    }, 1000);
+                                }
+                            });
+                        });
+                    }
+                    catch {
+                        setModalWaiting("error");
+                        setErrorMessage("Por favor, verifique a sua conexão com a internet.");
+                    }
+                }
             }
-            catch {
-                setModalWaiting("error");
-                setErrorMessage("Por favor, verifique a sua conexão com a internet.");
+            else {
+                // Empity cart, create a new product on cart.
+                handleTotalOrder({
+                    id: 0,
+                    tracker: '',
+                    client_id: 0,
+                    client: '',
+                    ordered: new Date(),
+                    delivery: new Date(),
+                    delivered: new Date(),
+                    sub_total: 0,
+                    cupom: '',
+                    delivery_tax: 0,
+                    delivery_type: '',
+                    discount: 0,
+                    fee: 0,
+                    total: 0,
+                    payment: '',
+                    paid: false,
+                    address: '',
+                    reason_cancellation: '',
+                    orderStatus: {
+                        id: 1,
+                        title: '',
+                        description: '',
+                        order: 0,
+                    },
+                    orderItems: [itemsToOrder],
+                });
+
+                setTimeout(() => {
+                    setModalWaiting("hidden");
+
+                    navigation.navigate('Cart');
+                }, 1000);
             }
         }
     }
@@ -259,11 +349,13 @@ export default function ProductDetails() {
                                         </TouchableHighlight>
                                     </View>
 
-                                    {
-                                        categoryAdditional.min > 0 && <View style={styles.rowObrigatory}>
-                                            <Text style={styles.obrigatoryTitle}>Obrigatório</Text>
-                                        </View>
-                                    }
+                                    <View style={styles.rowObrigatory}>
+                                        <Text
+                                            style={[styles.obrigatoryTitle, { backgroundColor: categoryAdditional.min > 0 ? colorPrimaryLight : colorTextMenuDescription }]}
+                                        >
+                                            {categoryAdditional.min > 0 ? "Obrigatório." : "Opcional."}
+                                        </Text>
+                                    </View>
 
                                     <View style={styles.rowTitleSelectedAdditionals} >
                                         {
@@ -458,7 +550,6 @@ const styles = StyleSheet.create({
         fontFamily: 'Nunito_300Light_Italic',
         fontSize: 13,
         color: '#fff',
-        backgroundColor: '#8c8c8c',
         borderRadius: 5,
         textAlign: 'center'
     },

@@ -120,7 +120,7 @@ export default function Cart() {
 
                     <View style={globalStyles.row}>
                         <View style={globalStyles.column}>
-                            <Text style={globalStyles.textsMenu}>{`Taxa de engreta: R$ ${Number(order.delivery_tax).toFixed(2).replace('.', ',')}`}</Text>
+                            <Text style={globalStyles.textsMenu}>{`Taxa de entrega: R$ ${Number(order.delivery_tax).toFixed(2).replace('.', ',')}`}</Text>
                         </View>
                     </View>
 

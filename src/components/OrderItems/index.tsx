@@ -70,11 +70,6 @@ export default function OrderItems({ orderItem }: OrderItemProps) {
             else {
                 const newItemnsToOrder = order.orderItems.filter(item => { return item.id !== orderItem.id; });
 
-                console.log('newItemnsToOrder: ', newItemnsToOrder.map((item, index) => {
-
-                    return { ...item, id: index };
-                }));
-
                 handleTotalOrder(
                     {
                         ...order, orderItems: newItemnsToOrder.map((item, index) => {
