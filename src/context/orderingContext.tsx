@@ -26,7 +26,7 @@ const OrderingProvider: React.FC = ({ children }) => {
 
             let totalAdditionals = 0;
 
-            item.additionals.forEach(additional => {
+            item.orderItemAdditionals.forEach(additional => {
                 totalAdditionals = Number(totalAdditionals) + Number(additional.value);
             });
 

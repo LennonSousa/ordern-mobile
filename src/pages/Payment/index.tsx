@@ -66,24 +66,17 @@ export default function Payment() {
 
                         let itemsToOrder = order.orderItems.map(item => {
                             return {
-                                "amount": item.amount,
-                                "name": item.name,
-                                "value": item.value,
-                                "additional": item.additional,
-                                "additional_item": item.additional_item
+                                amount: item.amount,
+                                name: item.name,
+                                value: item.value,
+                                orderItemAdditionals: item.orderItemAdditionals.map(additional => {
+                                    return {
+                                        amount: additional.amount,
+                                        name: additional.name,
+                                        value: additional.value,
+                                    }
+                                })
                             };
-                        });
-
-                        order.orderItems.forEach(item => {
-                            item.additionals.forEach(additional => {
-                                itemsToOrder.push({
-                                    "amount": additional.amount,
-                                    "name": additional.name,
-                                    "value": additional.value,
-                                    "additional": additional.additional,
-                                    "additional_item": additional.additional_item
-                                });
-                            })
                         });
 
                         const res = await api.post('orders', {

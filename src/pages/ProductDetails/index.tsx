@@ -97,49 +97,38 @@ export default function ProductDetails() {
                 amount: selectedProduct.amount,
                 name: `${product.title} (${product.category.title})`,
                 value: selectedProduct.price,
-                additional: false,
-                additional_item: product.id,
-                additional_id: 0,
-                additionals: [{
+                product_id: product.id,
+                orderItemAdditionals: [{
                     id: 0,
                     amount: 1,
                     name: "",
                     value: 0,
-                    additional: true,
                     additional_id: 0,
-                    additional_item: 0,
-                    additionals: []
                 }]
             };
 
-            itemsToOrder.additionals = [];
+            itemsToOrder.orderItemAdditionals = [];
 
             selectedProduct.categoiesAdditional.forEach(category => {
                 category.selectedAdditionals.forEach(additional => {
-                    itemsToOrder.additionals.push({
-                        id: itemsToOrder.additionals.length,
+                    itemsToOrder.orderItemAdditionals.push({
+                        id: itemsToOrder.orderItemAdditionals.length,
                         amount: 1,
                         name: additional.title,
                         value: additional.price,
-                        additional: true,
-                        additional_id: additional.additional_id,
-                        additional_item: product.id,
-                        additionals: []
+                        additional_id: additional.additional_id
                     });
                 });
             });
 
             if (order) {
-                const orderItemsFound = order.orderItems.filter(item => { return item.additional_item === selectedProduct.id });
                 let identicFound = false;
 
-                if (orderItemsFound.length > 0) {
+                if (order.orderItems.length > 0) {
                     console.log('function findOne');
 
-                    orderItemsFound.forEach((listItem: OrderItem) => { // Searching for each one.
-                        let searchItem: OrderItem = { ...itemsToOrder, id: listItem.id };
-
-                        if (itemsToOrder.additionals.length === 0 && listItem.additionals.length === 0) { // No addiciontals, means that are identicals.
+                    order.orderItems.forEach((listItem: OrderItem) => { // Searching for each one.
+                        if (itemsToOrder.orderItemAdditionals.length === 0 && listItem.orderItemAdditionals.length === 0) { // No addiciontals, means that are identicals.
                             identicFound = true;
 
                             console.log('Idêntico!');
@@ -164,11 +153,13 @@ export default function ProductDetails() {
                                 navigation.navigate('Cart');
                             }, 1000);
                         }
-                        else if (itemsToOrder.additionals.length === listItem.additionals.length) { // Same additionals amount.
+                        else if (itemsToOrder.orderItemAdditionals.length === listItem.orderItemAdditionals.length) { // Same additionals amount.
                             let allAdditionalsIdentcials = true;
 
-                            itemsToOrder.additionals.forEach(additionalToOrder => {
-                                const itemFound = listItem.additionals.find(orderItemAdditionals => { return additionalToOrder.additional_id === orderItemAdditionals.additional_id });
+                            itemsToOrder.orderItemAdditionals.forEach(additionalToOrder => {
+                                const itemFound = listItem.orderItemAdditionals.find(orderItemAdditionals => {
+                                    return additionalToOrder.additional_id === orderItemAdditionals.additional_id
+                                });
 
                                 console.log('itemFound: ', itemFound);
 

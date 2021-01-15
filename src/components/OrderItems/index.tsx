@@ -4,6 +4,7 @@ import { BorderlessButton } from 'react-native-gesture-handler';
 import { Feather } from '@expo/vector-icons';
 
 import { ContextOrdering } from '../../context/orderingContext';
+import ItemAdditional, { OrderItemAdditional } from '../OrderItemAdditionals';
 
 import globalStyles, { colorPrimaryLight, colorPrimaryDark } from '../../assets/styles/global';
 
@@ -12,10 +13,8 @@ export interface OrderItem {
     amount: number;
     name: string;
     value: number;
-    additional: boolean;
-    additional_id: number;
-    additional_item: number;
-    additionals: OrderItem[];
+    product_id: number;
+    orderItemAdditionals: OrderItemAdditional[];
 }
 
 interface OrderItemProps {
@@ -31,7 +30,7 @@ export default function OrderItems({ orderItem }: OrderItemProps) {
 
     let totalAdditionals = 0;
 
-    orderItem.additionals && orderItem.additionals.forEach(additional => {
+    orderItem.orderItemAdditionals && orderItem.orderItemAdditionals.forEach(additional => {
         totalAdditionals = Number(totalAdditionals) + Number(additional.value);
     });
 
@@ -104,20 +103,8 @@ export default function OrderItems({ orderItem }: OrderItemProps) {
 
                     <View style={styles.additionalContainer}>
                         {
-                            orderItem.additionals && orderItem.additionals.map(additional => {
-                                return <View key={additional.id} style={styles.additionalRow}>
-                                    <View style={styles.additionalColumnAmount}>
-                                        <Text style={styles.additionalTextAmount}>{Number(additional.amount).toFixed(0)}</Text>
-                                    </View>
-
-                                    <View style={styles.additionalColumnName}>
-                                        <Text style={styles.additionalTexts}>{additional.name}</Text>
-                                    </View>
-
-                                    <View style={styles.additionalColumnValue}>
-                                        <Text style={styles.additionalTexts}>{`R$ ${Number(additional.value).toFixed(2).replace('.', ',')}`}</Text>
-                                    </View>
-                                </View>
+                            orderItem.orderItemAdditionals && orderItem.orderItemAdditionals.map((additional, index) => {
+                                return <ItemAdditional key={index} orderItemAdditional={additional} />
                             })
                         }
                     </View>

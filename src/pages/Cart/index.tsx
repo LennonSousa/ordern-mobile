@@ -55,7 +55,7 @@ export default function Cart() {
 
                 categories.forEach(category => {
                     category.products.forEach(product => {
-                        const productFound = order.orderItems.find(orderItem => { return orderItem.additional_item === product.id });
+                        const productFound = order.orderItems.find(orderItem => { return orderItem.product_id === product.id });
 
                         if (productFound) {
                             const verify = VerifyProductAvailable(product);

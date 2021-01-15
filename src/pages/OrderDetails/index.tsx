@@ -39,23 +39,8 @@ export default function OrderDetails() {
     useEffect(() => {
         if (params.id) {
             api.get(`orders/${params.id}`).then(res => {
-                let order: Order = res.data;
 
-                let orderItems: OrderItem[] = order.orderItems.filter(item => {
-                    return !item.additional;
-                });
-
-                order = {
-                    ...order, orderItems: orderItems.map(orderItem => {
-                        return {
-                            ...orderItem, additionals: order.orderItems.filter(item => {
-                                return item.additional && item.additional_item === orderItem.additional_item
-                            })
-                        }
-                    })
-                }
-
-                setSelectedOrder(order);
+                setSelectedOrder(res.data);
             })
                 .catch(() => {
 

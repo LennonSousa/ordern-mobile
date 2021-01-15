@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { View, Text, Switch, StyleSheet } from 'react-native';
-import { ContextSelectedProduct } from '../../context/selectedProductContext';
+import { SelectedProductContext } from '../../context/selectedProductContext';
 
 export interface ProductValue {
     id: number;
@@ -15,7 +15,7 @@ interface ProductValueProps {
 }
 
 export default function ProductValues({ productValue }: ProductValueProps) {
-    const { selectedProduct, handleSelectedProduct } = useContext(ContextSelectedProduct);
+    const { selectedProduct, handleSelectedProduct } = useContext(SelectedProductContext);
 
     const [isEnabled, setIsEnabled] = useState(false);
 
