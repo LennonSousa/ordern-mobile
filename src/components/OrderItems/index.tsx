@@ -31,7 +31,7 @@ export default function OrderItems({ orderItem }: OrderItemProps) {
     let totalAdditionals = 0;
 
     orderItem.orderItemAdditionals && orderItem.orderItemAdditionals.forEach(additional => {
-        totalAdditionals = Number(totalAdditionals) + Number(additional.value);
+        totalAdditionals = Number(totalAdditionals) + (Number(additional.value) * Number(additional.amount));
     });
 
     const amountProduct = orderItem.amount;

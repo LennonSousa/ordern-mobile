@@ -7,7 +7,7 @@ interface SelectedAdditionals {
     additional_id: number;
     title: string;
     price: number;
-    enabled: boolean;
+    amount: number;
 }
 
 interface CategoriesAdditional {
@@ -45,7 +45,7 @@ const SelectedProductProvider: React.FC = ({ children }) => {
 
         product.categoiesAdditional.forEach(category => {
             category.selectedAdditionals.forEach(additional => {
-                totalAdditionals = Number(totalAdditionals) + Number(additional.price);
+                totalAdditionals = Number(totalAdditionals) + (Number(additional.price) * Number(additional.amount));
             })
         });
 

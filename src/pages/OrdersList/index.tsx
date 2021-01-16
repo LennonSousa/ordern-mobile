@@ -39,6 +39,11 @@ export default function OrdersList() {
         }
     }, [navigation]);
 
+    const onRefresh = React.useCallback(() => {
+        setRefreshing(true);
+        setOrdersList(undefined);
+    }, []);
+
     useEffect(() => {
         if (customer && refreshing) {
             api.get(`customer/orders/${customer.id}`).then(res => {
@@ -51,11 +56,6 @@ export default function OrdersList() {
             setRefreshing(false);
         }
     }, [refreshing]);
-
-    const onRefresh = React.useCallback(() => {
-        setRefreshing(true);
-        setOrdersList(undefined);
-    }, []);
 
     return (
         <>

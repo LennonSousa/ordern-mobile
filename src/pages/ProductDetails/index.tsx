@@ -92,10 +92,12 @@ export default function ProductDetails() {
         if (product && selectedProduct) {
             setModalWaiting("waiting");
 
+            const selectedValue = selectedProduct.values.find(item => { return item.id === selectedProduct.selectedValue });
+
             let itemsToOrder: OrderItem = {
                 id: 0,
                 amount: selectedProduct.amount,
-                name: `${product.title} (${product.category.title})`,
+                name: `${product.title} - ${!product.price_one && selectedValue ? selectedValue.description : ''} (${product.category.title})`,
                 value: selectedProduct.price,
                 product_id: product.id,
                 orderItemAdditionals: [{
@@ -113,7 +115,7 @@ export default function ProductDetails() {
                 category.selectedAdditionals.forEach(additional => {
                     itemsToOrder.orderItemAdditionals.push({
                         id: itemsToOrder.orderItemAdditionals.length,
-                        amount: 1,
+                        amount: additional.amount,
                         name: additional.title,
                         value: additional.price,
                         additional_id: additional.additional_id
@@ -128,52 +130,17 @@ export default function ProductDetails() {
                     console.log('function findOne');
 
                     order.orderItems.forEach((listItem: OrderItem) => { // Searching for each one.
-                        if (itemsToOrder.orderItemAdditionals.length === 0 && listItem.orderItemAdditionals.length === 0) { // No addiciontals, means that are identicals.
-                            identicFound = true;
+                        if (itemsToOrder.product_id === listItem.product_id) {
+                            if (!selectedProduct.price_one) {
 
-                            console.log('Idêntico!');
-
-                            handleTotalOrder(
-                                {
-                                    ...order, orderItems: order.orderItems.map((item, index) => {
-                                        if (index === listItem.id) {
-                                            return {
-                                                ...item, amount: item.amount + selectedProduct.amount
-                                            };
-                                        }
-
-                                        return item;
-                                    })
-                                }
-                            );
-
-                            setTimeout(() => {
-                                setModalWaiting("hidden");
-
-                                navigation.navigate('Cart');
-                            }, 1000);
-                        }
-                        else if (itemsToOrder.orderItemAdditionals.length === listItem.orderItemAdditionals.length) { // Same additionals amount.
-                            let allAdditionalsIdentcials = true;
-
-                            itemsToOrder.orderItemAdditionals.forEach(additionalToOrder => {
-                                const itemFound = listItem.orderItemAdditionals.find(orderItemAdditionals => {
-                                    return additionalToOrder.additional_id === orderItemAdditionals.additional_id
-                                });
-
-                                console.log('itemFound: ', itemFound);
-
-                                if (!itemFound)
-                                    allAdditionalsIdentcials = false;
-
-                                if (!allAdditionalsIdentcials)
+                                if (listItem.name !== itemsToOrder.name)
                                     return;
-                            });
+                            }
 
-                            if (allAdditionalsIdentcials) {
+                            if (itemsToOrder.orderItemAdditionals.length === 0 && listItem.orderItemAdditionals.length === 0) { // No addiciontals, means that are identicals.
                                 identicFound = true;
 
-                                console.log('Idêntico com adicionais!');
+                                console.log('Idêntico!');
 
                                 handleTotalOrder(
                                     {
@@ -194,6 +161,49 @@ export default function ProductDetails() {
 
                                     navigation.navigate('Cart');
                                 }, 1000);
+                            }
+                            else if (itemsToOrder.orderItemAdditionals.length === listItem.orderItemAdditionals.length) { // Same additionals amount.
+                                let allAdditionalsIdentcials = true;
+
+                                itemsToOrder.orderItemAdditionals.forEach(additionalToOrder => {
+                                    const itemFound = listItem.orderItemAdditionals.find(orderItemAdditionals => {
+                                        return additionalToOrder.additional_id === orderItemAdditionals.additional_id
+                                    });
+
+                                    console.log('itemFound: ', itemFound);
+
+                                    if (!itemFound)
+                                        allAdditionalsIdentcials = false;
+
+                                    if (!allAdditionalsIdentcials)
+                                        return;
+                                });
+
+                                if (allAdditionalsIdentcials) {
+                                    identicFound = true;
+
+                                    console.log('Idêntico com adicionais!');
+
+                                    handleTotalOrder(
+                                        {
+                                            ...order, orderItems: order.orderItems.map((item, index) => {
+                                                if (index === listItem.id) {
+                                                    return {
+                                                        ...item, amount: item.amount + selectedProduct.amount
+                                                    };
+                                                }
+
+                                                return item;
+                                            })
+                                        }
+                                    );
+
+                                    setTimeout(() => {
+                                        setModalWaiting("hidden");
+
+                                        navigation.navigate('Cart');
+                                    }, 1000);
+                                }
                             }
                         }
                     });
@@ -357,7 +367,10 @@ export default function ProductDetails() {
                                                     });
 
                                                     return additionals && additionals.map(item => {
-                                                        return <Text key={item.id} style={styles.selectedAdditionals}>{item.title}</Text>
+                                                        return <View key={item.id} style={{ flexDirection: 'row', marginVertical: 2 }}>
+                                                            <Text style={styles.selectedAdditionalsAmount}>{item.amount}</Text>
+                                                            <Text style={styles.selectedAdditionals}>{item.title}</Text>
+                                                        </View>
                                                     });
                                                 }
                                             })
@@ -547,6 +560,16 @@ const styles = StyleSheet.create({
 
     rowTitleSelectedAdditionals: {
         paddingHorizontal: 20
+    },
+
+    selectedAdditionalsAmount: {
+        fontFamily: 'Nunito_300Light_Italic',
+        fontSize: 13,
+        color: '#ffffff',
+        backgroundColor: '#cc0000',
+        borderRadius: 5,
+        paddingHorizontal: 5,
+        marginRight: 5,
     },
 
     selectedAdditionals: {

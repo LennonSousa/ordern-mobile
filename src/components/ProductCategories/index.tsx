@@ -9,6 +9,7 @@ export interface ProductCategory {
     title: string;
     min: number;
     max: number;
+    repeat: boolean;
     order: number;
     productAdditional: ProductAdditional[];
     product: number;
@@ -21,13 +22,13 @@ interface ProductDetailsRouteParams {
 export default function ProductCategories() {
     const route = useRoute();
 
-    const [productCategoryAdditionals, setProductCategoryAdditionals] = useState<ProductCategory>();
+    const [productCategory, setProductCategory] = useState<ProductCategory>();
 
     const params = route.params as ProductDetailsRouteParams;
 
     useEffect(() => {
         if (params.productCategory) {
-            setProductCategoryAdditionals(params.productCategory);
+            setProductCategory(params.productCategory);
         }
     }, [params.productCategory]);
 
@@ -35,13 +36,13 @@ export default function ProductCategories() {
         <View style={styles.container}>
             <View>
                 {/* Title*/}
-                <Text style={styles.title}>{productCategoryAdditionals?.title}</Text>
+                <Text style={styles.title}>{productCategory?.title}</Text>
 
                 {/* Prices*/}
                 <Text style={styles.minText}>
                     {
-                        productCategoryAdditionals && productCategoryAdditionals.min > 0 ?
-                            `Mínimo ${productCategoryAdditionals.min} ${productCategoryAdditionals.min === 1 ? 'opção.' : 'opções.'}` :
+                        productCategory && productCategory.min > 0 ?
+                            `Mínimo ${productCategory.min} ${productCategory.min === 1 ? 'opção.' : 'opções.'}` :
                             "Opcional."
 
                     }
@@ -50,8 +51,8 @@ export default function ProductCategories() {
                 {/* Obrigatory*/}
                 <Text style={styles.maxText}>
                     {
-                        productCategoryAdditionals && productCategoryAdditionals.max > 0 ?
-                            `Escolha até ${productCategoryAdditionals.max} ${productCategoryAdditionals.max === 1 ? 'opção.' : 'opções.'}` :
+                        productCategory && productCategory.max > 0 ?
+                            `Escolha até ${productCategory.max} ${productCategory.max === 1 ? 'opção.' : 'opções.'}` :
                             "Escolha quantos quiser."
 
                     }
@@ -60,11 +61,10 @@ export default function ProductCategories() {
                 {/* Additionals*/}
                 <View>
                     {
-                        productCategoryAdditionals?.productAdditional.map(additional => {
+                        productCategory && productCategory.productAdditional.map(additional => {
                             return !additional.additional.paused && <ProductAdditionalItem
                                 key={additional.id}
-                                productAdditional={additional}
-                                idCategory={productCategoryAdditionals.id} />
+                                productAdditional={additional} />
                         })
                     }
                 </View>
