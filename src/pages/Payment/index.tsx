@@ -24,8 +24,14 @@ interface Card {
     [key: string]: string;
 }
 
+let paymentType: "money" | "credit" | "debit" | "on-line";
+
 const validatiionSchema = Yup.object().shape({
     cvc: Yup.number().required('Obrigatório!'),
+});
+
+const changeValidatiionSchema = Yup.object().shape({
+    changeValue: Yup.number().positive('Digite um valor.').notRequired(),
 });
 
 export default function Payment() {
@@ -34,10 +40,12 @@ export default function Payment() {
     const { order, handleClearOrder } = useContext(ContextOrdering);
 
     const [selectedCard, setSelectedCard] = useState<CustomerPayment>();
-    const [selectedPaymentType, setSelectedPaymentType] = useState('money');
+    const [selectedPaymentType, setSelectedPaymentType] = useState<typeof paymentType>('money');
 
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
     const [errorMessage, setErrorMessage] = useState('');
+
+    const [changeAskModalWaiting, setChangeAskModalWaiting] = useState(false);
 
     async function requestPayment(card: Card) {
         if (customer && order) {
@@ -80,25 +88,25 @@ export default function Payment() {
                         });
 
                         const res = await api.post('orders', {
-                            "tracker": order.tracker,
-                            "client_id": customer.id,
-                            "client": customer.name,
-                            "ordered": new Date(),
-                            "delivery": new Date(),
-                            "delivered": new Date(),
-                            "sub_total": order.sub_total,
-                            "cupom": order.cupom,
-                            "delivery_tax": order.delivery_tax,
-                            "delivery_type": order.delivery_type,
-                            "discount": order.discount,
-                            "fee": order.fee,
-                            "total": order.total,
-                            "payment": `****${selectedCard?.card_number.slice(selectedCard.card_number.length - 4)} - ${selectedCard?.brand}`,
-                            "paid": true,
-                            "address": order.address,
-                            "reason_cancellation": "",
-                            "orderStatus": 1,
-                            "orderItems": itemsToOrder
+                            tracker: order.tracker,
+                            client_id: customer.id,
+                            client: customer.name,
+                            ordered: new Date(),
+                            delivery: new Date(),
+                            delivered: new Date(),
+                            sub_total: order.sub_total,
+                            cupom: order.cupom,
+                            delivery_tax: order.delivery_tax,
+                            delivery_type: order.delivery_type,
+                            discount: order.discount,
+                            fee: order.fee,
+                            total: order.total,
+                            payment: `****${selectedCard?.card_number.slice(selectedCard.card_number.length - 4)} - ${selectedCard?.brand}`,
+                            paid: true,
+                            address: order.address,
+                            reason_cancellation: "",
+                            orderStatus: 1,
+                            orderItems: itemsToOrder
                         });
 
                         setTimeout(() => {
@@ -262,7 +270,7 @@ export default function Payment() {
                                 <View style={globalStyles.column}>
                                     <View style={globalStyles.menuRow}>
                                         <View style={globalStyles.colTitleButtonItem}>
-                                            <BorderlessButton onPress={() => { setSelectedCard(payment) }}>
+                                            <BorderlessButton onPress={() => { setSelectedCard(payment); setSelectedPaymentType("on-line"); }}>
                                                 <View style={{ flexDirection: 'row' }}>
                                                     <View style={globalStyles.colTitleButtonItem}>
                                                         <Text style={{ color: '#8c8c8c' }}>{`****${payment.card_number.slice(payment.card_number.length - 4)} - ${payment.brand}`}</Text>
@@ -299,7 +307,7 @@ export default function Payment() {
                         }
                     }
                     onSubmit={async values => {
-                        if (selectedCard) {
+                        if (selectedCard && selectedPaymentType === "on-line") {
                             requestPayment({
                                 'card[number]': selectedCard.card_number,
                                 'card[exp_month]': selectedCard.exp_month.substring(0, 2),
@@ -317,9 +325,18 @@ export default function Payment() {
                             <View style={{
                                 flexDirection: 'row',
                                 alignItems: 'center',
-                                height: 70,
+                                height: 100,
                                 backgroundColor: colorBackground,
-                                paddingHorizontal: 15
+                                paddingHorizontal: 15,
+                                paddingBottom: 15,
+                                shadowColor: "#000000",
+                                shadowOffset: {
+                                    width: 5,
+                                    height: 0
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 10
                             }}>
                                 <View style={{ flex: 0.5 }}>
                                     <Input
@@ -352,20 +369,225 @@ export default function Payment() {
                         </>
                     )}
                 </Formik> :
-                    <PageFooter>
-                        <View style={{ flex: 0.5 }} >
-                            <Text style={[globalStyles.textsMenu, { textAlign: 'center' }]}>{`Total: R$ ${order?.total.toFixed(2).replace('.', ',')}`}</Text>
-                        </View>
+                    <Formik
+                        initialValues={{
+                            change: false,
+                            changeValue: '',
+                        }}
+                        onSubmit={async values => {
+                            setChangeAskModalWaiting(false);
+                            setModalWaiting("waiting");
+                            try {
+                                if (order && customer) {
+                                    let paymentText = '';
 
-                        <View style={{ flex: 0.5 }} >
-                            <TouchableHighlight
-                                underlayColor={colorPrimaryDark}
-                                style={globalStyles.footerButton}
-                            >
-                                <Text style={globalStyles.footerButtonText}>Fazer o pedido</Text>
-                            </TouchableHighlight>
-                        </View>
-                    </PageFooter>
+                                    if (selectedPaymentType === "credit") {
+                                        paymentText = "Crédito na entrega.";
+                                    }
+                                    else if (selectedPaymentType === "debit") {
+                                        paymentText = "Débito na entrega."
+                                    }
+                                    else if (selectedPaymentType === "money") {
+                                        paymentText = `Dinheiro ${values.change ? `(Troco para R$ ${values.changeValue})` : ''}`
+                                    }
+
+                                    let itemsToOrder = order.orderItems.map(item => {
+                                        return {
+                                            amount: item.amount,
+                                            name: item.name,
+                                            value: item.value,
+                                            orderItemAdditionals: item.orderItemAdditionals.map(additional => {
+                                                return {
+                                                    amount: additional.amount,
+                                                    name: additional.name,
+                                                    value: additional.value,
+                                                }
+                                            })
+                                        };
+                                    });
+
+                                    const res = await api.post('orders', {
+                                        tracker: order.tracker,
+                                        client_id: customer.id,
+                                        client: customer.name,
+                                        ordered: new Date(),
+                                        delivery: new Date(),
+                                        delivered: new Date(),
+                                        sub_total: order.sub_total,
+                                        cupom: order.cupom,
+                                        delivery_tax: order.delivery_tax,
+                                        delivery_type: order.delivery_type,
+                                        discount: order.discount,
+                                        fee: order.fee,
+                                        total: order.total,
+                                        payment: paymentText,
+                                        paid: false,
+                                        address: order.address,
+                                        reason_cancellation: "",
+                                        orderStatus: 1,
+                                        orderItems: itemsToOrder
+                                    });
+
+                                    setModalWaiting("success");
+
+                                    setTimeout(() => {
+                                        setModalWaiting("hidden");
+                                        handleClearOrder();
+
+                                        navigation.navigate('OrderDetails', { id: res.data.id });
+                                    }, 1500);
+                                }
+                            }
+                            catch {
+                                setModalWaiting("error");
+
+                                setErrorMessage('Erro na transação. Tente novamente mais tarde.');
+
+                                console.log('Order failed');
+                            }
+                        }}
+                        validationSchema={changeValidatiionSchema}
+                    >
+                        {({ handleChange, handleBlur, handleSubmit, values, setFieldValue, errors }) => (
+                            <>
+                                <Modal
+                                    animationType="slide"
+                                    transparent={true}
+                                    visible={changeAskModalWaiting}
+                                >
+                                    <View style={{
+                                        flex: 1,
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                    }}>
+                                        <View style={styles.modalView}>
+                                            <View style={{ marginVertical: 5 }}>
+                                                <FontAwesome5 name="money-bill-alt" size={48} color="#fe3807" />
+                                            </View>
+
+                                            <View>
+                                                <View style={{ marginVertical: 5 }}>
+                                                    <Text style={[globalStyles.subTitlePrimary, { textAlign: 'center' }]}>Precisa de troco?</Text>
+                                                </View>
+
+                                                {
+                                                    values.change && <View style={{ flexDirection: 'row', marginTop: 5, width: '100%' }}>
+                                                        <View style={{ flex: 1 }}>
+                                                            <Input
+                                                                style={styles.fieldsLogIn}
+                                                                title='Valor'
+                                                                keyboardType='numeric'
+                                                                onChangeText={handleChange('changeValue')}
+                                                                onBlur={handleBlur('changeValue')}
+                                                                value={values.changeValue}
+                                                            />
+                                                            <InvalidFeedback message={errors.changeValue}></InvalidFeedback>
+                                                        </View>
+                                                    </View>
+                                                }
+
+                                                <View style={{ flexDirection: 'row', marginTop: 5, width: '100%' }}>
+                                                    {
+                                                        values.change ? <>
+                                                            <View style={{ flex: 0.5, marginHorizontal: 2 }}>
+                                                                <TouchableHighlight
+                                                                    underlayColor={colorPrimaryDark}
+                                                                    style={globalStyles.footerButton}
+                                                                    onPress={() => {
+                                                                        setFieldValue('change', false)
+                                                                    }}
+                                                                >
+                                                                    <Text style={globalStyles.footerButtonText}>Voltar</Text>
+                                                                </TouchableHighlight>
+                                                            </View>
+                                                            <View style={{ flex: 0.5, marginHorizontal: 2 }}>
+                                                                <TouchableHighlight
+                                                                    underlayColor={colorPrimaryDark}
+                                                                    style={globalStyles.footerButton}
+                                                                    onPress={() => {
+                                                                        setFieldValue('change', true);
+                                                                        handleSubmit() as any;
+                                                                    }}
+                                                                >
+                                                                    <Text style={globalStyles.footerButtonText}>Fazer o pedido</Text>
+                                                                </TouchableHighlight>
+                                                            </View>
+                                                        </> : <>
+                                                                <View style={{ flex: 0.5, marginHorizontal: 2 }}>
+                                                                    <TouchableHighlight
+                                                                        underlayColor={colorPrimaryDark}
+                                                                        style={globalStyles.footerButton}
+                                                                        onPress={() => {
+                                                                            setFieldValue('change', false);
+                                                                            handleSubmit() as any;
+                                                                        }}
+                                                                    >
+                                                                        <Text style={globalStyles.footerButtonText}>Não</Text>
+                                                                    </TouchableHighlight>
+                                                                </View>
+                                                                <View style={{ flex: 0.5, marginHorizontal: 2 }}>
+                                                                    <TouchableHighlight
+                                                                        underlayColor={colorPrimaryDark}
+                                                                        style={globalStyles.footerButton}
+                                                                        onPress={() => {
+                                                                            setFieldValue('change', true);
+                                                                        }}
+                                                                    >
+                                                                        <Text style={globalStyles.footerButtonText}>Sim</Text>
+                                                                    </TouchableHighlight>
+                                                                </View>
+                                                            </>
+                                                    }
+                                                </View>
+
+                                                <View style={{ flexDirection: 'row', width: '100%' }}>
+                                                    <View style={{ flex: 1 }}>
+                                                        <TouchableHighlight
+                                                            underlayColor={colorPrimaryDark}
+                                                            style={globalStyles.footerButton}
+                                                            onPress={() => {
+                                                                setChangeAskModalWaiting(false);
+                                                            }}
+                                                        >
+                                                            <Text style={globalStyles.footerButtonText}>Cancelar</Text>
+                                                        </TouchableHighlight>
+                                                    </View>
+                                                </View>
+                                            </View>
+                                        </View>
+                                    </View>
+                                </Modal>
+
+                                <PageFooter>
+                                    <View style={{ flex: 0.5 }} >
+                                        <Text style={[globalStyles.textsMenu, { textAlign: 'center' }]}>{`Total: R$ ${order?.total.toFixed(2).replace('.', ',')}`}</Text>
+                                    </View>
+
+                                    {
+                                        selectedPaymentType === "money" ? <View style={{ flex: 0.5 }} >
+                                            <TouchableHighlight
+                                                underlayColor={colorPrimaryDark}
+                                                style={globalStyles.footerButton}
+                                                onPress={() => setChangeAskModalWaiting(true)}
+                                            >
+                                                <Text style={globalStyles.footerButtonText}>Fazer o pedido</Text>
+                                            </TouchableHighlight>
+                                        </View> :
+                                            <View style={{ flex: 0.5 }} >
+                                                <TouchableHighlight
+                                                    underlayColor={colorPrimaryDark}
+                                                    style={globalStyles.footerButton}
+                                                    onPress={handleSubmit as any}
+                                                >
+                                                    <Text style={globalStyles.footerButtonText}>Fazer o pedido</Text>
+                                                </TouchableHighlight>
+                                            </View>
+                                    }
+                                </PageFooter>
+                            </>
+                        )}
+                    </Formik>
+
             }
         </>
     )
