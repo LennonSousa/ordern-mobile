@@ -25,6 +25,7 @@ export interface Product {
     paused: boolean;
     order: number;
     available_all: boolean;
+    on_request: boolean;
     category: Category;
     values: ProductValue[];
     categoriesAdditional: ProductCategory[];

@@ -1,5 +1,5 @@
-import React, { useContext, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View, TouchableHighlight, ActivityIndicator, Modal } from 'react-native';
+import React, { useContext, useState, useEffect } from 'react';
+import { ScrollView, StyleSheet, Text, View, TouchableHighlight, Modal } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
@@ -47,6 +47,10 @@ export default function Payment() {
 
     const [changeAskModalWaiting, setChangeAskModalWaiting] = useState(false);
 
+    useEffect(() => {
+        console.log(order);
+    }, []);
+
     async function requestPayment(card: Card) {
         if (customer && order) {
             setModalWaiting("waiting");
@@ -77,6 +81,7 @@ export default function Payment() {
                                 amount: item.amount,
                                 name: item.name,
                                 value: item.value,
+                                notes: item.notes,
                                 orderItemAdditionals: item.orderItemAdditionals.map(additional => {
                                     return {
                                         amount: additional.amount,
@@ -102,6 +107,7 @@ export default function Payment() {
                             fee: order.fee,
                             total: order.total,
                             payment: `****${selectedCard?.card_number.slice(selectedCard.card_number.length - 4)} - ${selectedCard?.brand}`,
+                            payment_type: selectedPaymentType,
                             paid: true,
                             address: order.address,
                             reason_cancellation: "",
@@ -396,6 +402,7 @@ export default function Payment() {
                                             amount: item.amount,
                                             name: item.name,
                                             value: item.value,
+                                            notes: item.notes,
                                             orderItemAdditionals: item.orderItemAdditionals.map(additional => {
                                                 return {
                                                     amount: additional.amount,
@@ -421,6 +428,7 @@ export default function Payment() {
                                         fee: order.fee,
                                         total: order.total,
                                         payment: paymentText,
+                                        payment_type: selectedPaymentType,
                                         paid: false,
                                         address: order.address,
                                         reason_cancellation: "",

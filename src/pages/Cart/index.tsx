@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View, TouchableHighlight, Image, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
@@ -29,17 +29,6 @@ export default function Cart() {
 
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
     const [errorMessage, setErrorMessage] = useState('');
-
-    useEffect(() => {
-        if (order) {
-            handleTotalOrder(
-                {
-                    ...order,
-                    delivery_tax: 0
-                }
-            );
-        }
-    }, []);
 
     async function handleOrdertoShipment() {
         if (order) {
@@ -118,11 +107,13 @@ export default function Cart() {
                         }
                     </View>
 
-                    <View style={globalStyles.row}>
-                        <View style={globalStyles.column}>
-                            <Text style={globalStyles.textsMenu}>{`Taxa de entrega: R$ ${Number(order.delivery_tax).toFixed(2).replace('.', ',')}`}</Text>
+                    {
+                        order.delivery_tax > 0 && <View style={globalStyles.row}>
+                            <View style={globalStyles.column}>
+                                <Text style={globalStyles.textsMenu}>{`Taxa de entrega: R$ ${Number(order.delivery_tax).toFixed(2).replace('.', ',')}`}</Text>
+                            </View>
                         </View>
-                    </View>
+                    }
 
                     <View style={{
                         flex: 1,

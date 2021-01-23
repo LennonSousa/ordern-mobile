@@ -13,6 +13,7 @@ export interface OrderItem {
     amount: number;
     name: string;
     value: number;
+    notes: string;
     product_id: number;
     orderItemAdditionals: OrderItemAdditional[];
 }
@@ -111,6 +112,12 @@ export default function OrderItems({ orderItem }: OrderItemProps) {
 
                     <View style={styles.itemTotalContainer}>
                         <Text style={styles.itemTotalText}>{`R$ ${Number(total).toFixed(2).replace('.', ',')}`}</Text>
+                    </View>
+
+                    <View style={styles.itemRow}>
+                        <View style={{ flex: 1 }}>
+                            <Text style={globalStyles.textsDescriptionMenu}>{orderItem.notes}</Text>
+                        </View>
                     </View>
                 </View>
             </BorderlessButton>

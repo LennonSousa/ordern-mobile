@@ -1,8 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useRoute } from '@react-navigation/native';
-import { useNavigation } from '@react-navigation/native';
-import { Dimensions, ImageBackground, StyleSheet, Text, TextInput, View } from 'react-native';
-import { ScrollView, TouchableHighlight, TouchableOpacity } from 'react-native-gesture-handler';
+import { useRoute, useNavigation } from '@react-navigation/native';
+import { Dimensions, ScrollView, TouchableHighlight, TouchableOpacity, ImageBackground, StyleSheet, Text, TextInput, View, Linking, Modal } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
 import { Category } from '../../components/Categories';
@@ -17,9 +15,11 @@ import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingMo
 
 import api from '../../services/api';
 
-import { colorHighLight, colorPrimaryLight, colorTextMenuDescription } from '../../assets/styles/global';
+import { colorHighLight, colorPrimaryDark, colorPrimaryLight, colorTextMenuDescription } from '../../assets/styles/global';
 import { OrderItem } from '../../components/OrderItems';
-import _ from 'lodash';
+import PageFooter from '../../components/PageFooter';
+
+import globalStyles from '../../assets/styles/global';
 
 interface ProductDetailsRouteParams {
     product: Product;
@@ -32,11 +32,15 @@ export default function ProductDetails() {
     const { handleCategories } = useContext(CategoriesContext);
     const { selectedProduct, handleSelectedProduct } = useContext(SelectedProductContext);
     const { order, handleTotalOrder } = useContext(ContextOrdering);
+    const [selectedProductNotes, setSelectedProductNotes] = useState('');
 
     const [product, setProduct] = useState<Product>();
 
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
     const [errorMessage, setErrorMessage] = useState('');
+
+    const [modalOnRequest, setModalOnRequest] = useState(false);
+    const [errorMessageOnRequest, setErrorOnRequest] = useState('');
 
     const params = route.params as ProductDetailsRouteParams;
 
@@ -99,6 +103,7 @@ export default function ProductDetails() {
                 amount: selectedProduct.amount,
                 name: `${product.title} - ${!product.price_one && selectedValue ? selectedValue.description : ''} (${product.category.title})`,
                 value: selectedProduct.price,
+                notes: selectedProductNotes,
                 product_id: product.id,
                 orderItemAdditionals: [{
                     id: 0,
@@ -277,6 +282,7 @@ export default function ProductDetails() {
                     fee: 0,
                     total: 0,
                     payment: '',
+                    payment_type: '',
                     paid: false,
                     address: '',
                     reason_cancellation: '',
@@ -298,10 +304,19 @@ export default function ProductDetails() {
         }
     }
 
+    function handleOnRequest() {
+        const message = `Olá, gostaria de comprar o produto: ${params.product.title} (${params.product.category.title}).\nGostaria de verificar o valor do item, por favor!`;
+
+        setModalOnRequest(false);
+
+        if (params.product)
+            Linking.openURL(`whatsapp://send?phone=${+5599988141211}&text=${message}`);
+    }
+
     return (
         <>
             {
-                product && selectedProduct && <ScrollView style={styles.container}>
+                product && selectedProduct && <ScrollView style={globalStyles.container}>
                     <View style={styles.containerCover}>
                         <ImageBackground source={{ uri: product.image }} style={styles.cover} />
                     </View>
@@ -390,7 +405,13 @@ export default function ProductDetails() {
                             <Feather name="message-square" style={styles.iconNotes} />
                             <Text style={styles.titleNotes}>  Alguma observação?</Text>
                         </View>
-                        <TextInput multiline={true} numberOfLines={3} maxLength={140} style={styles.inputNotes} />
+                        <TextInput
+                            multiline={true}
+                            numberOfLines={3}
+                            maxLength={140}
+                            style={styles.inputNotes}
+                            onChangeText={(e) => setSelectedProductNotes(e)}
+                        />
                     </View>
 
                     <View style={{
@@ -404,64 +425,117 @@ export default function ProductDetails() {
             }
 
             {/* Footer*/}
-            {
-                selectedProduct && <View style={styles.footer}>
-                    <View style={styles.footerContainerAmount}>
-                        <View style={styles.footerContainerAmountRow}>
-                            <View style={styles.footerContainerAmountColumnMinus}>
-                                <TouchableOpacity
-                                    onPress={() => { handleAmount("minus") }}
-                                    disabled={
-                                        selectedProduct.amount > 1 ? false : true
-                                    }
-                                >
-                                    <Feather name="minus" style={styles.iconButtons} />
-                                </TouchableOpacity>
+
+
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalOnRequest}
+            >
+                <View style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                }}>
+                    <View style={styles.modalView}>
+                        <View style={{ marginVertical: 5 }}>
+                            <Feather name="message-square" size={48} color="#fe3807" />
+                        </View>
+
+                        <View>
+                            <View style={{ marginVertical: 5 }}>
+                                <Text style={[globalStyles.subTitlePrimary, { textAlign: 'center' }]}>Para comprar este produto você precisa
+                                            primeiro consultar a quantidade e o total com um atendente.</Text>
                             </View>
 
-                            <View style={styles.footerContainerAmountColumnValue}>
-                                <Text style={styles.iconButtons}>{selectedProduct?.amount}</Text>
-                            </View>
-
-                            <View style={styles.footerContainerAmountColumnPlus}>
-                                <TouchableOpacity onPress={() => { handleAmount("plus") }}>
-                                    <Feather name="plus" style={styles.iconButtons} />
-                                </TouchableOpacity>
+                            <View style={{ flexDirection: 'row', marginTop: 5, width: '100%' }}>
+                                <View style={{ flex: 0.5, marginHorizontal: 2 }}>
+                                    <TouchableHighlight
+                                        underlayColor={colorPrimaryDark}
+                                        style={globalStyles.footerButton}
+                                        onPress={() => { setModalOnRequest(false) }}
+                                    >
+                                        <Text style={globalStyles.footerButtonText}>Cancelar</Text>
+                                    </TouchableHighlight>
+                                </View>
+                                <View style={{ flex: 0.5, marginHorizontal: 2 }}>
+                                    <TouchableHighlight
+                                        underlayColor={colorPrimaryDark}
+                                        style={globalStyles.footerButton}
+                                        onPress={handleOnRequest}
+                                    >
+                                        <Text style={globalStyles.footerButtonText}>Consultar</Text>
+                                    </TouchableHighlight>
+                                </View>
                             </View>
                         </View>
                     </View>
+                </View>
+            </Modal>
 
-                    <View style={styles.footerContainerButton}>
+            <PageFooter>
+                {
+                    params.product.on_request ? <View style={{ flex: 1 }} >
                         <TouchableHighlight
-                            underlayColor="#ff0000"
-                            onPress={handleAddProductToCart}
-                            disabled={selectedProduct.price === 0.00 ? true : false}
-                            style={styles.footerButton}
+                            underlayColor={colorPrimaryDark}
+                            style={globalStyles.footerButton}
+                            onPress={() => { setModalOnRequest(true) }}
                         >
-                            <View style={styles.footerContainerButtonRow}>
-                                <View style={styles.footerContainerButtonColumnText}>
-                                    <Text style={styles.textButtons}>Adicionar</Text>
-                                </View>
-                                <View style={styles.footerContainerButtonColumnTotal}>
-                                    <Text style={styles.textButtons}>
-                                        {`R$ ${selectedProduct && Number(selectedProduct.total).toFixed(2).toString().replace('.', ',')}`}
-                                    </Text>
+                            <Text style={globalStyles.footerButtonText}>Verificar valor</Text>
+                        </TouchableHighlight>
+                    </View> : <>
+                            <View style={styles.footerContainerAmount}>
+                                <View style={styles.footerContainerAmountRow}>
+                                    <View style={styles.footerContainerAmountColumnMinus}>
+                                        <TouchableOpacity
+                                            onPress={() => { handleAmount("minus") }}
+                                            disabled={
+                                                selectedProduct && selectedProduct.amount > 1 ? false : true
+                                            }
+                                        >
+                                            <Feather name="minus" style={styles.iconButtons} />
+                                        </TouchableOpacity>
+                                    </View>
+
+                                    <View style={styles.footerContainerAmountColumnValue}>
+                                        <Text style={styles.iconButtons}>{selectedProduct?.amount}</Text>
+                                    </View>
+
+                                    <View style={styles.footerContainerAmountColumnPlus}>
+                                        <TouchableOpacity onPress={() => { handleAmount("plus") }}>
+                                            <Feather name="plus" style={styles.iconButtons} />
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
                             </View>
-                        </TouchableHighlight>
-                    </View>
-                </View>
-            }
+
+                            <View style={{ flex: 0.5 }}>
+                                <TouchableHighlight
+                                    underlayColor="#ff0000"
+                                    onPress={handleAddProductToCart}
+                                    disabled={selectedProduct?.price === 0.00 ? true : false}
+                                    style={globalStyles.footerButton}
+                                >
+                                    <View style={styles.footerContainerButtonRow}>
+                                        <View style={styles.footerContainerButtonColumnText}>
+                                            <Text style={styles.textButtons}>Adicionar</Text>
+                                        </View>
+                                        <View style={styles.footerContainerButtonColumnTotal}>
+                                            <Text style={styles.textButtons}>
+                                                {`R$ ${selectedProduct && Number(selectedProduct.total).toFixed(2).toString().replace('.', ',')}`}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                </TouchableHighlight>
+                            </View>
+                        </>
+                }
+            </PageFooter>
         </>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-
     containerCover: {
         alignItems: 'center'
     },
@@ -610,15 +684,20 @@ const styles = StyleSheet.create({
         color: '#8c8c8c',
     },
 
-    footer: {
-        flexDirection: 'row',
-        width: Dimensions.get('window').width,
-        height: 70,
-        borderTopColor: '#f2f2f2',
-        borderTopWidth: 1,
-        backgroundColor: '#fff',
-        padding: 10,
-        justifyContent: 'space-between'
+    modalView: {
+        margin: 20,
+        backgroundColor: "white",
+        borderRadius: 20,
+        padding: 35,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5
     },
 
     footerContainerAmount: {
@@ -651,12 +730,6 @@ const styles = StyleSheet.create({
         fontSize: 18,
         color: '#8c8c8c',
         textAlign: 'center'
-    },
-
-    footerContainerButton: {
-        backgroundColor: '#cc0000',
-        flex: 0.5,
-        borderRadius: 5
     },
 
     footerContainerButtonRow: {

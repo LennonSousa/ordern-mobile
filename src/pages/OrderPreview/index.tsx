@@ -7,7 +7,7 @@ import { ContextOrdering } from '../../context/orderingContext';
 import OrderItems from '../../components/OrderItems';
 import PageFooter from '../../components/PageFooter';
 
-import globalStyles, { colorPrimaryLight, colorPrimaryDark } from '../../assets/styles/global';
+import globalStyles, { colorPrimaryLight, colorPrimaryDark, colorHighLight, colorTextMenuDescription } from '../../assets/styles/global';
 
 export default function OrderPreview() {
     const navigation = useNavigation();
@@ -89,8 +89,18 @@ export default function OrderPreview() {
                             <View style={globalStyles.menuDescriptionRow}>
                                 <View style={globalStyles.menuDescriptionColumn}>
                                     <Text
-                                        style={globalStyles.textsDescriptionMenu}>
-                                        {`R$ ${Number(order.delivery_tax).toFixed(2).replace('.', ',')} (${order.delivery_type})`}
+                                        style={
+                                            {
+                                                fontFamily: order.delivery_tax <= 0 ? 'Nunito_600SemiBold' : 'Nunito_300Light',
+                                                fontSize: 14,
+                                                color: order.delivery_tax <= 0 ? colorHighLight : colorTextMenuDescription
+                                            }
+                                        }
+                                    >
+                                        {
+                                            order.delivery_tax <= 0 ? "Grátis" :
+                                                `R$ ${Number(order.delivery_tax).toFixed(2).replace('.', ',')} ${order.delivery_type !== "pickup" ? `(${order.delivery_type})` : ""}`
+                                        }
                                     </Text>
                                 </View>
                             </View>

@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { StyleSheet, View, Text, TouchableHighlight, ScrollView, RefreshControl } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { View, Text, TouchableHighlight, ScrollView, RefreshControl } from 'react-native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -16,7 +16,7 @@ import Input from '../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../components/Interfaces/InvalidFeedback';
 import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingModal';
 
-import globalStyles, { colorPrimaryLight, colorHighLight } from '../../assets/styles/global';
+import globalStyles, { colorPrimaryLight, colorHighLight, colorTextMenuDescription } from '../../assets/styles/global';
 import { OrderStatus } from '../../components/OrderStatus';
 
 interface OrderDetailsRouteParams {
@@ -41,7 +41,7 @@ export default function OrderDetails() {
         reasonCancellation: Yup.string().required('Obrigatório!')
     });
 
-    useEffect(() => {
+    useFocusEffect(() => {
         if (params.id) {
             api.get(`orders/${params.id}`).then(res => {
 
@@ -51,13 +51,7 @@ export default function OrderDetails() {
                     setSelectedOrder(undefined);
                 });
         }
-
-        const unsubscribe = navigation.addListener('blur', () => {
-            setSelectedOrder(undefined);
-        });
-
-        return unsubscribe;
-    }, [navigation, params.id]);
+    });
 
     const onRefresh = React.useCallback(() => {
         setRefreshing(true);
@@ -170,8 +164,18 @@ export default function OrderDetails() {
                                     <View style={globalStyles.menuDescriptionRow}>
                                         <View style={globalStyles.menuDescriptionColumn}>
                                             <Text
-                                                style={globalStyles.textsDescriptionMenu}>
-                                                {`R$ ${Number(selectedOrder.delivery_tax).toFixed(2).replace('.', ',')} (${selectedOrder.delivery_type})`}
+                                                style={
+                                                    {
+                                                        fontFamily: selectedOrder.delivery_tax <= 0 ? 'Nunito_600SemiBold' : 'Nunito_300Light',
+                                                        fontSize: 14,
+                                                        color: selectedOrder.delivery_tax <= 0 ? colorHighLight : colorTextMenuDescription
+                                                    }
+                                                }
+                                            >
+                                                {
+                                                    selectedOrder.delivery_tax <= 0 ? "Grátis" :
+                                                        `R$ ${Number(selectedOrder.delivery_tax).toFixed(2).replace('.', ',')} ${selectedOrder.delivery_type !== "pickup" ? `(${selectedOrder.delivery_type})` : ""}`
+                                                }
                                             </Text>
                                         </View>
                                     </View>
@@ -286,6 +290,7 @@ export default function OrderDetails() {
                                                 onChangeText={handleChange('reasonCancellation')}
                                                 onBlur={handleBlur('reasonCancellation')}
                                                 value={values.reasonCancellation}
+                                                editable={selectedOrder.orderStatus.order !== 5 ? true : false}
                                             />
                                             <InvalidFeedback message={errors.reasonCancellation}></InvalidFeedback>
                                         </View>

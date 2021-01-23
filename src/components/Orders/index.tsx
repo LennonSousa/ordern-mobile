@@ -20,6 +20,7 @@ export interface Order {
     fee: number;
     total: number;
     payment: string | number;
+    payment_type: string;
     paid: boolean;
     address: string;
     reason_cancellation: string;

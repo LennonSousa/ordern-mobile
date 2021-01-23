@@ -2,7 +2,7 @@ import React, { createContext, useState } from 'react';
 import { Order } from '../components/Orders';
 
 interface orderingContextData {
-    order: Order | undefined;
+    order: Order | null;
     handleOrder(order: Order): void;
     handleTotalOrder(product: Order): void;
     handleClearOrder(): void;
@@ -11,7 +11,7 @@ interface orderingContextData {
 const ContextOrdering = createContext<orderingContextData>({} as orderingContextData);
 
 const OrderingProvider: React.FC = ({ children }) => {
-    const [order, setOrder] = useState<Order>();
+    const [order, setOrder] = useState<Order | null>(null);
 
     function handleOrder(order: Order) {
         setOrder(order);
@@ -46,7 +46,7 @@ const OrderingProvider: React.FC = ({ children }) => {
     }
 
     function handleClearOrder() {
-        setOrder(undefined);
+        setOrder(null);
     }
 
     return (

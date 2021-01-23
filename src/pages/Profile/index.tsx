@@ -11,6 +11,7 @@ import { CustomerContext } from '../../context/customerContext';
 import Header from '../../components/PageHeader';
 import Input from '../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../components/Interfaces/InvalidFeedback';
+import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingModal';
 
 import globalStyles from '../../assets/styles/global';
 
@@ -18,7 +19,9 @@ export default function Profile() {
     const navigation = useNavigation();
     const { signed, handleLogin, handleLogout } = useContext(AuthContext);
     const { customer } = useContext(CustomerContext);
-    const [messageErrorLogin, setMessageErrorLogin] = useState(false);
+
+    const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
+    const [errorMessage, setErrorMessage] = useState('');
 
     const validatiionSchema = Yup.object().shape({
         email: Yup.string().email('E-mail inválido!').required('Você precisa preencher o seu e-mail!'),
@@ -169,13 +172,22 @@ export default function Profile() {
                         initialValues={{ email: '', password: '' }}
                         onSubmit={async values => {
                             if (values.email !== '' && values.password !== '') {
+                                setModalWaiting("waiting");
+
                                 try {
                                     const res = await handleLogin(values.email, values.password)
 
-                                    !res && setMessageErrorLogin(true);
+                                    if (!res) {
+                                        setModalWaiting("error");
+                                        setErrorMessage("E-mail ou senha incorretos!");
+                                    }
+                                    else
+                                        setModalWaiting("hidden");
+
                                 }
                                 catch {
-                                    setMessageErrorLogin(true);
+                                    setModalWaiting("error");
+                                    setErrorMessage("Algo deu errado com a sua solicitação.");
                                 }
 
                             }
@@ -200,7 +212,7 @@ export default function Profile() {
                                             keyboardType='email-address'
                                             returnKeyType='go'
                                             onChangeText={handleChange('email')}
-                                            onBlur={() => { handleBlur('email'); setMessageErrorLogin(false); }}
+                                            onBlur={handleBlur('email')}
                                             value={values.email}
                                         />
                                         <InvalidFeedback message={errors.email}></InvalidFeedback>
@@ -216,7 +228,7 @@ export default function Profile() {
                                             autoCapitalize='none'
                                             secureTextEntry={true}
                                             onChangeText={handleChange('password')}
-                                            onBlur={() => { handleBlur('password'); setMessageErrorLogin(false); }}
+                                            onBlur={handleBlur('password')}
                                             value={values.password}
                                         />
                                         <InvalidFeedback message={errors.password}></InvalidFeedback>
@@ -228,9 +240,6 @@ export default function Profile() {
                                         <TouchableHighlight underlayColor='#cc0000' style={styles.buttonLogIn} onPress={handleSubmit as any}>
                                             <Text style={styles.buttonTextLogIn}>Entrar</Text>
                                         </TouchableHighlight>
-                                        {
-                                            messageErrorLogin && <InvalidFeedback message="E-mail ou senha incorretos!"></InvalidFeedback>
-                                        }
                                     </View>
                                 </View>
 
@@ -245,6 +254,13 @@ export default function Profile() {
                         )}
                     </Formik>
             }
+            <View style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+            }}>
+                <WaitingModal message={errorMessage} status={modalWaiting} />
+            </View>
         </View>
     )
 }
