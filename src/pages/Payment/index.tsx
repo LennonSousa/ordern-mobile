@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { ScrollView, StyleSheet, Text, View, TouchableHighlight, Modal } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, TouchableHighlight, TouchableOpacity, Modal } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
@@ -13,15 +13,22 @@ import stripeErrorCodes from '../../utils/stripeErrorCodes';
 import { CustomerContext } from '../../context/customerContext';
 import { ContextOrdering } from '../../context/orderingContext';
 import { CustomerPayment } from '../../components/CustomerPayments';
+import { CrediBrand } from '../../components/CreditBrands';
+import { DebitBrand } from '../../components/DebitBrands';
 import Input from '../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../components/Interfaces/InvalidFeedback';
 import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingModal';
 
-import globalStyles, { colorPrimaryLight, colorPrimaryDark, colorBackground } from '../../assets/styles/global';
+import globalStyles, { colorPrimaryLight, colorPrimaryDark, colorBackground, colorTextDescription } from '../../assets/styles/global';
 import PageFooter from '../../components/PageFooter';
 
 interface Card {
     [key: string]: string;
+}
+
+interface CardBrands {
+    name: string;
+    code: string;
 }
 
 let paymentType: "money" | "credit" | "debit" | "on-line";
@@ -42,14 +49,39 @@ export default function Payment() {
     const [selectedCard, setSelectedCard] = useState<CustomerPayment>();
     const [selectedPaymentType, setSelectedPaymentType] = useState<typeof paymentType>('money');
 
+    const [cardBrandsModal, setCardBrandsModal] = useState(false);
+
+    const [creditBrands, setCreditBrands] = useState<CrediBrand[]>([]);
+    const [debitBrands, setDebitBrands] = useState<DebitBrand[]>([]);
+
+    const [cardBrands, setCardBrands] = useState<CardBrands[]>([]);
+    const [selectedCardBrand, setSelectedCardBrand] = useState("");
+
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
     const [errorMessage, setErrorMessage] = useState('');
 
     const [changeAskModalWaiting, setChangeAskModalWaiting] = useState(false);
 
     useEffect(() => {
-        console.log(order);
+        api.get('restaurant/credit-brands').then(res => {
+            setCreditBrands(res.data);
+        }).catch(() => {
+            console.log("Error get credit brands.");
+        });
+
+        api.get('restaurant/debit-brands').then(res => {
+            setDebitBrands(res.data);
+        }).catch(() => {
+            console.log("Error get debit brands.");
+        });
     }, []);
+
+    useEffect(() => {
+        if (selectedPaymentType === "credit")
+            setCardBrands(creditBrands);
+        else if (selectedPaymentType === "debit")
+            setCardBrands(debitBrands);
+    }, [selectedPaymentType]);
 
     async function requestPayment(card: Card) {
         if (customer && order) {
@@ -222,7 +254,13 @@ export default function Payment() {
                         <View style={globalStyles.column}>
                             <View style={globalStyles.menuRow}>
                                 <View style={globalStyles.colTitleButtonItem}>
-                                    <BorderlessButton onPress={() => { setSelectedCard(undefined); setSelectedPaymentType('debit'); }}>
+                                    <BorderlessButton
+                                        onPress={() => {
+                                            setSelectedCard(undefined);
+                                            setSelectedPaymentType('debit');
+                                            setCardBrandsModal(true);
+                                        }}
+                                    >
                                         <View style={{ flexDirection: 'row' }}>
                                             <View style={{ flex: 0.1, marginHorizontal: 10 }}>
                                                 <FontAwesome5 name="money-check-alt" size={18} color="#8c8c8c" />
@@ -248,7 +286,13 @@ export default function Payment() {
                         <View style={globalStyles.column}>
                             <View style={globalStyles.menuRow}>
                                 <View style={globalStyles.colTitleButtonItem}>
-                                    <BorderlessButton onPress={() => { setSelectedCard(undefined); setSelectedPaymentType('credit'); }}>
+                                    <BorderlessButton
+                                        onPress={() => {
+                                            setSelectedCard(undefined);
+                                            setSelectedPaymentType('credit');
+                                            setCardBrandsModal(true);
+                                        }}
+                                    >
                                         <View style={{ flexDirection: 'row' }}>
                                             <View style={{ flex: 0.1, marginHorizontal: 10 }}>
                                                 <FontAwesome5 name="money-check-alt" size={18} color="#8c8c8c" />
@@ -305,6 +349,71 @@ export default function Payment() {
                 </View>
             </ScrollView>
 
+            { /*Modal choose card brand*/}
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={cardBrandsModal}
+            >
+                <View style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                }}>
+                    <View style={styles.modalView}>
+                        <View style={{ marginVertical: 5 }}>
+                            <FontAwesome5 name="credit-card" size={48} color="#fe3807" />
+                        </View>
+
+                        <View>
+                            <View style={{ marginVertical: 5 }}>
+                                <Text style={[globalStyles.subTitlePrimary, { textAlign: 'center' }]}>Escolha a bandeira</Text>
+                            </View>
+
+                            {
+                                cardBrands.map((cardBrand, index) => {
+                                    return <View key={index} style={styles.containerCardBrands}>
+                                        <View style={globalStyles.row}>
+                                            <View style={globalStyles.column}>
+                                                <View style={globalStyles.menuRow}>
+                                                    <View style={globalStyles.colTitleButtonItem}>
+                                                        <TouchableOpacity onPress={() => { setSelectedCardBrand(cardBrand.name); setCardBrandsModal(false); }}>
+                                                            <View style={{ flexDirection: 'row' }}>
+                                                                <View style={globalStyles.colTitleButtonItem}>
+                                                                    <Text style={globalStyles.textsButtonBorderMenu}>{cardBrand.name}</Text>
+                                                                </View>
+                                                                <View style={globalStyles.colIconButtonItem}>
+                                                                    {
+                                                                        selectedCardBrand === cardBrand.name && <FontAwesome5 name="check" size={18} color={colorPrimaryLight} />
+                                                                    }
+                                                                </View>
+                                                            </View>
+                                                        </TouchableOpacity>
+                                                    </View>
+                                                </View>
+                                            </View>
+                                        </View>
+                                    </View>
+                                })
+                            }
+
+                            <View style={{ flexDirection: 'row', width: '100%' }}>
+                                <View style={{ flex: 1 }}>
+                                    <TouchableHighlight
+                                        underlayColor={colorPrimaryDark}
+                                        style={globalStyles.footerButton}
+                                        onPress={() => { setCardBrandsModal(false) }}
+                                    >
+                                        <Text style={globalStyles.footerButtonText}>Cancelar</Text>
+                                    </TouchableHighlight>
+                                </View>
+                            </View>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+
+            { /*Card cvc on-line*/}
             {
                 selectedCard ? <Formik
                     initialValues={
@@ -382,20 +491,31 @@ export default function Payment() {
                         }}
                         onSubmit={async values => {
                             setChangeAskModalWaiting(false);
-                            setModalWaiting("waiting");
                             try {
                                 if (order && customer) {
                                     let paymentText = '';
 
                                     if (selectedPaymentType === "credit") {
-                                        paymentText = "Crédito na entrega.";
+                                        if (selectedCardBrand !== "")
+                                            paymentText = `Crédito na entrega (${selectedCardBrand}).`;
+                                        else {
+                                            setCardBrandsModal(true);
+                                            return;
+                                        }
                                     }
                                     else if (selectedPaymentType === "debit") {
-                                        paymentText = "Débito na entrega."
+                                        if (selectedCardBrand !== "")
+                                            paymentText = `Débito na entrega (${selectedCardBrand}).`;
+                                        else {
+                                            setCardBrandsModal(true);
+                                            return;
+                                        }
                                     }
                                     else if (selectedPaymentType === "money") {
                                         paymentText = `Dinheiro ${values.change ? `(Troco para R$ ${values.changeValue})` : ''}`
                                     }
+
+                                    setModalWaiting("waiting");
 
                                     let itemsToOrder = order.orderItems.map(item => {
                                         return {
@@ -639,5 +759,13 @@ const styles = StyleSheet.create({
 
     fieldsLogIn: {
         marginVertical: 8,
+    },
+
+    containerCardBrands: {
+        marginVertical: 5,
+        paddingHorizontal: 10,
+        borderRadius: 8,
+        borderColor: colorTextDescription,
+        borderWidth: 1,
     },
 });

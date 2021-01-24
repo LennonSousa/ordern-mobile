@@ -4,28 +4,15 @@ import { StyleSheet, View, Image, Dimensions, ImageBackground, StatusBar } from 
 import api from '../../services/api';
 import { ScrollView } from 'react-native-gesture-handler';
 
+import { RestaurantContext } from '../../context/restaurantContext';
 import { CategoriesContext } from '../../context/categoriesContext';
+import { Restaurant } from '../../components/Restaurant';
 import CategoryItem from '../../components/Categories';
 
 import globalStyles, { colorBackground } from '../../assets/styles/global';
 
-interface Restaurant {
-    id: number,
-    title: string,
-    phone: string,
-    description: string,
-    min_order: number,
-    cover: string,
-    avatar: string,
-    zip_code: string,
-    street: string,
-    number: string,
-    group: string,
-    city: string,
-    country: string
-}
-
 export default function LandingPage() {
+    const { handleRestaurant } = useContext(RestaurantContext);
     const { categories, handleCategories } = useContext(CategoriesContext);
 
     const [restaurant, setRestaurant] = useState<Restaurant>();
@@ -33,6 +20,7 @@ export default function LandingPage() {
     useEffect(() => {
         api.get('restaurants')
             .then(res => {
+                handleRestaurant(res.data[0]);
                 setRestaurant(res.data[0]);
 
                 api.get('categories')
