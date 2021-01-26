@@ -3,6 +3,8 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { Dimensions, ScrollView, TouchableHighlight, TouchableOpacity, ImageBackground, StyleSheet, Text, TextInput, View, Linking, Modal } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
+import api from '../../services/api';
+
 import { Category } from '../../components/Categories';
 import { Product } from '../../components/Products';
 import { ProductCategory } from '../../components/ProductCategories';
@@ -11,10 +13,8 @@ import { CategoriesContext } from '../../context/categoriesContext';
 import { ContextOrdering } from '../../context/orderingContext';
 import ProductValues from '../../components/ProductValues';
 import verifyProductAvailable from '../../utils/verifyProductAvailable';
+import ProductDetailsShimmer from '../../components/Shimmers/ProductDetails';
 import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingModal';
-
-import api from '../../services/api';
-
 import { colorHighLight, colorPrimaryDark, colorPrimaryLight, colorTextMenuDescription } from '../../assets/styles/global';
 import { OrderItem } from '../../components/OrderItems';
 import PageFooter from '../../components/PageFooter';
@@ -40,7 +40,6 @@ export default function ProductDetails() {
     const [errorMessage, setErrorMessage] = useState('');
 
     const [modalOnRequest, setModalOnRequest] = useState(false);
-    const [errorMessageOnRequest, setErrorOnRequest] = useState('');
 
     const params = route.params as ProductDetailsRouteParams;
 
@@ -94,100 +93,71 @@ export default function ProductDetails() {
 
     async function handleAddProductToCart() {
         if (product && selectedProduct) {
-            setModalWaiting("waiting");
-
-            const selectedValue = selectedProduct.values.find(item => { return item.id === selectedProduct.selectedValue });
-
-            let itemsToOrder: OrderItem = {
-                id: 0,
-                amount: selectedProduct.amount,
-                name: `${product.title} - ${!product.price_one && selectedValue ? selectedValue.description : ''} (${product.category.title})`,
-                value: selectedProduct.price,
-                notes: selectedProductNotes,
-                product_id: product.id,
-                orderItemAdditionals: [{
-                    id: 0,
-                    amount: 1,
-                    name: "",
-                    value: 0,
-                    additional_id: 0,
-                }]
-            };
-
-            itemsToOrder.orderItemAdditionals = [];
+            // Verifing optionals obrigatory.
+            let validetedAmountAdditionals = true;
 
             selectedProduct.categoiesAdditional.forEach(category => {
-                category.selectedAdditionals.forEach(additional => {
-                    itemsToOrder.orderItemAdditionals.push({
-                        id: itemsToOrder.orderItemAdditionals.length,
-                        amount: additional.amount,
-                        name: additional.title,
-                        value: additional.price,
-                        additional_id: additional.additional_id
-                    });
-                });
+                if (category.min > 0) {
+                    const selectedAdditionalsAmount = category.selectedAdditionals.length;
+
+                    if (selectedAdditionalsAmount < category.min)
+                        validetedAmountAdditionals = false;
+                }
             });
 
-            if (order) {
-                let identicFound = false;
+            if (validetedAmountAdditionals) {
+                setModalWaiting("waiting");
 
-                if (order.orderItems.length > 0) {
-                    console.log('function findOne');
+                const selectedValue = selectedProduct.values.find(item => { return item.id === selectedProduct.selectedValue });
 
-                    order.orderItems.forEach((listItem: OrderItem) => { // Searching for each one.
-                        if (itemsToOrder.product_id === listItem.product_id) {
-                            if (!selectedProduct.price_one) {
+                let itemsToOrder: OrderItem = {
+                    id: 0,
+                    amount: selectedProduct.amount,
+                    name: `${product.title} - ${!product.price_one && selectedValue ? selectedValue.description : ''} (${product.category.title})`,
+                    value: selectedProduct.price,
+                    notes: selectedProductNotes,
+                    product_id: product.id,
+                    orderItemAdditionals: [{
+                        id: 0,
+                        amount: 1,
+                        name: "",
+                        value: 0,
+                        additional_id: 0,
+                    }]
+                };
 
-                                if (listItem.name !== itemsToOrder.name)
-                                    return;
-                            }
+                itemsToOrder.orderItemAdditionals = [];
 
-                            if (itemsToOrder.orderItemAdditionals.length === 0 && listItem.orderItemAdditionals.length === 0) { // No addiciontals, means that are identicals.
-                                identicFound = true;
+                selectedProduct.categoiesAdditional.forEach(category => {
+                    category.selectedAdditionals.forEach(additional => {
+                        itemsToOrder.orderItemAdditionals.push({
+                            id: itemsToOrder.orderItemAdditionals.length,
+                            amount: additional.amount,
+                            name: additional.title,
+                            value: additional.price,
+                            additional_id: additional.additional_id
+                        });
+                    });
+                });
 
-                                console.log('Idêntico!');
+                if (order) {
+                    let identicFound = false;
 
-                                handleTotalOrder(
-                                    {
-                                        ...order, orderItems: order.orderItems.map((item, index) => {
-                                            if (index === listItem.id) {
-                                                return {
-                                                    ...item, amount: item.amount + selectedProduct.amount
-                                                };
-                                            }
+                    if (order.orderItems.length > 0) {
+                        console.log('function findOne');
 
-                                            return item;
-                                        })
-                                    }
-                                );
+                        order.orderItems.forEach((listItem: OrderItem) => { // Searching for each one.
+                            if (itemsToOrder.product_id === listItem.product_id) {
+                                if (!selectedProduct.price_one) {
 
-                                setTimeout(() => {
-                                    setModalWaiting("hidden");
-
-                                    navigation.navigate('Cart');
-                                }, 1000);
-                            }
-                            else if (itemsToOrder.orderItemAdditionals.length === listItem.orderItemAdditionals.length) { // Same additionals amount.
-                                let allAdditionalsIdentcials = true;
-
-                                itemsToOrder.orderItemAdditionals.forEach(additionalToOrder => {
-                                    const itemFound = listItem.orderItemAdditionals.find(orderItemAdditionals => {
-                                        return additionalToOrder.additional_id === orderItemAdditionals.additional_id
-                                    });
-
-                                    console.log('itemFound: ', itemFound);
-
-                                    if (!itemFound)
-                                        allAdditionalsIdentcials = false;
-
-                                    if (!allAdditionalsIdentcials)
+                                    if (listItem.name !== itemsToOrder.name)
                                         return;
-                                });
+                                }
 
-                                if (allAdditionalsIdentcials) {
+                                if (itemsToOrder.orderItemAdditionals.length === 0 && listItem.orderItemAdditionals.length === 0) { // No addiciontals, means that are identicals.
                                     identicFound = true;
 
-                                    console.log('Idêntico com adicionais!');
+                                    console.log('Idêntico!');
 
                                     handleTotalOrder(
                                         {
@@ -209,97 +179,144 @@ export default function ProductDetails() {
                                         navigation.navigate('Cart');
                                     }, 1000);
                                 }
-                            }
-                        }
-                    });
-                }
+                                else if (itemsToOrder.orderItemAdditionals.length === listItem.orderItemAdditionals.length) { // Same additionals amount.
+                                    let allAdditionalsIdentcials = true;
 
-                if (!identicFound) {
-                    // Not identic product on cart, create a new.
-                    try {
-                        const res = await api.get('categories');
+                                    itemsToOrder.orderItemAdditionals.forEach(additionalToOrder => {
+                                        const itemFound = listItem.orderItemAdditionals.find(orderItemAdditionals => {
+                                            return additionalToOrder.additional_id === orderItemAdditionals.additional_id
+                                        });
 
-                        handleCategories(res.data);
-                        const categories: Category[] = res.data;
+                                        console.log('itemFound: ', itemFound);
 
-                        categories.forEach(category => {
-                            category.products.forEach(productItem => {
-                                if (productItem.id === product.id) {
-                                    const verify = verifyProductAvailable(productItem);
+                                        if (!itemFound)
+                                            allAdditionalsIdentcials = false;
 
-                                    if (verify === "paused") {
-                                        setModalWaiting("error");
-                                        setErrorMessage("Desculpe, mas esse produto acabou de ficar sem estoque.");
-
-                                        return;
-                                    }
-                                    else if (verify === "not-available") {
-                                        setModalWaiting("error");
-                                        setErrorMessage("Desculpe, mas esse produto não está mais disponível nesse horário.");
-
-                                        return;
-                                    }
-
-                                    const newItemnsToOrder = [...order.orderItems, itemsToOrder];
-
-                                    handleTotalOrder({
-                                        ...order, orderItems: newItemnsToOrder.map((item, index) => {
-
-                                            return { ...item, id: index };
-                                        })
+                                        if (!allAdditionalsIdentcials)
+                                            return;
                                     });
 
-                                    setTimeout(() => {
-                                        setModalWaiting("hidden");
+                                    if (allAdditionalsIdentcials) {
+                                        identicFound = true;
 
-                                        navigation.navigate('Cart');
-                                    }, 1000);
+                                        console.log('Idêntico com adicionais!');
+
+                                        handleTotalOrder(
+                                            {
+                                                ...order, orderItems: order.orderItems.map((item, index) => {
+                                                    if (index === listItem.id) {
+                                                        return {
+                                                            ...item, amount: item.amount + selectedProduct.amount
+                                                        };
+                                                    }
+
+                                                    return item;
+                                                })
+                                            }
+                                        );
+
+                                        setTimeout(() => {
+                                            setModalWaiting("hidden");
+
+                                            navigation.navigate('Cart');
+                                        }, 1000);
+                                    }
                                 }
-                            });
+                            }
                         });
                     }
-                    catch {
-                        setModalWaiting("error");
-                        setErrorMessage("Por favor, verifique a sua conexão com a internet.");
+
+                    if (!identicFound) {
+                        // Not identic product on cart, create a new.
+                        try {
+                            const res = await api.get('categories');
+
+                            handleCategories(res.data);
+                            const categories: Category[] = res.data;
+
+                            categories.forEach(category => {
+                                category.products.forEach(productItem => {
+                                    if (productItem.id === product.id) {
+                                        const verify = verifyProductAvailable(productItem);
+
+                                        if (verify === "paused") {
+                                            setModalWaiting("error");
+                                            setErrorMessage("Desculpe, mas esse produto acabou de ficar sem estoque.");
+
+                                            return;
+                                        }
+                                        else if (verify === "not-available") {
+                                            setModalWaiting("error");
+                                            setErrorMessage("Desculpe, mas esse produto não está mais disponível nesse horário.");
+
+                                            return;
+                                        }
+
+                                        const newItemnsToOrder = [...order.orderItems, itemsToOrder];
+
+                                        handleTotalOrder({
+                                            ...order, orderItems: newItemnsToOrder.map((item, index) => {
+
+                                                return { ...item, id: index };
+                                            })
+                                        });
+
+                                        setTimeout(() => {
+                                            setModalWaiting("hidden");
+
+                                            navigation.navigate('Cart');
+                                        }, 1000);
+                                    }
+                                });
+                            });
+                        }
+                        catch {
+                            setModalWaiting("error");
+                            setErrorMessage("Por favor, verifique a sua conexão com a internet.");
+                        }
                     }
+                }
+                else {
+                    // Empity cart, create a new product on cart.
+                    handleTotalOrder({
+                        id: 0,
+                        tracker: '',
+                        client_id: 0,
+                        client: '',
+                        ordered: new Date(),
+                        delivery: new Date(),
+                        delivered: new Date(),
+                        sub_total: 0,
+                        cupom: '',
+                        delivery_tax: 0,
+                        delivery_type: '',
+                        discount: 0,
+                        fee: 0,
+                        total: 0,
+                        payment: '',
+                        payment_type: '',
+                        paid: false,
+                        address: '',
+                        reason_cancellation: '',
+                        orderStatus: {
+                            id: 1,
+                            title: '',
+                            description: '',
+                            order: 0,
+                        },
+                        orderItems: [itemsToOrder],
+                    });
+
+                    setTimeout(() => {
+                        setModalWaiting("hidden");
+
+                        navigation.navigate('Cart');
+                    }, 1000);
                 }
             }
             else {
-                // Empity cart, create a new product on cart.
-                handleTotalOrder({
-                    id: 0,
-                    tracker: '',
-                    client_id: 0,
-                    client: '',
-                    ordered: new Date(),
-                    delivery: new Date(),
-                    delivered: new Date(),
-                    sub_total: 0,
-                    cupom: '',
-                    delivery_tax: 0,
-                    delivery_type: '',
-                    discount: 0,
-                    fee: 0,
-                    total: 0,
-                    payment: '',
-                    payment_type: '',
-                    paid: false,
-                    address: '',
-                    reason_cancellation: '',
-                    orderStatus: {
-                        id: 1,
-                        title: '',
-                        description: '',
-                        order: 0,
-                    },
-                    orderItems: [itemsToOrder],
-                });
-
-                setTimeout(() => {
-                    setModalWaiting("hidden");
-
-                    navigation.navigate('Cart');
-                }, 1000);
+                setModalWaiting("error");
+                setErrorMessage("Você deve escolher os itens obrigatórios.");
             }
         }
     }
@@ -316,221 +333,224 @@ export default function ProductDetails() {
     return (
         <>
             {
-                product && selectedProduct && <ScrollView style={globalStyles.container}>
-                    <View style={styles.containerCover}>
-                        <ImageBackground source={{ uri: product.image }} style={styles.cover} />
-                    </View>
+                product && selectedProduct ?
+                    <>
+                        <ScrollView style={globalStyles.container}>
+                            <View style={styles.containerCover}>
+                                <ImageBackground source={{ uri: product.image }} style={styles.cover} />
+                            </View>
 
-                    <View>
-                        <Text style={styles.productTitle}>{product.title}</Text>
-                        <Text style={styles.productDescription}>{product.description}</Text>
-                    </View>
+                            <View>
+                                <Text style={styles.productTitle}>{product.title}</Text>
+                                <Text style={styles.productDescription}>{product.description}</Text>
+                            </View>
 
-                    <View style={styles.rowPrice}>
-                        {
-                            product.discount ? <Text style={styles.productPriceDiscount}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text> :
-                                <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text>
-                        }
+                            <View style={styles.rowPrice}>
+                                {
+                                    product.discount ? <Text style={styles.productPriceDiscount}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text> :
+                                        <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text>
+                                }
 
-                        {
-                            product.discount && <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.discount_price.toString().replace('.', ',')}`}</Text>
-                        }
-                    </View>
+                                {
+                                    product.discount && <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.discount_price.toString().replace('.', ',')}`}</Text>
+                                }
+                            </View>
 
-                    {
-                        !product.price_one && <View style={styles.productValuesContainer}>
-                            <Text style={styles.categoryAdditionalTitle} >Escolha uma opção:</Text>
                             {
-                                product.values.map(value => {
-                                    return <View key={value.id}>
-                                        <ProductValues productValue={value} />
-                                    </View>
+                                !product.price_one && <View style={styles.productValuesContainer}>
+                                    <Text style={styles.categoryAdditionalTitle} >Escolha uma opção:</Text>
+                                    {
+                                        product.values.map(value => {
+                                            return <View key={value.id}>
+                                                <ProductValues productValue={value} />
+                                            </View>
+                                        })
+                                    }
+                                </View>
+                            }
+
+                            {
+                                product && product.categoriesAdditional.map((categoryAdditional, index) => {
+                                    return (
+                                        <View key={index} style={styles.containerAdditionals}>
+                                            <View style={styles.rowAdditionals}>
+                                                <TouchableHighlight
+                                                    underlayColor='#e6e6e6'
+                                                    onPress={() => { handleNavigateToCategoryAdditionals(categoryAdditional) }}>
+                                                    <View style={styles.rowTitleCategoryAdditionals}>
+                                                        <Text style={styles.categoryAdditionalTitle}>{categoryAdditional.title}</Text>
+                                                        <Feather name="chevron-right" style={styles.categoryAdditionalArrow} />
+                                                    </View>
+                                                </TouchableHighlight>
+                                            </View>
+
+                                            <View style={styles.rowObrigatory}>
+                                                <Text
+                                                    style={[styles.obrigatoryTitle, { backgroundColor: categoryAdditional.min > 0 ? colorPrimaryLight : colorTextMenuDescription }]}
+                                                >
+                                                    {categoryAdditional.min > 0 ? "Obrigatório." : "Opcional."}
+                                                </Text>
+                                            </View>
+
+                                            <View style={styles.rowTitleSelectedAdditionals} >
+                                                {
+                                                    selectedProduct.categoiesAdditional.map(category => {
+                                                        if (categoryAdditional.id === category.id) {
+                                                            const additionals = category.selectedAdditionals.map(additional => {
+                                                                return additional;
+                                                            });
+
+                                                            return additionals && additionals.map(item => {
+                                                                return <View key={item.id} style={{ flexDirection: 'row', marginVertical: 2 }}>
+                                                                    <Text style={styles.selectedAdditionalsAmount}>{item.amount}</Text>
+                                                                    <Text style={styles.selectedAdditionals}>{item.title}</Text>
+                                                                </View>
+                                                            });
+                                                        }
+                                                    })
+                                                }
+                                            </View>
+                                        </View>
+                                    )
                                 })
                             }
-                        </View>
-                    }
 
-                    {
-                        product && product.categoriesAdditional.map(categoryAdditional => {
-                            return (
-                                <View key={categoryAdditional.id} style={styles.containerAdditionals}>
-                                    <View style={styles.rowAdditionals}>
-                                        <TouchableHighlight
-                                            underlayColor='#e6e6e6'
-                                            onPress={() => { handleNavigateToCategoryAdditionals(categoryAdditional) }}>
-                                            <View style={styles.rowTitleCategoryAdditionals}>
-                                                <Text style={styles.categoryAdditionalTitle}>{categoryAdditional.title}</Text>
-                                                <Feather name="chevron-right" style={styles.categoryAdditionalArrow} />
-                                            </View>
-                                        </TouchableHighlight>
-                                    </View>
+                            {/* Divider*/}
+                            <View style={styles.divider}></View>
 
-                                    <View style={styles.rowObrigatory}>
-                                        <Text
-                                            style={[styles.obrigatoryTitle, { backgroundColor: categoryAdditional.min > 0 ? colorPrimaryLight : colorTextMenuDescription }]}
-                                        >
-                                            {categoryAdditional.min > 0 ? "Obrigatório." : "Opcional."}
-                                        </Text>
-                                    </View>
-
-                                    <View style={styles.rowTitleSelectedAdditionals} >
-                                        {
-                                            selectedProduct.categoiesAdditional.map(category => {
-                                                if (categoryAdditional.id === category.id) {
-                                                    const additionals = category.selectedAdditionals.map(additional => {
-                                                        return additional;
-                                                    });
-
-                                                    return additionals && additionals.map(item => {
-                                                        return <View key={item.id} style={{ flexDirection: 'row', marginVertical: 2 }}>
-                                                            <Text style={styles.selectedAdditionalsAmount}>{item.amount}</Text>
-                                                            <Text style={styles.selectedAdditionals}>{item.title}</Text>
-                                                        </View>
-                                                    });
-                                                }
-                                            })
-                                        }
-                                    </View>
+                            {/* Notes*/}
+                            <View style={styles.containerNotes}>
+                                <View style={{ flexDirection: 'row' }}>
+                                    <Feather name="message-square" style={styles.iconNotes} />
+                                    <Text style={styles.titleNotes}>  Alguma observação?</Text>
                                 </View>
-                            )
-                        })
-                    }
-
-                    {/* Divider*/}
-                    <View style={styles.divider}></View>
-
-                    {/* Notes*/}
-                    <View style={styles.containerNotes}>
-                        <View style={{ flexDirection: 'row' }}>
-                            <Feather name="message-square" style={styles.iconNotes} />
-                            <Text style={styles.titleNotes}>  Alguma observação?</Text>
-                        </View>
-                        <TextInput
-                            multiline={true}
-                            numberOfLines={3}
-                            maxLength={140}
-                            style={styles.inputNotes}
-                            onChangeText={(e) => setSelectedProductNotes(e)}
-                        />
-                    </View>
-
-                    <View style={{
-                        flex: 1,
-                        justifyContent: "center",
-                        alignItems: "center",
-                    }}>
-                        <WaitingModal message={errorMessage} status={modalWaiting} />
-                    </View>
-                </ScrollView>
-            }
-
-            {/* Footer*/}
-
-
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={modalOnRequest}
-            >
-                <View style={{
-                    flex: 1,
-                    justifyContent: "center",
-                    alignItems: "center",
-                }}>
-                    <View style={styles.modalView}>
-                        <View style={{ marginVertical: 5 }}>
-                            <Feather name="message-square" size={48} color="#fe3807" />
-                        </View>
-
-                        <View>
-                            <View style={{ marginVertical: 5 }}>
-                                <Text style={[globalStyles.subTitlePrimary, { textAlign: 'center' }]}>Para comprar este produto você precisa
-                                            primeiro consultar a quantidade e o total com um atendente.</Text>
+                                <TextInput
+                                    multiline={true}
+                                    numberOfLines={3}
+                                    maxLength={140}
+                                    style={styles.inputNotes}
+                                    onChangeText={(e) => setSelectedProductNotes(e)}
+                                />
                             </View>
 
-                            <View style={{ flexDirection: 'row', marginTop: 5, width: '100%' }}>
-                                <View style={{ flex: 0.5, marginHorizontal: 2 }}>
-                                    <TouchableHighlight
-                                        underlayColor={colorPrimaryDark}
-                                        style={globalStyles.footerButton}
-                                        onPress={() => { setModalOnRequest(false) }}
-                                    >
-                                        <Text style={globalStyles.footerButtonText}>Cancelar</Text>
-                                    </TouchableHighlight>
-                                </View>
-                                <View style={{ flex: 0.5, marginHorizontal: 2 }}>
-                                    <TouchableHighlight
-                                        underlayColor={colorPrimaryDark}
-                                        style={globalStyles.footerButton}
-                                        onPress={handleOnRequest}
-                                    >
-                                        <Text style={globalStyles.footerButtonText}>Consultar</Text>
-                                    </TouchableHighlight>
-                                </View>
+                            <View style={{
+                                flex: 1,
+                                justifyContent: "center",
+                                alignItems: "center",
+                            }}>
+                                <WaitingModal message={errorMessage} status={modalWaiting} />
                             </View>
-                        </View>
-                    </View>
-                </View>
-            </Modal>
+                        </ScrollView>
+                        {/* Footer*/}
 
-            <PageFooter>
-                {
-                    params.product.on_request ? <View style={{ flex: 1 }} >
-                        <TouchableHighlight
-                            underlayColor={colorPrimaryDark}
-                            style={globalStyles.footerButton}
-                            onPress={() => { setModalOnRequest(true) }}
+
+                        <Modal
+                            animationType="slide"
+                            transparent={true}
+                            visible={modalOnRequest}
                         >
-                            <Text style={globalStyles.footerButtonText}>Verificar valor</Text>
-                        </TouchableHighlight>
-                    </View> : <>
-                            <View style={styles.footerContainerAmount}>
-                                <View style={styles.footerContainerAmountRow}>
-                                    <View style={styles.footerContainerAmountColumnMinus}>
-                                        <TouchableOpacity
-                                            onPress={() => { handleAmount("minus") }}
-                                            disabled={
-                                                selectedProduct && selectedProduct.amount > 1 ? false : true
-                                            }
-                                        >
-                                            <Feather name="minus" style={styles.iconButtons} />
-                                        </TouchableOpacity>
+                            <View style={{
+                                flex: 1,
+                                justifyContent: "center",
+                                alignItems: "center",
+                            }}>
+                                <View style={styles.modalView}>
+                                    <View style={{ marginVertical: 5 }}>
+                                        <Feather name="message-square" size={48} color="#fe3807" />
                                     </View>
 
-                                    <View style={styles.footerContainerAmountColumnValue}>
-                                        <Text style={styles.iconButtons}>{selectedProduct?.amount}</Text>
-                                    </View>
+                                    <View>
+                                        <View style={{ marginVertical: 5 }}>
+                                            <Text style={[globalStyles.subTitlePrimary, { textAlign: 'center' }]}>Para comprar este produto você precisa
+                                        primeiro consultar a quantidade e o total com um atendente.</Text>
+                                        </View>
 
-                                    <View style={styles.footerContainerAmountColumnPlus}>
-                                        <TouchableOpacity onPress={() => { handleAmount("plus") }}>
-                                            <Feather name="plus" style={styles.iconButtons} />
-                                        </TouchableOpacity>
+                                        <View style={{ flexDirection: 'row', marginTop: 5, width: '100%' }}>
+                                            <View style={{ flex: 0.5, marginHorizontal: 2 }}>
+                                                <TouchableHighlight
+                                                    underlayColor={colorPrimaryDark}
+                                                    style={globalStyles.footerButton}
+                                                    onPress={() => { setModalOnRequest(false) }}
+                                                >
+                                                    <Text style={globalStyles.footerButtonText}>Cancelar</Text>
+                                                </TouchableHighlight>
+                                            </View>
+                                            <View style={{ flex: 0.5, marginHorizontal: 2 }}>
+                                                <TouchableHighlight
+                                                    underlayColor={colorPrimaryDark}
+                                                    style={globalStyles.footerButton}
+                                                    onPress={handleOnRequest}
+                                                >
+                                                    <Text style={globalStyles.footerButtonText}>Consultar</Text>
+                                                </TouchableHighlight>
+                                            </View>
+                                        </View>
                                     </View>
                                 </View>
                             </View>
+                        </Modal>
 
-                            <View style={{ flex: 0.5 }}>
-                                <TouchableHighlight
-                                    underlayColor="#ff0000"
-                                    onPress={handleAddProductToCart}
-                                    disabled={selectedProduct?.price === 0.00 ? true : false}
-                                    style={globalStyles.footerButton}
-                                >
-                                    <View style={styles.footerContainerButtonRow}>
-                                        <View style={styles.footerContainerButtonColumnText}>
-                                            <Text style={styles.textButtons}>Adicionar</Text>
+                        <PageFooter>
+                            {
+                                params.product.on_request ? <View style={{ flex: 1 }} >
+                                    <TouchableHighlight
+                                        underlayColor={colorPrimaryDark}
+                                        style={globalStyles.footerButton}
+                                        onPress={() => { setModalOnRequest(true) }}
+                                    >
+                                        <Text style={globalStyles.footerButtonText}>Verificar valor</Text>
+                                    </TouchableHighlight>
+                                </View> : <>
+                                        <View style={styles.footerContainerAmount}>
+                                            <View style={styles.footerContainerAmountRow}>
+                                                <View style={styles.footerContainerAmountColumnMinus}>
+                                                    <TouchableOpacity
+                                                        onPress={() => { handleAmount("minus") }}
+                                                        disabled={
+                                                            selectedProduct && selectedProduct.amount > 1 ? false : true
+                                                        }
+                                                    >
+                                                        <Feather name="minus" style={styles.iconButtons} />
+                                                    </TouchableOpacity>
+                                                </View>
+
+                                                <View style={styles.footerContainerAmountColumnValue}>
+                                                    <Text style={styles.iconButtons}>{selectedProduct?.amount}</Text>
+                                                </View>
+
+                                                <View style={styles.footerContainerAmountColumnPlus}>
+                                                    <TouchableOpacity onPress={() => { handleAmount("plus") }}>
+                                                        <Feather name="plus" style={styles.iconButtons} />
+                                                    </TouchableOpacity>
+                                                </View>
+                                            </View>
                                         </View>
-                                        <View style={styles.footerContainerButtonColumnTotal}>
-                                            <Text style={styles.textButtons}>
-                                                {`R$ ${selectedProduct && Number(selectedProduct.total).toFixed(2).toString().replace('.', ',')}`}
-                                            </Text>
+
+                                        <View style={{ flex: 0.5 }}>
+                                            <TouchableHighlight
+                                                underlayColor="#ff0000"
+                                                onPress={handleAddProductToCart}
+                                                disabled={selectedProduct?.price === 0.00 ? true : false}
+                                                style={globalStyles.footerButton}
+                                            >
+                                                <View style={styles.footerContainerButtonRow}>
+                                                    <View style={styles.footerContainerButtonColumnText}>
+                                                        <Text style={styles.textButtons}>Adicionar</Text>
+                                                    </View>
+                                                    <View style={styles.footerContainerButtonColumnTotal}>
+                                                        <Text style={styles.textButtons}>
+                                                            {`R$ ${selectedProduct && Number(selectedProduct.total).toFixed(2).toString().replace('.', ',')}`}
+                                                        </Text>
+                                                    </View>
+                                                </View>
+                                            </TouchableHighlight>
                                         </View>
-                                    </View>
-                                </TouchableHighlight>
-                            </View>
-                        </>
-                }
-            </PageFooter>
+                                    </>
+                            }
+                        </PageFooter>
+                    </> :
+                    <ProductDetailsShimmer />
+            }
         </>
     );
 }
@@ -545,13 +565,6 @@ const styles = StyleSheet.create({
         height: 180,
         alignItems: 'center',
         justifyContent: 'center'
-    },
-
-    avatar: {
-        width: 75,
-        height: 75,
-        resizeMode: 'cover',
-        borderRadius: 100
     },
 
     productTitle: {

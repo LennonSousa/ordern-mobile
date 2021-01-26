@@ -4,7 +4,7 @@ import { Restaurant } from '../components/Restaurant';
 
 interface RestaurantContextData {
     restaurant: Restaurant | undefined;
-    handleRestaurant(categories: Restaurant): void;
+    handleRestaurant(restaurantItem: Restaurant): void;
 }
 
 const RestaurantContext = createContext<RestaurantContextData>({} as RestaurantContextData);

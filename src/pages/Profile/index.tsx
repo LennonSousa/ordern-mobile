@@ -10,10 +10,13 @@ import { AuthContext } from '../../context/authContext';
 import { CustomerContext } from '../../context/customerContext';
 import Header from '../../components/PageHeader';
 import Input from '../../components/Interfaces/Inputs';
+import PasswordInput from '../../components/Interfaces/PasswordInput';
 import InvalidFeedback from '../../components/Interfaces/InvalidFeedback';
 import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingModal';
 
 import globalStyles from '../../assets/styles/global';
+
+const { expo } = require('../../../app.json');
 
 export default function Profile() {
     const navigation = useNavigation();
@@ -130,7 +133,9 @@ export default function Profile() {
 
                         <View style={styles.fieldsRow}>
                             <View style={styles.fieldsColumn}>
-                                <BorderlessButton>
+                                <BorderlessButton onPress={() => {
+                                    navigation.navigate('CustomerNewReset');
+                                }}>
                                     <View style={styles.menuRow}>
                                         <View style={styles.menuColumn}>
                                             <Text>Credenciais</Text>
@@ -221,12 +226,9 @@ export default function Profile() {
 
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
-                                        <Input
+                                        <PasswordInput
                                             style={styles.fieldsLogIn}
                                             title='Senha'
-                                            textContentType='password'
-                                            autoCapitalize='none'
-                                            secureTextEntry={true}
                                             onChangeText={handleChange('password')}
                                             onBlur={handleBlur('password')}
                                             value={values.password}
@@ -245,10 +247,36 @@ export default function Profile() {
 
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
-                                        <BorderlessButton onPress={() => { navigation.navigate('NewCustomer') }}>
+                                        <BorderlessButton onPress={() => { navigation.navigate('CustomerNewReset') }}>
+                                            <Text style={styles.buttonTextSignIn}>Esquecia a minha senha.</Text>
+                                        </BorderlessButton>
+                                    </View>
+                                </View>
+
+                                <View style={styles.fieldsRow}>
+                                    <View style={styles.fieldsColumn}>
+                                        <BorderlessButton onPress={() => { navigation.navigate('CustomerNew') }}>
                                             <Text style={styles.buttonTextSignIn}>Criar o meu cadastro.</Text>
                                         </BorderlessButton>
                                     </View>
+                                </View>
+
+                                <View style={styles.fieldsRow}>
+                                    <View style={{ flex: 0.5 }}>
+                                        <BorderlessButton onPress={() => { navigation.navigate('PrivacyTerms', { type: "terms" }) }}>
+                                            <Text style={[globalStyles.textsDescriptionMenu, { textAlign: 'center' }]}>Termos de uso.</Text>
+                                        </BorderlessButton>
+                                    </View>
+
+                                    <View style={{ flex: 0.5 }}>
+                                        <BorderlessButton onPress={() => { navigation.navigate('PrivacyTerms', { type: "privacy" }) }}>
+                                            <Text style={[globalStyles.textsDescriptionMenu, { textAlign: 'center' }]}>Políticas de privacidade.</Text>
+                                        </BorderlessButton>
+                                    </View>
+                                </View>
+
+                                <View style={styles.fieldsRow}>
+                                    <Text style={[globalStyles.textsDescriptionMenu, { textAlign: 'center' }]}>{`Versão do aplicativo: ${expo.version}`}</Text>
                                 </View>
                             </ScrollView>
                         )}

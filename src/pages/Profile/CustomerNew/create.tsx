@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet, View, Text, TouchableHighlight, ScrollView, Platform } from 'react-native';
-import { BorderlessButton } from 'react-native-gesture-handler';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -57,7 +56,7 @@ export default function NewClient() {
                 }}
                 onSubmit={async values => {
                     try {
-                        const res = await api.post('clients', {
+                        const res = await api.post('customer', {
                             "name": values.name,
                             "cpf": values.cpf,
                             "birth": birth,

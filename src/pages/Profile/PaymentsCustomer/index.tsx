@@ -4,10 +4,11 @@ import { BorderlessButton, TouchableOpacity } from 'react-native-gesture-handler
 import { Feather } from '@expo/vector-icons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+
 import creditCardType, {
     getTypeInfo,
     types as CardType,
-  } from "credit-card-type";
+} from "credit-card-type";
 
 import api from '../../../services/api';
 
@@ -15,6 +16,7 @@ import { CustomerContext } from '../../../context/customerContext';
 import { CustomerPayment } from '../../../components/CustomerPayments';
 import Input from '../../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
+import WaitingModal, { statusModal } from '../../../components/Interfaces/WaitingModal';
 
 export default function PaymentsCustomer() {
     const { customer, handleCustomer } = useContext(CustomerContext);
@@ -25,10 +27,13 @@ export default function PaymentsCustomer() {
     const [containerNewPayment, setContainerNewPayment] = useState(false);
     const [buttonDeletePayment, setButtonDeletePayment] = useState(true);
 
+    const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
+    const [errorMessage, setErrorMessage] = useState('');
+
     const validatiionSchema = Yup.object().shape({
         card_number: Yup.string().required('Obrigatório!').max(16, 'Deve conter no máximo 16 caracteres!'),
-        exp_month: Yup.number().required('Obigatório!').min(2, 'Mês inválido!'),
-        exp_year: Yup.number().required('Obigatório!').min(4, 'Ano inválido!'),
+        exp_month: Yup.string().required('Obigatório!').min(2, 'Mês inválido!'),
+        exp_year: Yup.string().required('Obrigatório!').min(4, 'Ano inválido!'),
         name: Yup.string().required('Obigatório!'),
         cpf: Yup.string().required('Obigatório!')
     });
@@ -50,6 +55,8 @@ export default function PaymentsCustomer() {
     async function handleDeleteAddress(id: number) {
         try {
             if (customer) {
+                setModalWaiting("waiting");
+
                 await api.delete(`customer/payments/${id}`);
 
                 const res = await api.get(`customer/${customer.id}`);
@@ -59,10 +66,13 @@ export default function PaymentsCustomer() {
                 setContainerNewPayment(false);
                 setSelectedCustomerPayment(null);
                 setButtonDeletePayment(true);
+
+                setModalWaiting("hidden");
             }
         }
         catch {
-
+            setModalWaiting("error");
+            setErrorMessage("Algo deu errado com a sua solicitação.");
         }
     }
 
@@ -112,26 +122,28 @@ export default function PaymentsCustomer() {
                         onSubmit={async values => {
                             if (customer) {
                                 try {
+                                    setModalWaiting("waiting");
+
                                     if (selectedCustomerPayment) {
                                         await api.put(`customer/payments/${selectedCustomerPayment.id}`, {
-                                            "card_number": values.card_number,
-                                            "brand": values.brand,
-                                            "exp_month": values.exp_month,
-                                            "exp_year": values.exp_year,
-                                            "name": values.name,
-                                            "cpf": values.cpf,
-                                            "customer": customer.id
+                                            card_number: values.card_number,
+                                            brand: values.brand,
+                                            exp_month: values.exp_month,
+                                            exp_year: values.exp_year,
+                                            name: values.name,
+                                            cpf: values.cpf,
+                                            customer: customer.id
                                         });
                                     }
                                     else {
                                         await api.post('customer/payments', {
-                                            "card_number": values.card_number,
-                                            "brand": values.brand,
-                                            "exp_month": values.exp_month,
-                                            "exp_year": values.exp_year,
-                                            "name": values.name,
-                                            "cpf": values.cpf,
-                                            "customer": customer.id
+                                            card_number: values.card_number,
+                                            brand: values.brand,
+                                            exp_month: values.exp_month,
+                                            exp_year: values.exp_year,
+                                            name: values.name,
+                                            cpf: values.cpf,
+                                            customer: customer.id
                                         });
                                     }
 
@@ -141,14 +153,16 @@ export default function PaymentsCustomer() {
 
                                     setContainerNewPayment(false);
                                     setSelectedCustomerPayment(null);
+
+                                    setModalWaiting("hidden");
                                 }
                                 catch {
-
+                                    setModalWaiting("error");
+                                    setErrorMessage("Algo deu errado com a sua solicitação.");
                                 }
                             }
                         }}
                         validationSchema={validatiionSchema}
-                        validateOnChange={false}
                     >
                         {({ handleChange, handleBlur, handleSubmit, values, errors, setFieldValue }) => (
                             <View style={styles.containerItem}>
@@ -163,7 +177,7 @@ export default function PaymentsCustomer() {
                                 </View>
 
                                 <View style={styles.fieldsRow}>
-                                    <View style={{ flex: 0.7 }}>
+                                    <View style={{ flex: 1 }}>
                                         <Input
                                             style={styles.fieldsLogIn}
                                             title='Número do cartão'
@@ -174,13 +188,17 @@ export default function PaymentsCustomer() {
                                             onChangeText={e => {
                                                 setFieldValue('card_number', e);
                                                 setFieldValue('brand', values.card_number.length >= 15 ? creditCardType(values.card_number).length !== 0 ? (creditCardType(values.card_number)[0].niceType) : '' : '')
-                                        }}
+                                            }}
                                             value={values.card_number}
                                         />
-                                        <InvalidFeedback message={errors.card_number}></InvalidFeedback>
-                                    </View>
-                                    <View style={{ flex: 0.2, marginHorizontal: 10 }}>
-                                        <InvalidFeedback message={values.brand}></InvalidFeedback>
+                                        <View style={styles.fieldsRow}>
+                                            <View style={{ flex: 0.5 }}>
+                                                <InvalidFeedback message={errors.card_number}></InvalidFeedback>
+                                            </View>
+                                            <View style={{ flex: 0.5, alignItems: 'flex-end' }}>
+                                                <InvalidFeedback message={values.brand}></InvalidFeedback>
+                                            </View>
+                                        </View>
                                     </View>
                                 </View>
 
@@ -189,6 +207,7 @@ export default function PaymentsCustomer() {
                                         <Input
                                             style={styles.fieldsLogIn}
                                             title='Mês'
+                                            placeholder='xx'
                                             keyboardType='numeric'
                                             maxLength={2}
                                             onChangeText={handleChange('exp_month')}
@@ -201,6 +220,7 @@ export default function PaymentsCustomer() {
                                         <Input
                                             style={styles.fieldsLogIn}
                                             title='Ano'
+                                            placeholder='xxxx'
                                             keyboardType='numeric'
                                             maxLength={4}
                                             onChangeText={handleChange('exp_year')}
@@ -314,6 +334,14 @@ export default function PaymentsCustomer() {
                     })
                 }
             </ScrollView>
+
+            <View style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+            }}>
+                <WaitingModal message={errorMessage} status={modalWaiting} />
+            </View>
         </View>
     )
 }

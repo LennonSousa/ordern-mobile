@@ -18,12 +18,19 @@ import Payment from './pages/Payment';
 import Profile from './pages/Profile';
 import ProductDetails from './pages/ProductDetails';
 import CategoryAdditionals from './components/ProductCategories';
-import NewCustomer from './pages/Profile/NewCustomer';
+import CustomerNew from './pages/Profile/CustomerNew';
+import CreateCustomer from './pages/Profile/CustomerNew/create';
+
+import CustomerNewReset from './pages/Profile/CustomerReset/index'
+import CustomerReset from './pages/Profile/CustomerReset/reset'
+
 import CustomerUpdate from './pages/Profile/UpdateCustomer';
 import OrdersList from './pages/OrdersList';
 import AddressCustomer from './pages/Profile/AddressCustomer';
 import PaymentsCustomer from './pages/Profile/PaymentsCustomer';
 import OrderDetails from './pages/OrderDetails';
+
+import PrivacyTerms from './pages/PricacyTerms';
 
 function HomeTabs() {
     const { order } = useContext(ContextOrdering);
@@ -107,11 +114,38 @@ export default function Routes() {
                 />
 
                 <Stack.Screen
-                    name="NewCustomer"
-                    component={NewCustomer}
+                    name="CustomerNew"
+                    component={CustomerNew}
                     options={{
                         headerShown: true,
                         header: () => <Header title="Vamos começar!" showCancel={false} />
+                    }}
+                />
+
+                <Stack.Screen
+                    name="CreateCustomer"
+                    component={CreateCustomer}
+                    options={{
+                        headerShown: true,
+                        header: () => <Header title="Criar o seu cadastro" showCancel={false} />
+                    }}
+                />
+
+                <Stack.Screen
+                    name="CustomerNewReset"
+                    component={CustomerNewReset}
+                    options={{
+                        headerShown: true,
+                        header: () => <Header title="Vamos começar!" showCancel={false} />
+                    }}
+                />
+
+                <Stack.Screen
+                    name="CustomerReset"
+                    component={CustomerReset}
+                    options={{
+                        headerShown: true,
+                        header: () => <Header title="Redefinir senha" showCancel={false} />
                     }}
                 />
 
@@ -177,6 +211,11 @@ export default function Routes() {
                 <Stack.Screen
                     name="OrderDetails"
                     component={OrderDetails}
+                />
+
+                <Stack.Screen
+                    name="PrivacyTerms"
+                    component={PrivacyTerms}
                 />
             </Stack.Navigator>
         </NavigationContainer>

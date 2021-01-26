@@ -12,4 +12,7 @@ export interface Restaurant {
     group: string;
     city: string;
     country: string;
+    latitude: string;
+    longitude: string;
+    free_shipping: number;
 }

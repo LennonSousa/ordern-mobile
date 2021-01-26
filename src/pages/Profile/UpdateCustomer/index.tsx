@@ -13,6 +13,7 @@ import api from '../../../services/api';
 import { CustomerContext } from '../../../context/customerContext';
 import Input from '../../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
+import WaitingModal, { statusModal } from '../../../components/Interfaces/WaitingModal';
 
 import globalStyles, { colorPrimaryDark } from '../../../assets/styles/global';
 
@@ -24,11 +25,8 @@ export default function CustomerUpdate() {
 
     const [birth, setBirth] = useState(new Date());
 
-    const [modalWaiting, setModalWaiting] = useState(false);
-    const [circleWaiting, setCircleWaiting] = useState(true);
-    const [successWaiting, setSuccessWaiting] = useState(false);
-    const [errorWaiting, setErrorWaiting] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('Erro desconhecido.');
+    const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         if (customer) {
@@ -57,40 +55,31 @@ export default function CustomerUpdate() {
                         password: ''
                     }}
                     onSubmit={async values => {
-                        setCircleWaiting(true);
-                        setSuccessWaiting(false);
-                        setErrorWaiting(false);
-
-                        setModalWaiting(true);
+                        setModalWaiting("waiting");
 
                         try {
                             await api.put(`customer/${customer.id}`, {
-                                "name": values.name,
-                                "cpf": values.cpf,
-                                "birth": birth,
-                                "phone": values.phone,
-                                "active": true,
-                                "paused": false,
+                                name: values.name,
+                                cpf: values.cpf,
+                                birth: birth,
+                                phone: values.phone,
+                                active: true,
+                                paused: false,
                             });
 
                             const updatedCustomer = await api.get(`customer/${customer.id}`);
 
-                            setCircleWaiting(false);
-                            setSuccessWaiting(true);
+                            setModalWaiting("success");
 
                             handleCustomer(updatedCustomer.data);
 
                             setTimeout(() => {
-                                setModalWaiting(false);
-
-                                setCircleWaiting(true);
-                                setSuccessWaiting(false);
-                                setErrorWaiting(false);
+                                setModalWaiting("hidden");
                             }, 1500);
                         }
                         catch (err) {
-                            setCircleWaiting(false);
-                            setErrorWaiting(true);
+                            setModalWaiting("error");
+                            setErrorMessage("Algo deu errado com a sua solicitação.");
 
                             console.log(err);
                         }
@@ -126,6 +115,20 @@ export default function CustomerUpdate() {
                                         value={values.name}
                                     />
                                     <InvalidFeedback message={errors.name}></InvalidFeedback>
+                                </View>
+                            </View>
+
+                            <View style={globalStyles.fieldsRow}>
+                                <View style={globalStyles.fieldsColumn}>
+                                    <Input
+                                        style={globalStyles.fieldsLogIn}
+                                        title='E-mail'
+                                        textContentType='emailAddress'
+                                        autoCapitalize='none'
+                                        keyboardType='email-address'
+                                        editable={false}
+                                        value={customer.email}
+                                    />
                                 </View>
                             </View>
 
@@ -219,54 +222,13 @@ export default function CustomerUpdate() {
                     )}
                 </Formik>
             }
+
             <View style={{
                 flex: 1,
                 justifyContent: "center",
                 alignItems: "center",
             }}>
-                <Modal
-                    animationType="slide"
-                    transparent={true}
-                    visible={modalWaiting}
-                >
-                    <View style={{
-                        flex: 1,
-                        justifyContent: "center",
-                        alignItems: "center",
-                    }}>
-                        <View style={styles.modalView}>
-                            <View style={{ marginVertical: 5 }}>
-                                {
-                                    circleWaiting && <ActivityIndicator size="large" color="#fe3807" />
-                                }
-                                {
-                                    successWaiting && <FontAwesome5 name="check-circle" size={48} color="#33cc33" />
-                                }
-                                {
-                                    errorWaiting && <FontAwesome5 name="times-circle" size={48} color="#fe3807" />
-                                }
-                            </View>
-
-                            {
-                                errorWaiting && <View>
-                                    <View style={{ marginVertical: 5 }}>
-                                        <Text style={[globalStyles.subTitlePrimary, { textAlign: 'center' }]}>{errorMessage}</Text>
-                                    </View>
-
-                                    <View style={{ marginVertical: 5 }}>
-                                        <TouchableHighlight
-                                            underlayColor={colorPrimaryDark}
-                                            style={globalStyles.footerButton}
-                                            onPress={() => setModalWaiting(false)}
-                                        >
-                                            <Text style={globalStyles.footerButtonText}>Entendi!</Text>
-                                        </TouchableHighlight>
-                                    </View>
-                                </View>
-                            }
-                        </View>
-                    </View>
-                </Modal>
+                <WaitingModal message={errorMessage} status={modalWaiting} />
             </View>
         </ScrollView>
     )

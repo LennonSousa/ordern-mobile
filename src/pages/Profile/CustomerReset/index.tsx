@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableHighlight, ScrollView } from 'react-native';
-import { BorderlessButton } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { Formik } from 'formik';
@@ -10,22 +9,24 @@ import api from '../../../services/api';
 
 import Input from '../../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
+import WaitingModal, { statusModal } from '../../../components/Interfaces/WaitingModal';
 
-export default function NewClient() {
+export default function CustomerReset() {
     const navigation = useNavigation();
 
     const [emailState, setEmailState] = useState('');
 
     const [emailSended, setEmailSended] = useState(false);
-    const [messageErrorLogin, setMessageErrorLogin] = useState(false);
-    const [messageTokenIncorrect, setMessageTokenIncorrect] = useState(false);
+
+    const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
+    const [errorMessage, setErrorMessage] = useState('');
 
     const validatiionSchema01 = Yup.object().shape({
         email: Yup.string().email('E-mail inválido!').required('Você precisa preencher o seu e-mail!')
     });
 
     const validatiionSchema02 = Yup.object().shape({
-        token: Yup.string().required('Obrigatório!').min(4, 'Deve conter no mínimo 4 caracteres!').max(4, 'Deve conter no máximo 4 caracteres!')
+        token: Yup.string().required('Obrigatório!').min(6, 'Deve conter no mínimo 6 caracteres!').max(6, 'Deve conter no máximo 6 caracteres!')
     });
 
     return (
@@ -36,21 +37,34 @@ export default function NewClient() {
                         initialValues={{ token: '' }}
                         onSubmit={async values => {
                             if (emailState !== '' && values.token !== '') {
+                                setModalWaiting("waiting");
+
                                 try {
-                                    const res = await api.put('customer/new', { email: emailState, token: values.token });
+                                    const res = await api.put('customer/reset', { email: emailState, token: values.token },
+                                        {
+                                            validateStatus: function (status) {
+                                                return status < 500; // Resolve only if the status code is less than 500
+                                            }
+                                        });
 
                                     if (res.status === 201) {
-                                        setMessageErrorLogin(false);
+                                        setModalWaiting("hidden");
 
-                                        navigation.navigate('CreateCustomer',
+                                        navigation.navigate('CustomerReset',
                                             {
                                                 email: res.data.email,
-                                                token: res.data.token
+                                                token: res.data.token,
+                                                customer: res.data.customer
                                             });
+                                    }
+                                    else {
+                                        setModalWaiting("error");
+                                        setErrorMessage("Código incorreto.");
                                     }
                                 }
                                 catch {
-                                    setMessageTokenIncorrect(true);
+                                    setModalWaiting("error");
+                                    setErrorMessage("Algo deu errado com a sua solicitação.");
                                 }
                             }
                         }}
@@ -84,7 +98,7 @@ export default function NewClient() {
                                             textContentType='password'
                                             autoCapitalize='none'
                                             onChangeText={handleChange('token')}
-                                            onBlur={() => { handleBlur('token'); setMessageTokenIncorrect(false); }}
+                                            onBlur={() => { handleBlur('token') }}
                                             value={values.token}
                                         />
                                         <InvalidFeedback message={errors.token}></InvalidFeedback>
@@ -95,9 +109,6 @@ export default function NewClient() {
                                     <TouchableHighlight underlayColor='#cc0000' style={styles.footerButton} onPress={handleSubmit as any}>
                                         <Text style={styles.footerButtonText}>Confirmar</Text>
                                     </TouchableHighlight>
-                                    {
-                                        messageTokenIncorrect && <InvalidFeedback message="Código incorreto!"></InvalidFeedback>
-                                    }
                                 </View>
                             </ScrollView>
                         )}
@@ -107,17 +118,25 @@ export default function NewClient() {
                         onSubmit={async values => {
                             if (values.email !== '') {
                                 try {
-                                    const res = await api.post('customer/new', { email: values.email });
+                                    setModalWaiting("waiting");
 
-                                    if (res.status === 200) {
-                                        setMessageErrorLogin(true);
+                                    const res = await api.post('customer/reset', { email: values.email });
+
+                                    if (res.status === 204) {
+                                        setModalWaiting("error");
+                                        setErrorMessage("E-mail não cadastrado!");
                                     }
-                                    else if (res.status === 204) {
+                                    else if (res.status === 200) {
                                         setEmailState(values.email);
                                         setEmailSended(true);
+
+                                        setModalWaiting("hidden");
                                     }
                                 }
-                                catch { }
+                                catch {
+                                    setModalWaiting("error");
+                                    setErrorMessage("Algo deu errado com a sua solicitação.");
+                                }
                             }
                         }}
                         validationSchema={validatiionSchema01}
@@ -133,7 +152,7 @@ export default function NewClient() {
                                             autoCapitalize='none'
                                             keyboardType='email-address'
                                             onChangeText={handleChange('email')}
-                                            onBlur={() => { handleBlur('email'); setMessageErrorLogin(false); }}
+                                            onBlur={() => { handleBlur('email') }}
                                             value={values.email}
                                         />
                                         <InvalidFeedback message={errors.email}></InvalidFeedback>
@@ -145,23 +164,20 @@ export default function NewClient() {
                                         <TouchableHighlight underlayColor='#cc0000' style={styles.buttonLogIn} onPress={handleSubmit as any} >
                                             <Text style={styles.buttonTextLogIn}>Avançar</Text>
                                         </TouchableHighlight>
-                                        {
-                                            messageErrorLogin && <InvalidFeedback message="E-mail já cadastrado!"></InvalidFeedback>
-                                        }
-                                    </View>
-                                </View>
-
-                                <View style={styles.fieldsRow}>
-                                    <View style={styles.fieldsColumn}>
-                                        <BorderlessButton onPress={() => { navigation.navigate('Profile') }}>
-                                            <Text style={styles.buttonTextSignIn}>Já tenho cadastro!</Text>
-                                        </BorderlessButton>
                                     </View>
                                 </View>
                             </ScrollView>
                         )}
                     </Formik>
             }
+
+            <View style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+            }}>
+                <WaitingModal message={errorMessage} status={modalWaiting} />
+            </View>
         </View >
     )
 }

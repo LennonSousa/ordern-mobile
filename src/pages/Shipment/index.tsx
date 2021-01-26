@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, Switch, View, TouchableHighlight, Dimensions } from 'react-native';
+import { ScrollView, StyleSheet, Text, Switch, View, TouchableHighlight } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Marker, Callout } from 'react-native-maps';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -150,35 +150,38 @@ export default function Shipment() {
                     </View>
                 </View>
 
-                <View style={[globalStyles.row, { marginVertical: 0, width: '100%', height: 250 }]}>
-                    <View style={[globalStyles.column, { alignItems: 'center' }]}>
-                        <MapView
-                            style={styles.mapContainer}
-                            provider={PROVIDER_GOOGLE}
-                            initialRegion={{
-                                latitude: -5.4984682505722775,
-                                longitude: -47.477012644130255,
-                                latitudeDelta: 0.008,
-                                longitudeDelta: 0.008
-                            }}
-                        >
-                            <Marker
-                                icon={restaurant ? restaurant.avatar : pickupShipment}
-                                style={{ width: 15, height: 15 }}
-                                coordinate={{
-                                    latitude: -5.4984682505722775,
-                                    longitude: -47.477012644130255,
+                {
+                    restaurant && <View style={[globalStyles.row, { marginVertical: 0, width: '100%', height: 250 }]}>
+                        <View style={[globalStyles.column, { alignItems: 'center' }]}>
+                            <MapView
+                                style={styles.mapContainer}
+                                provider={PROVIDER_GOOGLE}
+                                initialRegion={{
+                                    latitude: Number(restaurant.latitude),
+                                    longitude: Number(restaurant.longitude),
+                                    latitudeDelta: 0.008,
+                                    longitudeDelta: 0.008
                                 }}
                             >
-                                <Callout tooltip>
-                                    <View>
-                                        <Text>Oi</Text>
-                                    </View>
-                                </Callout>
-                            </Marker>
-                        </MapView>
+                                <Marker
+                                    icon={restaurant ? restaurant.avatar : pickupShipment}
+                                    style={{ width: 15, height: 15 }}
+                                    coordinate={{
+                                        latitude: Number(restaurant.latitude),
+                                        longitude: Number(restaurant.longitude),
+                                    }}
+                                >
+                                    <Callout tooltip>
+                                        <View>
+                                            <Text>Oi</Text>
+                                        </View>
+                                    </Callout>
+                                </Marker>
+                            </MapView>
+                        </View>
                     </View>
-                </View>
+                }
+
                 <View style={[globalStyles.row, { marginTop: 0, marginBottom: 10 }]}>
                     <View style={[globalStyles.column, { alignItems: 'center' }]}>
                         <Text style={globalStyles.titlePrimaryLight}>Nosso endereço</Text>

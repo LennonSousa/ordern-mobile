@@ -29,11 +29,15 @@ export default function WaitingModal({ status, message }: WaitingModalProps) {
         else if (status === 'success') {
             setCircleWaiting(false);
             setSuccessWaiting(true);
+
+            setModalWaiting(true);
         }
         else if (status === 'error') {
             setCircleWaiting(false);
             setErrorWaiting(true);
             setErrorMessage(message);
+
+            setModalWaiting(true);
         }
         else if (status === 'hidden') {
             setModalWaiting(false);

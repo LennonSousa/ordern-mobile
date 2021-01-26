@@ -12,6 +12,7 @@ import { CustomerContext } from '../../../context/customerContext';
 import { CustomerAddress } from '../../../components/CustomerAddress';
 import Input from '../../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
+import WaitingModal, { statusModal } from '../../../components/Interfaces/WaitingModal';
 
 export default function AddressCustomer() {
     const { customer, handleCustomer } = useContext(CustomerContext);
@@ -21,6 +22,9 @@ export default function AddressCustomer() {
 
     const [containerNewAddress, setContainerNewAddress] = useState(false);
     const [buttonDeleteAddress, setButtonDeleteAddress] = useState(true);
+
+    const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
+    const [errorMessage, setErrorMessage] = useState('');
 
     const validatiionSchema = Yup.object().shape({
         zip_code: Yup.string().required('Obrigatório!').max(8, 'Deve conter no máximo 8 caracteres!'),
@@ -48,6 +52,8 @@ export default function AddressCustomer() {
     async function handleDeleteAddress(id: number) {
         try {
             if (customer) {
+                setModalWaiting("waiting");
+
                 await api.delete(`customer/address/${id}`);
 
                 const res = await api.get(`customer/${customer.id}`);
@@ -57,10 +63,13 @@ export default function AddressCustomer() {
                 setContainerNewAddress(false);
                 setSelectedCustomerAddress(null);
                 setButtonDeleteAddress(true);
+
+                setModalWaiting("hidden");
             }
         }
         catch {
-
+            setModalWaiting("error");
+            setErrorMessage("Algo deu errado com a sua solicitação.");
         }
     }
 
@@ -112,30 +121,32 @@ export default function AddressCustomer() {
                         onSubmit={async values => {
                             if (customer) {
                                 try {
+                                    setModalWaiting("waiting");
+
                                     if (selectedCustomerAddress) {
                                         await api.put(`customer/address/${selectedCustomerAddress.id}`, {
-                                            "zip_code": values.zip_code,
-                                            "street": values.street,
-                                            "number": values.number,
-                                            "group": values.group,
-                                            "complement": values.complement,
-                                            "city": values.city,
-                                            "country": values.country,
-                                            "type": values.type,
-                                            "customer": customer.id
+                                            zip_code: values.zip_code,
+                                            street: values.street,
+                                            number: values.number,
+                                            group: values.group,
+                                            complement: values.complement,
+                                            city: values.city,
+                                            country: values.country,
+                                            type: values.type,
+                                            customer: customer.id
                                         });
                                     }
                                     else {
                                         await api.post('customer/address', {
-                                            "zip_code": values.zip_code,
-                                            "street": values.street,
-                                            "number": values.number,
-                                            "group": values.group,
-                                            "complement": values.complement,
-                                            "city": values.city,
-                                            "country": values.country,
-                                            "type": values.type,
-                                            "customer": customer.id
+                                            zip_code: values.zip_code,
+                                            street: values.street,
+                                            number: values.number,
+                                            group: values.group,
+                                            complement: values.complement,
+                                            city: values.city,
+                                            country: values.country,
+                                            type: values.type,
+                                            customer: customer.id
                                         });
                                     }
 
@@ -145,9 +156,12 @@ export default function AddressCustomer() {
 
                                     setContainerNewAddress(false);
                                     setSelectedCustomerAddress(null);
+
+                                    setModalWaiting("hidden");
                                 }
                                 catch {
-
+                                    setModalWaiting("error");
+                                    setErrorMessage("Algo deu errado com a sua solicitação.");
                                 }
                             }
                         }}
@@ -398,6 +412,14 @@ export default function AddressCustomer() {
                     })
                 }
             </ScrollView>
+
+            <View style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+            }}>
+                <WaitingModal message={errorMessage} status={modalWaiting} />
+            </View>
         </View>
     )
 }
