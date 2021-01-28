@@ -34,6 +34,7 @@ import PrivacyTerms from './pages/PricacyTerms';
 
 function HomeTabs() {
     const { order } = useContext(ContextOrdering);
+
     const [amountOrderItems, setAmountOrderItems] = useState(0);
 
     useEffect(() => {

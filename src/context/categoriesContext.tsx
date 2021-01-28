@@ -4,13 +4,13 @@ import { Category } from '../components/Categories';
 
 interface CategoriesContextData {
     categories: Category[] | undefined;
-    handleCategories(categories: Category[]): void;
+    handleCategories(categories: Category[] | undefined): void;
 }
 
 const CategoriesContext = createContext<CategoriesContextData>({} as CategoriesContextData);
 
 const CategoriesProvider: React.FC = ({ children }) => {
-    const [categories, setCategories] = useState<Category[]>([]);
+    const [categories, setCategories] = useState<Category[] | undefined>([]);
 
     function handleCategories(categories: Category[]) {
         setCategories(categories);

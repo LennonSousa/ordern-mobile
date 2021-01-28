@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-community/async-storage';
+import * as SecureStore from 'expo-secure-store';
 
 import api from '../services/api';
+
 import { CustomerContext } from '../context/customerContext';
 
 interface AuthContextData {
@@ -18,24 +20,46 @@ const AuthProvider: React.FC = ({ children }) => {
     const [signed, setSigned] = useState(false);
     const [loading, setLoading] = useState(true);
 
+    async function trySignin() {
+        //console.log('Recuperando login e senha...');
+
+        if (SecureStore.isAvailableAsync()) {
+            //console.log('SecureStore is availables.');
+
+            const emailLogin = await SecureStore.getItemAsync('emailLogin');
+            const password = await SecureStore.getItemAsync('password');
+
+            //console.log('emailLogin && password', emailLogin, password);
+
+            if (emailLogin && password) {
+                handleLogin(emailLogin, password);
+            }
+            else {
+                setSigned(false);
+            }
+        }
+        else {
+            const emailLogin = await AsyncStorage.getItem('emailLogin');
+            const password = await AsyncStorage.getItem('password');
+
+            //console.log('emailLogin && password', emailLogin, password);
+
+            if (emailLogin && password) {
+                handleLogin(emailLogin, password);
+            }
+            else {
+                setSigned(false);
+            }
+        }
+    }
+
     useEffect(() => {
         try {
-            async () => {
-                const storagedCustomer = await AsyncStorage.getItem('customer');
-                const storagedToken = await AsyncStorage.getItem('token');
+            //console.log('Auth provider useEffect...');
 
-                if (storagedCustomer && storagedToken) {
-                    api.defaults.headers['Authorization'] = `Bearer ${storagedToken}`;
-
-                    handleCustomer(JSON.parse(storagedCustomer));
-                    setSigned(true);
-                }
-                else {
-                    setSigned(false);
-                }
-            }
+            trySignin();
         } catch (error) {
-            console.log('error client authentication: ', error);
+            //console.log('error customer authentication: ', error);
             setSigned(false);
         }
 
@@ -43,6 +67,8 @@ const AuthProvider: React.FC = ({ children }) => {
     }, []);
 
     async function handleLogin(emailLogin: string, password: string) {
+        //console.log('Login...');
+
         try {
             const res = await api.post('customer/authenticate', {
                 email: emailLogin,
@@ -68,21 +94,37 @@ const AuthProvider: React.FC = ({ children }) => {
 
             api.defaults.headers['Authorization'] = `Bearer ${token}`;
 
-            await AsyncStorage.setItem('customer', JSON.stringify(JSON.stringify({ id, name, email })));
-            await AsyncStorage.setItem('token', token);
+            if (SecureStore.isAvailableAsync()) {
+                //console.log('SecureStore is availables.');
+
+                await SecureStore.setItemAsync('emailLogin', emailLogin);
+                await SecureStore.setItemAsync('password', password);
+            }
+            else {
+                await AsyncStorage.setItem('emailLogin', emailLogin);
+                await AsyncStorage.setItem('password', password);
+            }
+
+            //console.log('Sucesso...');
 
             setSigned(true);
 
             return true;
         }
         catch (error) {
-            console.log('error get customer authentication', error);
+            //console.log('error get customer authentication', error);
             return false;
         }
     }
 
     async function handleLogout() {
+        if (SecureStore.isAvailableAsync()) {
+            await SecureStore.deleteItemAsync('emailLogin');
+            await SecureStore.deleteItemAsync('password');
+        }
+
         await AsyncStorage.clear();
+        
         setSigned(false);
         api.defaults.headers.Authorization = undefined;
     }

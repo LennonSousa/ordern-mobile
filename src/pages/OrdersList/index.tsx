@@ -24,20 +24,16 @@ export default function OrdersList() {
 
     useEffect(() => {
         if (customer) {
-            const unsubscribe = navigation.addListener('focus', () => {
-                setOrdersList(undefined);
+            setOrdersList(undefined);
 
-                api.get(`customer/orders/${customer.id}`).then(res => {
-                    setOrdersList(res.data);
-                })
-                    .catch(() => {
-                        setOrdersList(undefined);
-                    });
-            });
-
-            return unsubscribe;
+            api.get(`customer/orders/${customer.id}`).then(res => {
+                setOrdersList(res.data);
+            })
+                .catch(() => {
+                    setOrdersList(undefined);
+                });
         }
-    }, [navigation]);
+    }, [customer]);
 
     const onRefresh = React.useCallback(() => {
         setRefreshing(true);

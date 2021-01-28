@@ -248,7 +248,7 @@ export default function Profile() {
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
                                         <BorderlessButton onPress={() => { navigation.navigate('CustomerNewReset') }}>
-                                            <Text style={styles.buttonTextSignIn}>Esquecia a minha senha.</Text>
+                                            <Text style={styles.buttonTextSignIn}>Esqueci a minha senha.</Text>
                                         </BorderlessButton>
                                     </View>
                                 </View>
@@ -264,13 +264,13 @@ export default function Profile() {
                                 <View style={styles.fieldsRow}>
                                     <View style={{ flex: 0.5 }}>
                                         <BorderlessButton onPress={() => { navigation.navigate('PrivacyTerms', { type: "terms" }) }}>
-                                            <Text style={[globalStyles.textsDescriptionMenu, { textAlign: 'center' }]}>Termos de uso.</Text>
+                                            <Text style={[globalStyles.textsDescriptionMenu, { textAlign: 'center' }]}>Termos de uso</Text>
                                         </BorderlessButton>
                                     </View>
 
                                     <View style={{ flex: 0.5 }}>
                                         <BorderlessButton onPress={() => { navigation.navigate('PrivacyTerms', { type: "privacy" }) }}>
-                                            <Text style={[globalStyles.textsDescriptionMenu, { textAlign: 'center' }]}>Políticas de privacidade.</Text>
+                                            <Text style={[globalStyles.textsDescriptionMenu, { textAlign: 'center' }]}>Políticas de privacidade</Text>
                                         </BorderlessButton>
                                     </View>
                                 </View>

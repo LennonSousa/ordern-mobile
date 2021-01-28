@@ -1,7 +1,8 @@
 import React, { useContext, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View, TouchableHighlight, Image, Dimensions } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
+import { OpenedDaysContext } from '../../context/openedDaysContext';
 import { CustomerContext } from '../../context/customerContext';
 import { CategoriesContext } from '../../context/categoriesContext';
 import { ContextOrdering } from '../../context/orderingContext';
@@ -22,16 +23,17 @@ interface NotAvailableProduct {
 }
 
 export default function Cart() {
+    const { isOpened } = useContext(OpenedDaysContext);
     const { customer } = useContext(CustomerContext);
     const { handleCategories } = useContext(CategoriesContext);
-    const { order, handleOrder, handleTotalOrder } = useContext(ContextOrdering);
+    const { order, handleOrder } = useContext(ContextOrdering);
     const navigation = useNavigation();
 
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
     const [errorMessage, setErrorMessage] = useState('');
 
     async function handleOrdertoShipment() {
-        if (order) {
+        if (isOpened && order) {
             setModalWaiting("waiting");
 
             try {

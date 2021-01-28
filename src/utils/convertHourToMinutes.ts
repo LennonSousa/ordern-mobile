@@ -8,7 +8,7 @@ export function convertHourToMinutes(time: String) {
 export function convertMinutesToHours(minutes: number) {
     let h = Math.floor(minutes / 60);
     let m = minutes % 60;
-    const hour = h < 10 ? '0' + h : '0' + h;
+    const hour = h < 10 ? '0' + h : h;
     const minute = m < 10 ? '0' + m : m;
     return `${hour}:${minute}`;
 }

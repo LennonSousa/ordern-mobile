@@ -5,12 +5,14 @@ import { Feather } from '@expo/vector-icons';
 
 import api from '../../services/api';
 
-import { Category } from '../../components/Categories';
-import { Product } from '../../components/Products';
-import { ProductCategory } from '../../components/ProductCategories';
+import { OpenedDaysContext } from '../../context/openedDaysContext';
 import { SelectedProductContext } from '../../context/selectedProductContext';
 import { CategoriesContext } from '../../context/categoriesContext';
 import { ContextOrdering } from '../../context/orderingContext';
+
+import { Category } from '../../components/Categories';
+import { Product } from '../../components/Products';
+import { ProductCategory } from '../../components/ProductCategories';
 import ProductValues from '../../components/ProductValues';
 import verifyProductAvailable from '../../utils/verifyProductAvailable';
 import ProductDetailsShimmer from '../../components/Shimmers/ProductDetails';
@@ -29,6 +31,7 @@ export default function ProductDetails() {
     const route = useRoute();
     const navigation = useNavigation();
 
+    const { isOpened } = useContext(OpenedDaysContext);
     const { handleCategories } = useContext(CategoriesContext);
     const { selectedProduct, handleSelectedProduct } = useContext(SelectedProductContext);
     const { order, handleTotalOrder } = useContext(ContextOrdering);
@@ -530,7 +533,7 @@ export default function ProductDetails() {
                                             <TouchableHighlight
                                                 underlayColor="#ff0000"
                                                 onPress={handleAddProductToCart}
-                                                disabled={selectedProduct?.price === 0.00 ? true : false}
+                                                disabled={selectedProduct?.price === 0.00 || !isOpened ? true : false}
                                                 style={globalStyles.footerButton}
                                             >
                                                 <View style={styles.footerContainerButtonRow}>

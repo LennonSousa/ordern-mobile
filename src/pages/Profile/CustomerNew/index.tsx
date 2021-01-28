@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableHighlight, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, TouchableHighlight, ScrollView, Switch } from 'react-native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
@@ -12,6 +12,8 @@ import Input from '../../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
 import WaitingModal, { statusModal } from '../../../components/Interfaces/WaitingModal';
 
+import globalStyles from '../../../assets/styles/global';
+
 export default function NewClient() {
     const navigation = useNavigation();
 
@@ -23,7 +25,8 @@ export default function NewClient() {
     const [errorMessage, setErrorMessage] = useState('');
 
     const validatiionSchema01 = Yup.object().shape({
-        email: Yup.string().email('E-mail inválido!').required('Você precisa preencher o seu e-mail!')
+        email: Yup.string().email('E-mail inválido!').required('Você precisa preencher o seu e-mail!'),
+        termsAccepted: Yup.boolean().isTrue('Obrigatório aceitar os termos.')
     });
 
     const validatiionSchema02 = Yup.object().shape({
@@ -114,9 +117,14 @@ export default function NewClient() {
                         )}
                     </Formik> :
                     <Formik
-                        initialValues={{ email: '' }}
+                        initialValues={
+                            {
+                                email: '',
+                                termsAccepted: false
+                            }
+                        }
                         onSubmit={async values => {
-                            if (values.email !== '') {
+                            if (values.email !== '' && values.termsAccepted) {
                                 try {
                                     setModalWaiting("waiting");
                                     const res = await api.post('customer/new', { email: values.email });
@@ -140,7 +148,7 @@ export default function NewClient() {
                         }}
                         validationSchema={validatiionSchema01}
                     >
-                        {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
+                        {({ handleChange, handleBlur, handleSubmit, values, setFieldValue, errors }) => (
                             <ScrollView style={styles.containerLogIn}>
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
@@ -160,9 +168,42 @@ export default function NewClient() {
 
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
+                                        <View style={{ flexDirection: 'row' }}>
+                                            <Text style={{ flex: 0.8 }}>Aceito os termos e condições</Text>
+                                            <Switch
+                                                style={{ flex: 0.2 }}
+                                                trackColor={{ false: "#767577", true: "#cc0000" }}
+                                                thumbColor="#f4f3f4"
+                                                ios_backgroundColor="#3e3e3e"
+                                                onValueChange={() => { setFieldValue('termsAccepted', !values.termsAccepted) }}
+                                                value={values.termsAccepted}
+                                            />
+                                        </View>
+                                        <View style={{ flexDirection: 'row' }}>
+                                            <InvalidFeedback message={errors.termsAccepted}></InvalidFeedback>
+                                        </View>
+                                    </View>
+                                </View>
+
+                                <View style={styles.fieldsRow}>
+                                    <View style={styles.fieldsColumn}>
                                         <TouchableHighlight underlayColor='#cc0000' style={styles.buttonLogIn} onPress={handleSubmit as any} >
                                             <Text style={styles.buttonTextLogIn}>Avançar</Text>
                                         </TouchableHighlight>
+                                    </View>
+                                </View>
+
+                                <View style={styles.fieldsRow}>
+                                    <View style={{ flex: 0.5 }}>
+                                        <BorderlessButton onPress={() => { navigation.navigate('PrivacyTerms', { type: "terms" }) }}>
+                                            <Text style={[globalStyles.textsDescriptionMenu, { textAlign: 'center' }]}>Termos de uso</Text>
+                                        </BorderlessButton>
+                                    </View>
+
+                                    <View style={{ flex: 0.5 }}>
+                                        <BorderlessButton onPress={() => { navigation.navigate('PrivacyTerms', { type: "privacy" }) }}>
+                                            <Text style={[globalStyles.textsDescriptionMenu, { textAlign: 'center' }]}>Políticas de privacidade</Text>
+                                        </BorderlessButton>
                                     </View>
                                 </View>
 

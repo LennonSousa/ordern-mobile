@@ -1,6 +1,6 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { View, Text, TouchableHighlight, ScrollView, RefreshControl } from 'react-native';
-import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
+import { useRoute, useFocusEffect } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -25,7 +25,6 @@ interface OrderDetailsRouteParams {
 
 export default function OrderDetails() {
     const route = useRoute();
-    const navigation = useNavigation();
     const { customer } = useContext(CustomerContext);
 
     const params = route.params as OrderDetailsRouteParams;
@@ -53,7 +52,7 @@ export default function OrderDetails() {
         }
     });
 
-    const onRefresh = React.useCallback(() => {
+    const onRefresh = useCallback(() => {
         setRefreshing(true);
         setSelectedOrder(undefined);
     }, []);
