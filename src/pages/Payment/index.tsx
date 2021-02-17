@@ -183,18 +183,29 @@ export default function Payment() {
     }
 
     const getCreditCardToken = async (creditCardData: Card) => {
-        const response = await stripeapi.post('tokens',
-            Object.keys(creditCardData)
-                .map(key => key + '=' + creditCardData[key])
-                .join('&'),
-            {
-                validateStatus: function (status) {
-                    return status < 500; // Resolve only if the status code is less than 500
-                }
+        const paymentResponse = await api.get('payment/stripe', {
+            validateStatus: function (status) {
+                return status < 500; // Resolve only if the status code is less than 500
             }
-        );
+        });
 
-        return response;
+        if (paymentResponse.status === 200) {
+            const response = await stripeapi.post('tokens',
+                Object.keys(creditCardData)
+                    .map(key => key + '=' + creditCardData[key])
+                    .join('&'),
+                {
+                    validateStatus: function (status) {
+                        return status < 500; // Resolve only if the status code is less than 500
+                    },
+                    headers: { 'Authorization': `Bearer ${paymentResponse.data.pk_live}` }
+                }
+            );
+
+            return response;
+        }
+        else
+            return paymentResponse
     }
 
     return (
