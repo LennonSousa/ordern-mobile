@@ -1,5 +1,20 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { StyleSheet, ScrollView, View, Image, Dimensions, ImageBackground, StatusBar, RefreshControl, Text, TouchableOpacity, ActivityIndicator, Modal, TouchableHighlight } from 'react-native';
+import React, { useState, useEffect, useContext, useCallback, useRef } from 'react';
+import {
+    SafeAreaView,
+    StyleSheet,
+    ScrollView,
+    View,
+    Dimensions,
+    ImageBackground,
+    StatusBar,
+    RefreshControl,
+    Text,
+    TouchableOpacity,
+    ActivityIndicator,
+    Modal,
+    TouchableHighlight,
+    Animated
+} from 'react-native';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
 
 import api from '../../services/api';
@@ -7,19 +22,32 @@ import api from '../../services/api';
 import { RestaurantContext } from '../../context/restaurantContext';
 import { OpenedDaysContext } from '../../context/openedDaysContext';
 import { CategoriesContext } from '../../context/categoriesContext';
+
+import Highlights, { Highlight } from '../../components/Highlights';
 import CategoryItem from '../../components/Categories';
 import LandingPageShimmer from '../../components/Shimmers/Landing';
 import CategoriesShimmer from '../../components/Shimmers/Categories';
 import { dayOfWeekAsInteger } from '../../utils/dayOfWeekAsInteger';
 import { convertMinutesToHours } from '../../utils/convertHourToMinutes';
 
-import globalStyles, { colorBackground, colorHighLight, colorPrimaryLight, colorPrimaryDark, colorTextDescription } from '../../assets/styles/global';
+import globalStyles, {
+    colorBackground,
+    colorHighLight,
+    colorPrimaryLight,
+    colorPrimaryDark,
+    colorTextDescription,
+    colorHeaderBackground
+} from '../../assets/styles/global';
 
 export default function LandingPage() {
     const { restaurant, handleRestaurant } = useContext(RestaurantContext);
     const { categories, handleCategories } = useContext(CategoriesContext);
 
     const { isOpened, openedDays, handleOpenedDays } = useContext(OpenedDaysContext);
+
+    const [highlights, setHighlights] = useState<Highlight[]>([]);
+
+    const [scrollY] = useState(new Animated.Value(0));
     const [businessTimeModal, setbusinessTimeModal] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
 
@@ -28,14 +56,23 @@ export default function LandingPage() {
             .then(res => {
                 handleRestaurant(res.data[0]);
 
-                api.get('categories')
+                api.get('highlights/landing')
                     .then(res => {
-                        handleCategories(res.data);
+                        setHighlights(res.data);
 
-                        handleOpenedDays();
+                        api.get('categories')
+                            .then(res => {
+                                handleCategories(res.data);
+
+                                handleOpenedDays();
+                            })
+                            .catch(err => {
+                                console.log('error get categories');
+                                console.log(err);
+                            });
                     })
                     .catch(err => {
-                        console.log('error get categories');
+                        console.log('error get highlights');
                         console.log(err);
                     });
             })
@@ -43,7 +80,6 @@ export default function LandingPage() {
                 console.log('error get restaurants');
                 console.log(err);
             });
-
     }, []);
 
     const onRefresh = useCallback(() => {
@@ -53,14 +89,32 @@ export default function LandingPage() {
 
     useEffect(() => {
         if (refreshing) {
-            api.get('categories')
+            api.get('restaurants')
                 .then(res => {
-                    handleCategories(res.data);
+                    handleRestaurant(res.data[0]);
 
-                    handleOpenedDays();
+                    api.get('highlights/landing')
+                        .then(res => {
+                            setHighlights(res.data);
+
+                            api.get('categories')
+                                .then(res => {
+                                    handleCategories(res.data);
+
+                                    handleOpenedDays();
+                                })
+                                .catch(err => {
+                                    console.log('error get categories');
+                                    console.log(err);
+                                });
+                        })
+                        .catch(err => {
+                            console.log('error get highlights');
+                            console.log(err);
+                        });
                 })
                 .catch(err => {
-                    console.log('error get categories');
+                    console.log('error get restaurants');
                     console.log(err);
                 });
 
@@ -69,46 +123,119 @@ export default function LandingPage() {
     }, [refreshing]);
 
     return (
-        <View style={globalStyles.container}>
+        <SafeAreaView style={globalStyles.container}>
             <StatusBar barStyle="dark-content" backgroundColor={colorBackground} />
             {
                 restaurant ? <>
-                    <View style={styles.containerCover}>
-                        <ImageBackground source={{ uri: restaurant.cover }} style={styles.cover}>
-                            <Image source={{ uri: restaurant.avatar }} style={styles.avatar}></Image>
+                    <Animated.View style={
+                        [
+                            styles.containerCover,
+                            {
+                                height: scrollY.interpolate({
+                                    inputRange: [0, 110],
+                                    outputRange: [110, 40],
+                                    extrapolate: 'clamp'
+                                }),
+                                position: 'relative'
+                            }
+                        ]}
+                    >
+                        <ImageBackground
+                            source={{ uri: restaurant.cover }}
+                            style={styles.cover}
+                        >
+                            <Animated.Image
+                                source={{ uri: restaurant.avatar }}
+                                style={[styles.avatar, {
+                                    width: scrollY.interpolate({
+                                        inputRange: [0, 110],
+                                        outputRange: [90, 40],
+                                        extrapolate: 'clamp'
+                                    }),
+                                    height: scrollY.interpolate({
+                                        inputRange: [0, 110],
+                                        outputRange: [90, 40],
+                                        extrapolate: 'clamp'
+                                    }),
+                                    opacity: scrollY.interpolate({
+                                        inputRange: [0, 110],
+                                        outputRange: [1, 0.25],
+                                        extrapolate: 'clamp'
+                                    })
+                                }]}
+                            ></Animated.Image>
                         </ImageBackground>
 
-                        <TouchableOpacity
-                            onPress={() => { setbusinessTimeModal(true) }}
-                            style={{
-                                width: 95,
-                                height: 30,
-                                position: 'absolute',
-                                bottom: 15,
-                                right: 5,
-                                backgroundColor: isOpened ? colorHighLight : colorPrimaryLight,
-                                borderRadius: 5,
-                                justifyContent: 'center'
-                            }}
-                        >
-                            {
-                                openedDays ? <View style={{
-                                    flexDirection: 'row', alignItems: 'center', justifyContent: 'center'
-                                }}>
-                                    <Feather
-                                        name={isOpened ? "thumbs-up" : "thumbs-down"}
-                                        size={24}
-                                        color="#ffffff"
-                                        style={{ flex: 0.3, paddingHorizontal: 5 }}
-                                    />
-                                    <Text
-                                        style={[globalStyles.textsButtonBorderMenu, { flex: 0.7, color: "#ffffff", textAlign: 'center' }]}>{isOpened ? "Aberto" : "Fechado"}
-                                    </Text>
-                                </View> :
-                                    <ActivityIndicator size="small" color="#ffffff" />
-                            }
-                        </TouchableOpacity>
-                    </View>
+                        <Animated.View style={[styles.toolsHeader, globalStyles.row, styles.withShadow, {
+                            backgroundColor: scrollY.interpolate({
+                                inputRange: [105, 110],
+                                outputRange: ['transparent', colorHeaderBackground],
+                                extrapolate: 'clamp'
+                            }),
+                            shadowOpacity: scrollY.interpolate({
+                                inputRange: [105, 110],
+                                outputRange: [0, 0.25],
+                                extrapolate: 'clamp'
+                            }),
+                            elevation: scrollY.interpolate({
+                                inputRange: [105, 110],
+                                outputRange: [0, 5],
+                                extrapolate: 'clamp'
+                            })
+                        }]}>
+                            <View style={{ flex: 0.3, justifyContent: 'center', alignItems: 'center' }}>
+                                <TouchableOpacity
+                                    onPress={() => { setbusinessTimeModal(true) }}
+                                    style={{
+                                        width: 95,
+                                        height: 30,
+                                        justifyContent: 'center'
+                                    }}
+                                >
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Feather
+                                            name="search"
+                                            size={24}
+                                            color={colorPrimaryLight}
+                                            style={{ flex: 0.3, paddingHorizontal: 5 }}
+                                        />
+                                    </View>
+                                </TouchableOpacity>
+                            </View>
+
+                            <View style={{ flex: 0.4 }}></View>
+
+                            <View style={{ flex: 0.3, alignItems: 'center' }}>
+                                <TouchableOpacity
+                                    onPress={() => { setbusinessTimeModal(true) }}
+                                    style={{
+                                        width: 95,
+                                        height: 30,
+                                        backgroundColor: isOpened ? colorHighLight : colorPrimaryLight,
+                                        borderRadius: 5,
+                                        justifyContent: 'center'
+                                    }}
+                                >
+                                    {
+                                        openedDays ? <View style={{
+                                            flexDirection: 'row', alignItems: 'center', justifyContent: 'center'
+                                        }}>
+                                            <Feather
+                                                name={isOpened ? "thumbs-up" : "thumbs-down"}
+                                                size={24}
+                                                color="#ffffff"
+                                                style={{ flex: 0.3, paddingHorizontal: 5 }}
+                                            />
+                                            <Text
+                                                style={[globalStyles.textsButtonBorderMenu, { flex: 0.7, color: "#ffffff", textAlign: 'center' }]}>{isOpened ? "Aberto" : "Fechado"}
+                                            </Text>
+                                        </View> :
+                                            <ActivityIndicator size="small" color="#ffffff" />
+                                    }
+                                </TouchableOpacity>
+                            </View>
+                        </Animated.View>
+                    </Animated.View>
                 </> :
                     <LandingPageShimmer />
             }
@@ -117,7 +244,33 @@ export default function LandingPage() {
                 categories ? <ScrollView
                     showsVerticalScrollIndicator={false}
                     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+                    scrollEventThrottle={16}
+                    onScroll={Animated.event([{
+                        nativeEvent: {
+                            contentOffset: { y: scrollY }
+                        },
+                    }],
+                        { useNativeDriver: false })}
                 >
+                    {
+                        restaurant && restaurant.highlights && highlights.length > 0 && <View style={{ flex: 1, backgroundColor: 'white', paddingTop: 10 }}>
+                            <Text style={globalStyles.titlePrimaryLight}>{restaurant.highlights_title}</Text>
+
+                            <View style={{ height: 200, marginTop: 20 }}>
+                                <ScrollView
+                                    horizontal={true}
+                                    showsHorizontalScrollIndicator={false}
+                                >
+                                    {
+                                        highlights && highlights.map((highlight, index) => {
+                                            return <Highlights key={index} highlight={highlight} />
+                                        })
+                                    }
+                                </ScrollView>
+                            </View>
+                        </View>
+                    }
+
                     {
                         categories && categories.map((category, index) => {
                             return <CategoryItem key={index} category={category} />
@@ -190,14 +343,14 @@ export default function LandingPage() {
                                     style={globalStyles.footerButton}
                                     onPress={() => { setbusinessTimeModal(false) }}
                                 >
-                                    <Text style={globalStyles.footerButtonText}>Etendi</Text>
+                                    <Text style={globalStyles.footerButtonText}>Entendi</Text>
                                 </TouchableHighlight>
                             </View>
                         </View>
                     </View>
                 </View>
             </Modal>
-        </View>
+        </SafeAreaView>
     )
 }
 
@@ -208,17 +361,31 @@ const styles = StyleSheet.create({
 
     cover: {
         width: Dimensions.get('window').width,
-        height: 110,
+        height: '100%',
         backgroundColor: '#000',
         alignItems: 'center',
         justifyContent: 'center'
     },
 
     avatar: {
-        width: 90,
-        height: 90,
         resizeMode: 'cover',
         borderRadius: 100
+    },
+
+    toolsHeader: {
+        width: Dimensions.get('window').width,
+        height: 40,
+        position: 'absolute',
+        bottom: -10,
+    },
+
+    withShadow: {
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowColor: "#000",
+        shadowRadius: 3.84,
     },
 
     modalView: {

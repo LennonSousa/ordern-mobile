@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { ScrollView, StyleSheet, Text, View, TouchableHighlight, TouchableOpacity, Modal } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, TouchableHighlight, TouchableOpacity, Modal, SafeAreaView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
@@ -12,6 +12,8 @@ import stripeErrorCodes from '../../utils/stripeErrorCodes';
 
 import { CustomerContext } from '../../context/customerContext';
 import { ContextOrdering } from '../../context/orderingContext';
+import { PaymentDelivery } from '../../components/PaymentsDelivery';
+import { PaymentStripe } from '../../components/PaymentStripe';
 import { CustomerPayment } from '../../components/CustomerPayments';
 import { CrediBrand } from '../../components/CreditBrands';
 import { DebitBrand } from '../../components/DebitBrands';
@@ -51,6 +53,8 @@ export default function Payment() {
 
     const [cardBrandsModal, setCardBrandsModal] = useState(false);
 
+    const [paymentsDelivery, setPaymentsDelivery] = useState<PaymentDelivery[]>([]);
+    const [paymentStripe, setPaymentStripe] = useState<PaymentStripe>();
     const [creditBrands, setCreditBrands] = useState<CrediBrand[]>([]);
     const [debitBrands, setDebitBrands] = useState<DebitBrand[]>([]);
 
@@ -63,13 +67,26 @@ export default function Payment() {
     const [changeAskModalWaiting, setChangeAskModalWaiting] = useState(false);
 
     useEffect(() => {
-        api.get('restaurant/credit-brands').then(res => {
+        api.get('payments/delivery').then(res => {
+            setPaymentsDelivery(res.data);
+        }).catch(() => {
+            console.log("Error get payments delivery.");
+        });
+
+        api.get('payments/stripe').then(res => {
+            if (res.status === 200)
+                setPaymentStripe(res.data);
+        }).catch(() => {
+            console.log("Error get payment stripe.");
+        });
+
+        api.get('payments/credit-brands').then(res => {
             setCreditBrands(res.data);
         }).catch(() => {
             console.log("Error get credit brands.");
         });
 
-        api.get('restaurant/debit-brands').then(res => {
+        api.get('payments/debit-brands').then(res => {
             setDebitBrands(res.data);
         }).catch(() => {
             console.log("Error get debit brands.");
@@ -87,109 +104,111 @@ export default function Payment() {
         if (customer && order) {
             setModalWaiting("waiting");
 
-            const creditCardToken = await getCreditCardToken(card);
+            try {
+                const creditCardToken = await getCreditCardToken(card);
 
-            const orderTotal = order.total.toFixed(2).replace('.', '').replace(',', '');
+                if (creditCardToken) {
+                    const orderTotal = order.total.toFixed(2).replace('.', '').replace(',', '');
 
-            if (creditCardToken.status === 200) {
-                try {
-                    const paymentResponse = await api.post('dopayments', {
-                        "amount": orderTotal,
-                        "tokenId": creditCardToken.data.id,
-                        "description": `Pedido: ${order.tracker}`,
-                        "email": customer.email
-                    },
-                        {
-                            validateStatus: function (status) {
-                                return status < 500; // Resolve only if the status code is less than 500
-                            }
-                        });
+                    if (creditCardToken.status === 200) {
+                        const paymentResponse = await api.post('payments/dopayments', {
+                            "amount": orderTotal,
+                            "tokenId": creditCardToken.data.id,
+                            "description": `Pedido: ${order.tracker}`,
+                            "email": customer.email
+                        },
+                            {
+                                validateStatus: function (status) {
+                                    return status < 500; // Resolve only if the status code is less than 500
+                                }
+                            });
 
-                    if (paymentResponse.status === 200) {
-                        setModalWaiting("success");
+                        if (paymentResponse.status === 200) {
+                            setModalWaiting("success");
 
-                        let itemsToOrder = order.orderItems.map(item => {
-                            return {
-                                amount: item.amount,
-                                name: item.name,
-                                value: item.value,
-                                notes: item.notes,
-                                orderItemAdditionals: item.orderItemAdditionals.map(additional => {
-                                    return {
-                                        amount: additional.amount,
-                                        name: additional.name,
-                                        value: additional.value,
-                                    }
-                                })
-                            };
-                        });
+                            let itemsToOrder = order.orderItems.map(item => {
+                                return {
+                                    amount: item.amount,
+                                    name: item.name,
+                                    value: item.value,
+                                    notes: item.notes,
+                                    orderItemAdditionals: item.orderItemAdditionals.map(additional => {
+                                        return {
+                                            amount: additional.amount,
+                                            name: additional.name,
+                                            value: additional.value,
+                                        }
+                                    })
+                                };
+                            });
 
-                        const res = await api.post('orders', {
-                            tracker: order.tracker,
-                            client_id: customer.id,
-                            client: customer.name,
-                            ordered: new Date(),
-                            delivery: new Date(),
-                            delivered: new Date(),
-                            sub_total: order.sub_total,
-                            cupom: order.cupom,
-                            delivery_tax: order.delivery_tax,
-                            delivery_type: order.delivery_type,
-                            discount: order.discount,
-                            fee: order.fee,
-                            total: order.total,
-                            payment: `****${selectedCard?.card_number.slice(selectedCard.card_number.length - 4)} - ${selectedCard?.brand}`,
-                            payment_type: selectedPaymentType,
-                            paid: true,
-                            address: order.address,
-                            reason_cancellation: "",
-                            orderStatus: 1,
-                            orderItems: itemsToOrder
-                        });
+                            const res = await api.post('orders', {
+                                tracker: order.tracker,
+                                client_id: customer.id,
+                                client: customer.name,
+                                ordered: new Date(),
+                                delivery: new Date(),
+                                delivered: new Date(),
+                                sub_total: order.sub_total,
+                                cupom: order.cupom,
+                                delivery_tax: order.delivery_tax,
+                                delivery_type: order.delivery_type,
+                                discount: order.discount,
+                                fee: order.fee,
+                                total: order.total,
+                                payment: `****${selectedCard?.card_number.slice(selectedCard.card_number.length - 4)} - ${selectedCard?.brand}`,
+                                payment_type: selectedPaymentType,
+                                paid: true,
+                                address: order.address,
+                                reason_cancellation: "",
+                                orderStatus: 1,
+                                orderItems: itemsToOrder
+                            });
 
-                        setTimeout(() => {
-                            setModalWaiting("hidden");
-                            handleClearOrder();
+                            setTimeout(() => {
+                                setModalWaiting("hidden");
+                                handleClearOrder();
 
-                            navigation.navigate('OrderDetails', { id: res.data.id });
-                        }, 1500);
+                                navigation.navigate('OrderDetails', { id: res.data.id });
+                            }, 1500);
+                        }
+                        else {
+                            setModalWaiting("error");
+                            setErrorMessage(stripeErrorCodes(paymentResponse.data.code));
+
+                            console.log('stripe error code: ', stripeErrorCodes(paymentResponse.data.code));
+
+                            console.log('Payment failed');
+                        }
                     }
                     else {
                         setModalWaiting("error");
-                        setErrorMessage(stripeErrorCodes(paymentResponse.data.code));
 
-                        console.log('stripe error code: ', stripeErrorCodes(paymentResponse.data.code));
+                        setErrorMessage(stripeErrorCodes(creditCardToken.data.error.code));
 
-                        console.log('Payment failed');
+                        console.log('Token card error');
                     }
                 }
-                catch {
+                else {
                     setModalWaiting("error");
 
-                    setErrorMessage('Erro na transação. Tente novamente mais tarde.');
+                    setErrorMessage('Erro na transação. Pagamento on-line não disponível no momento.');
 
                     console.log('Payment failed');
                 }
             }
-            else {
+            catch {
                 setModalWaiting("error");
 
+                setErrorMessage('Erro na transação. Tente novamente mais tarde.');
 
-                setErrorMessage(stripeErrorCodes(creditCardToken.data.error.code));
-
-                console.log('Token card error');
+                console.log('Payment failed');
             }
         }
     }
 
     const getCreditCardToken = async (creditCardData: Card) => {
-        const paymentResponse = await api.get('payment/stripe', {
-            validateStatus: function (status) {
-                return status < 500; // Resolve only if the status code is less than 500
-            }
-        });
-
-        if (paymentResponse.status === 200) {
+        if (paymentStripe) {
             const response = await stripeapi.post('tokens',
                 Object.keys(creditCardData)
                     .map(key => key + '=' + creditCardData[key])
@@ -198,18 +217,18 @@ export default function Payment() {
                     validateStatus: function (status) {
                         return status < 500; // Resolve only if the status code is less than 500
                     },
-                    headers: { 'Authorization': `Bearer ${paymentResponse.data.pk_live}` }
+                    headers: { 'Authorization': `Bearer ${paymentStripe.pk_live}` }
                 }
             );
 
             return response;
         }
         else
-            return paymentResponse
+            return null;
     }
 
     return (
-        <>
+        <SafeAreaView>
             <ScrollView style={globalStyles.container}>
                 <View style={globalStyles.row}>
                     <View style={globalStyles.column}>
@@ -234,104 +253,111 @@ export default function Payment() {
                     </View>
                 </View>
 
-                <View style={globalStyles.containerItem}>
-                    <View style={globalStyles.row}>
-                        <View style={globalStyles.column}>
-                            <View style={globalStyles.menuRow}>
-                                <View style={globalStyles.colTitleButtonItem}>
-                                    <BorderlessButton onPress={() => { setSelectedCard(undefined); setSelectedPaymentType('money'); }}>
-                                        <View style={{ flexDirection: 'row' }}>
-                                            <View style={{ flex: 0.1, marginHorizontal: 10 }}>
-                                                <FontAwesome5 name="money-bill" size={18} color="#8c8c8c" />
-                                            </View>
-                                            <View style={globalStyles.colTitleButtonItem}>
-                                                <Text style={globalStyles.textsButtonBorderMenu}>Dinheiro</Text>
-                                            </View>
-                                            <View style={globalStyles.colIconButtonItem}>
-                                                {
-                                                    !selectedCard && selectedPaymentType === 'money' && <FontAwesome5 name="check" size={18} color={colorPrimaryLight} />
-                                                }
-                                            </View>
-                                        </View>
-                                    </BorderlessButton>
-                                </View>
-                            </View>
-                        </View>
-                    </View>
-                </View>
-
-                <View style={globalStyles.containerItem}>
-                    <View style={globalStyles.row}>
-                        <View style={globalStyles.column}>
-                            <View style={globalStyles.menuRow}>
-                                <View style={globalStyles.colTitleButtonItem}>
-                                    <BorderlessButton
-                                        onPress={() => {
-                                            setSelectedCard(undefined);
-                                            setSelectedPaymentType('debit');
-                                            setCardBrandsModal(true);
-                                        }}
-                                    >
-                                        <View style={{ flexDirection: 'row' }}>
-                                            <View style={{ flex: 0.1, marginHorizontal: 10 }}>
-                                                <FontAwesome5 name="money-check-alt" size={18} color="#8c8c8c" />
-                                            </View>
-                                            <View style={globalStyles.colTitleButtonItem}>
-                                                <Text style={globalStyles.textsButtonBorderMenu}>Débito na entrega</Text>
-                                            </View>
-                                            <View style={globalStyles.colIconButtonItem}>
-                                                {
-                                                    !selectedCard && selectedPaymentType === 'debit' && <FontAwesome5 name="check" size={18} color={colorPrimaryLight} />
-                                                }
-                                            </View>
-                                        </View>
-                                    </BorderlessButton>
-                                </View>
-                            </View>
-                        </View>
-                    </View>
-                </View>
-
-                <View style={globalStyles.containerItem}>
-                    <View style={globalStyles.row}>
-                        <View style={globalStyles.column}>
-                            <View style={globalStyles.menuRow}>
-                                <View style={globalStyles.colTitleButtonItem}>
-                                    <BorderlessButton
-                                        onPress={() => {
-                                            setSelectedCard(undefined);
-                                            setSelectedPaymentType('credit');
-                                            setCardBrandsModal(true);
-                                        }}
-                                    >
-                                        <View style={{ flexDirection: 'row' }}>
-                                            <View style={{ flex: 0.1, marginHorizontal: 10 }}>
-                                                <FontAwesome5 name="money-check-alt" size={18} color="#8c8c8c" />
-                                            </View>
-                                            <View style={globalStyles.colTitleButtonItem}>
-                                                <Text style={globalStyles.textsButtonBorderMenu}>Crédito na entrega</Text>
-                                            </View>
-                                            <View style={globalStyles.colIconButtonItem}>
-                                                {
-                                                    !selectedCard && selectedPaymentType === 'credit' && <FontAwesome5 name="check" size={18} color={colorPrimaryLight} />
-                                                }
-                                            </View>
-                                        </View>
-                                    </BorderlessButton>
-                                </View>
-                            </View>
-                        </View>
-                    </View>
-                </View>
-
                 {
-                    customer && customer.payment && customer.payment.map((payment, index) => {
-                        return <View key={index} style={globalStyles.containerItem}>
+                    paymentsDelivery.find(item => { return item.code === 'money' && item.active === true }) && <View style={globalStyles.containerItem}>
+                        <BorderlessButton onPress={() => { setSelectedCard(undefined); setSelectedPaymentType('money'); }}>
                             <View style={globalStyles.row}>
                                 <View style={globalStyles.column}>
                                     <View style={globalStyles.menuRow}>
                                         <View style={globalStyles.colTitleButtonItem}>
-                                            <BorderlessButton onPress={() => { setSelectedCard(payment); setSelectedPaymentType("on-line"); }}>
+                                            <View style={{ flexDirection: 'row' }}>
+                                                <View style={{ flex: 0.1, marginHorizontal: 10 }}>
+                                                    <FontAwesome5 name="money-bill" size={18} color="#8c8c8c" />
+                                                </View>
+                                                <View style={globalStyles.colTitleButtonItem}>
+                                                    <Text style={globalStyles.textsButtonBorderMenu}>Dinheiro</Text>
+                                                </View>
+                                                <View style={globalStyles.colIconButtonItem}>
+                                                    {
+                                                        !selectedCard && selectedPaymentType === 'money' && <FontAwesome5 name="check" size={18} color={colorPrimaryLight} />
+                                                    }
+                                                </View>
+                                            </View>
+
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
+                        </BorderlessButton>
+                    </View>
+                }
+
+                {
+                    paymentsDelivery.find(item => { return item.code === 'debit' && item.active === true }) && <View style={globalStyles.containerItem}>
+                        <BorderlessButton
+                            onPress={() => {
+                                setSelectedCard(undefined);
+                                setSelectedPaymentType('debit');
+                                setCardBrandsModal(true);
+                            }}
+                        >
+                            <View style={globalStyles.row}>
+                                <View style={globalStyles.column}>
+                                    <View style={globalStyles.menuRow}>
+                                        <View style={globalStyles.colTitleButtonItem}>
+                                            <View style={{ flexDirection: 'row' }}>
+                                                <View style={{ flex: 0.1, marginHorizontal: 10 }}>
+                                                    <FontAwesome5 name="money-check-alt" size={18} color="#8c8c8c" />
+                                                </View>
+                                                <View style={globalStyles.colTitleButtonItem}>
+                                                    <Text style={globalStyles.textsButtonBorderMenu}>Débito na entrega</Text>
+                                                </View>
+                                                <View style={globalStyles.colIconButtonItem}>
+                                                    {
+                                                        !selectedCard && selectedPaymentType === 'debit' && <FontAwesome5 name="check" size={18} color={colorPrimaryLight} />
+                                                    }
+                                                </View>
+                                            </View>
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
+                        </BorderlessButton>
+                    </View>
+                }
+
+                {
+                    paymentsDelivery.find(item => { return item.code === 'credit' && item.active === true }) && <View style={globalStyles.containerItem}>
+                        <BorderlessButton
+                            onPress={() => {
+                                setSelectedCard(undefined);
+                                setSelectedPaymentType('credit');
+                                setCardBrandsModal(true);
+                            }}
+                        >
+                            <View style={globalStyles.row}>
+                                <View style={globalStyles.column}>
+                                    <View style={globalStyles.menuRow}>
+                                        <View style={globalStyles.colTitleButtonItem}>
+                                            <View style={{ flexDirection: 'row' }}>
+                                                <View style={{ flex: 0.1, marginHorizontal: 10 }}>
+                                                    <FontAwesome5 name="money-check-alt" size={18} color="#8c8c8c" />
+                                                </View>
+                                                <View style={globalStyles.colTitleButtonItem}>
+                                                    <Text style={globalStyles.textsButtonBorderMenu}>Crédito na entrega</Text>
+                                                </View>
+                                                <View style={globalStyles.colIconButtonItem}>
+                                                    {
+                                                        !selectedCard && selectedPaymentType === 'credit' && <FontAwesome5 name="check" size={18} color={colorPrimaryLight} />
+                                                    }
+                                                </View>
+                                            </View>
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
+                        </BorderlessButton>
+                    </View>
+                }
+
+                {
+                    paymentStripe && paymentStripe.active && customer && customer.payment ? customer.payment.map((payment, index) => {
+                        return <View key={index} style={globalStyles.containerItem}>
+                            <BorderlessButton onPress={() => { setSelectedCard(payment); setSelectedPaymentType("on-line"); }}>
+                                <View style={globalStyles.row}>
+                                    <View style={globalStyles.column}>
+                                        <View style={globalStyles.menuRow}>
+                                            <View style={globalStyles.colTitleButtonItem}>
                                                 <View style={{ flexDirection: 'row' }}>
                                                     <View style={globalStyles.colTitleButtonItem}>
                                                         <Text style={{ color: '#8c8c8c' }}>{`****${payment.card_number.slice(payment.card_number.length - 4)} - ${payment.brand}`}</Text>
@@ -342,13 +368,22 @@ export default function Payment() {
                                                         }
                                                     </View>
                                                 </View>
-                                            </BorderlessButton>
+                                            </View>
                                         </View>
+                                    </View>
+                                </View>
+                            </BorderlessButton>
+                        </View>
+                    }) :
+                        <View style={globalStyles.row}>
+                            <View style={globalStyles.column}>
+                                <View style={globalStyles.menuRow}>
+                                    <View style={globalStyles.menuColumn}>
+                                        <Text style={globalStyles.textDescription}>Pagamento on-line não disponível.</Text>
                                     </View>
                                 </View>
                             </View>
                         </View>
-                    })
                 }
 
                 <View style={{
@@ -384,11 +419,11 @@ export default function Payment() {
                             {
                                 cardBrands.map((cardBrand, index) => {
                                     return <View key={index} style={styles.containerCardBrands}>
-                                        <View style={globalStyles.row}>
-                                            <View style={globalStyles.column}>
-                                                <View style={globalStyles.menuRow}>
-                                                    <View style={globalStyles.colTitleButtonItem}>
-                                                        <TouchableOpacity onPress={() => { setSelectedCardBrand(cardBrand.name); setCardBrandsModal(false); }}>
+                                        <TouchableOpacity onPress={() => { setSelectedCardBrand(cardBrand.name); setCardBrandsModal(false); }}>
+                                            <View style={globalStyles.row}>
+                                                <View style={globalStyles.column}>
+                                                    <View style={globalStyles.menuRow}>
+                                                        <View style={globalStyles.colTitleButtonItem}>
                                                             <View style={{ flexDirection: 'row' }}>
                                                                 <View style={globalStyles.colTitleButtonItem}>
                                                                     <Text style={globalStyles.textsButtonBorderMenu}>{cardBrand.name}</Text>
@@ -399,11 +434,11 @@ export default function Payment() {
                                                                     }
                                                                 </View>
                                                             </View>
-                                                        </TouchableOpacity>
+                                                        </View>
                                                     </View>
                                                 </View>
                                             </View>
-                                        </View>
+                                        </TouchableOpacity>
                                     </View>
                                 })
                             }
@@ -728,7 +763,7 @@ export default function Payment() {
                     </Formik>
 
             }
-        </>
+        </SafeAreaView>
     )
 }
 

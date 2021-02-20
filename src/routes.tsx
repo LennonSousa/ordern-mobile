@@ -101,7 +101,7 @@ export default function Routes() {
                     component={ProductDetails}
                     options={{
                         headerShown: true,
-                        header: () => <Header title="Produto" />
+                        header: () => <Header title="" />
                     }}
                 />
 

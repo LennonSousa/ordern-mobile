@@ -1,10 +1,24 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { Dimensions, ScrollView, TouchableHighlight, TouchableOpacity, ImageBackground, StyleSheet, Text, TextInput, View, Linking, Modal } from 'react-native';
+import {
+    Dimensions,
+    ScrollView,
+    TouchableHighlight,
+    TouchableOpacity,
+    ImageBackground,
+    StyleSheet,
+    Text,
+    TextInput,
+    View,
+    Linking,
+    Modal,
+    SafeAreaView
+} from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
 import api from '../../services/api';
 
+import { RestaurantContext } from '../../context/restaurantContext';
 import { OpenedDaysContext } from '../../context/openedDaysContext';
 import { SelectedProductContext } from '../../context/selectedProductContext';
 import { CategoriesContext } from '../../context/categoriesContext';
@@ -22,6 +36,7 @@ import { OrderItem } from '../../components/OrderItems';
 import PageFooter from '../../components/PageFooter';
 
 import globalStyles from '../../assets/styles/global';
+import Header from '../../components/PageHeader';
 
 interface ProductDetailsRouteParams {
     product: Product;
@@ -31,6 +46,7 @@ export default function ProductDetails() {
     const route = useRoute();
     const navigation = useNavigation();
 
+    const { restaurant } = useContext(RestaurantContext);
     const { isOpened } = useContext(OpenedDaysContext);
     const { handleCategories } = useContext(CategoriesContext);
     const { selectedProduct, handleSelectedProduct } = useContext(SelectedProductContext);
@@ -48,7 +64,7 @@ export default function ProductDetails() {
 
     useEffect(() => {
         if (params.product) {
-            navigation.setOptions({ title: params.product.title });
+            navigation.setOptions({ header: () => <Header title={params.product.category.title} /> });
             setProduct(params.product);
 
             handleSelectedProduct({
@@ -147,7 +163,7 @@ export default function ProductDetails() {
                     let identicFound = false;
 
                     if (order.orderItems.length > 0) {
-                        console.log('function findOne');
+                        //console.log('function findOne');
 
                         order.orderItems.forEach((listItem: OrderItem) => { // Searching for each one.
                             if (itemsToOrder.product_id === listItem.product_id) {
@@ -160,7 +176,7 @@ export default function ProductDetails() {
                                 if (itemsToOrder.orderItemAdditionals.length === 0 && listItem.orderItemAdditionals.length === 0) { // No addiciontals, means that are identicals.
                                     identicFound = true;
 
-                                    console.log('Idêntico!');
+                                    //console.log('Idêntico!');
 
                                     handleTotalOrder(
                                         {
@@ -190,7 +206,7 @@ export default function ProductDetails() {
                                             return additionalToOrder.additional_id === orderItemAdditionals.additional_id
                                         });
 
-                                        console.log('itemFound: ', itemFound);
+                                        //console.log('itemFound: ', itemFound);
 
                                         if (!itemFound)
                                             allAdditionalsIdentcials = false;
@@ -202,7 +218,7 @@ export default function ProductDetails() {
                                     if (allAdditionalsIdentcials) {
                                         identicFound = true;
 
-                                        console.log('Idêntico com adicionais!');
+                                        //console.log('Idêntico com adicionais!');
 
                                         handleTotalOrder(
                                             {
@@ -330,11 +346,11 @@ export default function ProductDetails() {
         setModalOnRequest(false);
 
         if (params.product)
-            Linking.openURL(`whatsapp://send?phone=${+5599988141211}&text=${message}`);
+            Linking.openURL(`whatsapp://send?phone=${restaurant?.phone}&text=${message}`);
     }
 
     return (
-        <>
+        <SafeAreaView style={{ flex: 1 }} >
             {
                 product && selectedProduct ?
                     <>
@@ -444,9 +460,8 @@ export default function ProductDetails() {
                                 <WaitingModal message={errorMessage} status={modalWaiting} />
                             </View>
                         </ScrollView>
+
                         {/* Footer*/}
-
-
                         <Modal
                             animationType="slide"
                             transparent={true}
@@ -554,20 +569,20 @@ export default function ProductDetails() {
                     </> :
                     <ProductDetailsShimmer />
             }
-        </>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     containerCover: {
-        alignItems: 'center'
+        alignItems: 'center',
     },
 
     cover: {
         width: Dimensions.get('window').width,
         height: 180,
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
     },
 
     productTitle: {

@@ -20,6 +20,7 @@ export const colorButtonText = '#FFFFFF';
 export const colorBoxBase = '#FFFFFF';
 export const colorBoxBooter = '#FAFAFC';
 export const colorHighLight = '#00b300';
+export const colorHeaderBackground = '#f9fafc';
 
 const globalStyles = StyleSheet.create({
     container: {

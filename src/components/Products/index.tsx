@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { Image, StyleSheet, Text, View } from 'react-native';
-import { TouchableHighlight } from 'react-native-gesture-handler';
+import { Image, StyleSheet, Text, View, TouchableHighlight } from 'react-native';
 
 import { Category } from '../Categories';
 import { ProductValue } from '../ProductValues';

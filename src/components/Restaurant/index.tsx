@@ -15,4 +15,6 @@ export interface Restaurant {
     latitude: string;
     longitude: string;
     free_shipping: number;
+    highlights: boolean;
+    highlights_title: string
 }
