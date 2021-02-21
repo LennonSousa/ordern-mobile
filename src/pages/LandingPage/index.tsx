@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import {
     SafeAreaView,
     StyleSheet,
@@ -13,8 +13,11 @@ import {
     ActivityIndicator,
     Modal,
     TouchableHighlight,
-    Animated
+    Animated,
+    NativeScrollEvent,
+    NativeSyntheticEvent
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
 
 import api from '../../services/api';
@@ -40,6 +43,8 @@ import globalStyles, {
 } from '../../assets/styles/global';
 
 export default function LandingPage() {
+    const navigation = useNavigation();
+
     const { restaurant, handleRestaurant } = useContext(RestaurantContext);
     const { categories, handleCategories } = useContext(CategoriesContext);
 
@@ -47,9 +52,34 @@ export default function LandingPage() {
 
     const [highlights, setHighlights] = useState<Highlight[]>([]);
 
-    const [scrollY] = useState(new Animated.Value(0));
+    const scrollY = new Animated.Value(0);
+
+    const [state, setState] = useState(true);
+
+    const AnimatedStatusBar = Animated.createAnimatedComponent(StatusBar)
+
     const [businessTimeModal, setbusinessTimeModal] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+
+    const animatedEvent = Animated.event([{
+        nativeEvent: {
+            contentOffset: { y: scrollY }
+        },
+    }],
+        { useNativeDriver: false });
+
+    const onScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
+        let y = nativeEvent.contentOffset.y;
+
+        scrollY.setValue(y); // set scroll animation value here
+
+        if (y > 100 && state) {
+            setState(false);
+        }
+        if (y < 100 && !state) {
+            setState(true);
+        }
+    };
 
     useEffect(() => {
         api.get('restaurants')
@@ -124,7 +154,12 @@ export default function LandingPage() {
 
     return (
         <SafeAreaView style={globalStyles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor={colorBackground} />
+            <StatusBar
+                animated
+                barStyle={state ? "light-content" : "dark-content"}
+                translucent
+                backgroundColor="transparent"
+            />
             {
                 restaurant ? <>
                     <Animated.View style={
@@ -132,8 +167,8 @@ export default function LandingPage() {
                             styles.containerCover,
                             {
                                 height: scrollY.interpolate({
-                                    inputRange: [0, 110],
-                                    outputRange: [110, 40],
+                                    inputRange: [0, 140],
+                                    outputRange: [140, 70],
                                     extrapolate: 'clamp'
                                 }),
                                 position: 'relative'
@@ -166,26 +201,30 @@ export default function LandingPage() {
                             ></Animated.Image>
                         </ImageBackground>
 
-                        <Animated.View style={[styles.toolsHeader, globalStyles.row, styles.withShadow, {
+                        <Animated.View style={[styles.toolsHeader, styles.withShadow, {
                             backgroundColor: scrollY.interpolate({
-                                inputRange: [105, 110],
+                                inputRange: [105, 140],
                                 outputRange: ['transparent', colorHeaderBackground],
                                 extrapolate: 'clamp'
                             }),
                             shadowOpacity: scrollY.interpolate({
-                                inputRange: [105, 110],
+                                inputRange: [105, 140],
                                 outputRange: [0, 0.25],
                                 extrapolate: 'clamp'
                             }),
                             elevation: scrollY.interpolate({
-                                inputRange: [105, 110],
+                                inputRange: [105, 140],
                                 outputRange: [0, 5],
                                 extrapolate: 'clamp'
                             })
                         }]}>
-                            <View style={{ flex: 0.3, justifyContent: 'center', alignItems: 'center' }}>
+                            <View style={
+                                {
+                                    flex: 0.3, justifyContent: 'center', alignItems: 'center'
+                                }
+                            }>
                                 <TouchableOpacity
-                                    onPress={() => { setbusinessTimeModal(true) }}
+                                    onPress={() => { navigation.navigate('Search') }}
                                     style={{
                                         width: 95,
                                         height: 30,
@@ -245,12 +284,7 @@ export default function LandingPage() {
                     showsVerticalScrollIndicator={false}
                     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
                     scrollEventThrottle={16}
-                    onScroll={Animated.event([{
-                        nativeEvent: {
-                            contentOffset: { y: scrollY }
-                        },
-                    }],
-                        { useNativeDriver: false })}
+                    onScroll={onScroll}
                 >
                     {
                         restaurant && restaurant.highlights && highlights.length > 0 && <View style={{ flex: 1, backgroundColor: 'white', paddingTop: 10 }}>
@@ -356,7 +390,7 @@ export default function LandingPage() {
 
 const styles = StyleSheet.create({
     containerCover: {
-        alignItems: 'center'
+        alignItems: 'center',
     },
 
     cover: {
@@ -374,9 +408,13 @@ const styles = StyleSheet.create({
 
     toolsHeader: {
         width: Dimensions.get('window').width,
-        height: 40,
+        height: 70,
+        flexDirection: 'row',
+        alignItems: 'flex-end',
+        marginVertical: 10,
         position: 'absolute',
         bottom: -10,
+        paddingBottom: 10,
     },
 
     withShadow: {

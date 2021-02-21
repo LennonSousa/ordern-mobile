@@ -11,6 +11,7 @@ import { ContextOrdering } from './context/orderingContext';
 
 import Header from './components/PageHeader';
 import LandingPage from './pages/LandingPage';
+import Search from './pages/Search';
 import Cart from './pages/Cart';
 import Shipment from './pages/Shipment';
 import OrderReview from './pages/OrderPreview';
@@ -99,9 +100,14 @@ export default function Routes() {
                 <Stack.Screen
                     name="ProductDetails"
                     component={ProductDetails}
+                />
+
+                <Stack.Screen
+                    name="Search"
+                    component={Search}
                     options={{
                         headerShown: true,
-                        header: () => <Header title="" />
+                        header: () => <Header title="Buscar" showGoBack={false} />
                     }}
                 />
 

@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View, TouchableHighlight, Image, Dimensions } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { ScrollView, StyleSheet, Text, View, TouchableHighlight, Image, Dimensions, StatusBar } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 import { OpenedDaysContext } from '../../context/openedDaysContext';
 import { CustomerContext } from '../../context/customerContext';
@@ -97,6 +97,11 @@ export default function Cart() {
 
     return (
         <>
+        <StatusBar
+                animated
+                barStyle="dark-content"
+                
+            />
             <Header title="Sacola" showGoBack={false} showCancel={false} showClearBag={order ? true : false} />
             {
                 order ? <ScrollView style={globalStyles.container}>
