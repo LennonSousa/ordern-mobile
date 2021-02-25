@@ -151,7 +151,7 @@ export default function LandingPage() {
     }, [refreshing]);
 
     return (
-        <SafeAreaView style={globalStyles.container}>
+        <View style={globalStyles.container}>
             <StatusBar
                 animated
                 barStyle="light-content"
@@ -383,7 +383,7 @@ export default function LandingPage() {
                     </View>
                 </View>
             </Modal>
-        </SafeAreaView>
+        </View>
     )
 }
 

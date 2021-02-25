@@ -361,7 +361,7 @@ export default function ProductDetails() {
     }
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: colorBackground }}>
+        <View style={{ flex: 1, backgroundColor: colorBackground }}>
             <StatusBar translucent backgroundColor="transparent" />
             {
                 product && selectedProduct ?
@@ -600,7 +600,7 @@ export default function ProductDetails() {
                     </> :
                     <ProductDetailsShimmer />
             }
-        </SafeAreaView>
+        </View>
     );
 }
 
