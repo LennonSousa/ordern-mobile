@@ -97,11 +97,6 @@ export default function Cart() {
 
     return (
         <>
-        <StatusBar
-                animated
-                barStyle="dark-content"
-                
-            />
             <Header title="Sacola" showGoBack={false} showCancel={false} showClearBag={order ? true : false} />
             {
                 order ? <ScrollView style={globalStyles.container}>

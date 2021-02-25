@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { StatusBar, Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { Feather } from '@expo/vector-icons';
 
 const Stack = createStackNavigator();
@@ -33,18 +33,13 @@ import PaymentsCustomer from './pages/Profile/PaymentsCustomer';
 import OrderDetails from './pages/OrderDetails';
 
 import PrivacyTerms from './pages/PricacyTerms';
+import { StatusBar } from 'react-native';
 
 function HomeTabs() {
     const { order } = useContext(ContextOrdering);
-
-    const [navBarNotch, setNavBarNotch] = useState(0);
     const [amountOrderItems, setAmountOrderItems] = useState(0);
 
     useEffect(() => {
-        if (Platform.OS === 'android' && StatusBar.currentHeight) {
-            setNavBarNotch(StatusBar.currentHeight);
-        }
-
         if (order) {
             let totalAmount = 0;
             order.orderItems.forEach(item => {
@@ -107,136 +102,149 @@ function HomeTabs() {
 
 export default function Routes() {
     return (
-        <NavigationContainer>
-            <Stack.Navigator screenOptions={{ headerShown: false, cardStyle: { backgroundColor: '#f2f3f5' } }}>
-                <Stack.Screen
-                    name="HomeTabs"
-                    component={HomeTabs}
-                />
+        <>
+            <StatusBar
+                animated
+                barStyle="dark-content"
+                translucent
+                backgroundColor="transparent"
+            />
 
-                <Stack.Screen
-                    name="ProductDetails"
-                    component={ProductDetails}
-                />
+            <NavigationContainer>
+                <Stack.Navigator screenOptions={{ headerShown: false, cardStyle: { backgroundColor: '#f2f3f5' } }}>
+                    <Stack.Screen
+                        name="HomeTabs"
+                        component={HomeTabs}
+                    />
 
-                <Stack.Screen
-                    name="Search"
-                    component={Search}
-                    options={{
-                        headerShown: true,
-                        header: () => <Header title="Buscar" showGoBack={false} />
-                    }}
-                />
+                    <Stack.Screen
+                        name="ProductDetails"
+                        component={ProductDetails}
+                    />
 
-                <Stack.Screen
-                    name="CategoryAdditionals"
-                    component={CategoryAdditionals}
-                    options={{
-                        headerShown: true,
-                        header: () => <Header title="" showCancel={false} />
-                    }}
-                />
+                    <Stack.Screen
+                        name="Search"
+                        component={Search}
+                        options={{
+                            headerShown: true,
+                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Buscar" showGoBack={false} />
+                        }}
+                    />
 
-                <Stack.Screen
-                    name="CustomerNew"
-                    component={CustomerNew}
-                    options={{
-                        headerShown: true,
-                        header: () => <Header title="Vamos começar!" showCancel={false} />
-                    }}
-                />
+                    <Stack.Screen
+                        name="CategoryAdditionals"
+                        component={CategoryAdditionals}
+                        options={{
+                            headerShown: true,
+                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="" showCancel={false} />
+                        }}
+                    />
 
-                <Stack.Screen
-                    name="CreateCustomer"
-                    component={CreateCustomer}
-                    options={{
-                        headerShown: true,
-                        header: () => <Header title="Criar o seu cadastro" showCancel={false} />
-                    }}
-                />
+                    <Stack.Screen
+                        name="CustomerNew"
+                        component={CustomerNew}
+                        options={{
+                            headerShown: true,
+                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Vamos começar!" showCancel={false} />
+                        }}
+                    />
 
-                <Stack.Screen
-                    name="CustomerNewReset"
-                    component={CustomerNewReset}
-                    options={{
-                        headerShown: true,
-                        header: () => <Header title="Vamos começar!" showCancel={false} />
-                    }}
-                />
+                    <Stack.Screen
+                        name="CreateCustomer"
+                        component={CreateCustomer}
+                        options={{
+                            headerShown: true,
+                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Criar o seu cadastro" showCancel={false} />
+                        }}
+                    />
 
-                <Stack.Screen
-                    name="CustomerReset"
-                    component={CustomerReset}
-                    options={{
-                        headerShown: true,
-                        header: () => <Header title="Redefinir senha" showCancel={false} />
-                    }}
-                />
+                    <Stack.Screen
+                        name="CustomerNewReset"
+                        component={CustomerNewReset}
+                        options={{
+                            headerShown: true,
+                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Vamos começar!" showCancel={false} />
+                        }}
+                    />
 
-                <Stack.Screen
-                    name="CustomerUpdate"
-                    component={CustomerUpdate}
-                    options={{
-                        headerShown: true,
-                        header: () => <Header title="Suas informações" showCancel={false} />
-                    }}
-                />
+                    <Stack.Screen
+                        name="CustomerReset"
+                        component={CustomerReset}
+                        options={{
+                            headerShown: true,
+                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Redefinir senha" showCancel={false} />
+                        }}
+                    />
 
-                <Stack.Screen
-                    name="AddressCustomer"
-                    component={AddressCustomer}
-                    options={{
-                        headerShown: true,
-                        header: () => <Header title="Seus endereços" showCancel={true} />
-                    }}
-                />
+                    <Stack.Screen
+                        name="CustomerUpdate"
+                        component={CustomerUpdate}
+                        options={{
+                            headerShown: true,
+                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Suas informações" showCancel={false} />
+                        }}
+                    />
 
-                <Stack.Screen
-                    name="PaymentsCustomer"
-                    component={PaymentsCustomer}
-                    options={{
-                        headerShown: true,
-                        header: () => <Header title="Formas de pagamento" showCancel={true} />
-                    }}
-                />
+                    <Stack.Screen
+                        name="AddressCustomer"
+                        component={AddressCustomer}
+                        options={{
+                            headerShown: true,
+                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Seus endereços" showCancel={true} />
+                        }}
+                    />
 
-                <Stack.Screen
-                    name="Shipment"
-                    component={Shipment}
-                    options={{
-                        headerShown: true,
-                        header: () => <Header title="Envio" showCancel={true} />
-                    }}
-                />
+                    <Stack.Screen
+                        name="PaymentsCustomer"
+                        component={PaymentsCustomer}
+                        options={{
+                            headerShown: true,
+                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Formas de pagamento" showCancel={true} />
+                        }}
+                    />
 
-                <Stack.Screen
-                    name="OrderReview"
-                    component={OrderReview}
-                    options={{
-                        headerShown: true,
-                        header: () => <Header title="Pedido" showCancel={true} />
-                    }}
-                />
+                    <Stack.Screen
+                        name="Shipment"
+                        component={Shipment}
+                        options={{
+                            headerShown: true,
+                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Envio" showCancel={true} />
+                        }}
+                    />
 
-                <Stack.Screen
-                    name="Payment"
-                    component={Payment}
-                    options={{
-                        headerShown: true,
-                        header: () => <Header title="Pagamento" showCancel={true} />
-                    }}
-                />
+                    <Stack.Screen
+                        name="OrderReview"
+                        component={OrderReview}
+                        options={{
+                            headerShown: true,
+                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Pedido" showCancel={true} />
+                        }}
+                    />
 
-                <Stack.Screen
-                    name="OrderDetails"
-                    component={OrderDetails}
-                />
+                    <Stack.Screen
+                        name="Payment"
+                        component={Payment}
+                        options={{
+                            headerShown: true,
+                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Pagamento" showCancel={true} />
+                        }}
+                    />
 
-                <Stack.Screen
-                    name="PrivacyTerms"
-                    component={PrivacyTerms}
-                />
-            </Stack.Navigator>
-        </NavigationContainer>
+                    <Stack.Screen
+                        name="OrderDetails"
+                        component={OrderDetails}
+                        options={{
+                            headerShown: true,
+                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Pedido" customGoBack={'OrdersList'} />
+                        }}
+                    />
+
+                    <Stack.Screen
+                        name="PrivacyTerms"
+                        component={PrivacyTerms}
+                    />
+                </Stack.Navigator>
+            </NavigationContainer>
+        </>
     )
 }

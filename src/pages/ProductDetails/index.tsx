@@ -12,11 +12,10 @@ import {
     View,
     Linking,
     Modal,
-    SafeAreaView,
     Animated,
-    StatusBar,
-    Platform
+    StatusBar
 } from 'react-native';
+import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { Feather } from '@expo/vector-icons';
 
 import api from '../../services/api';
@@ -58,8 +57,6 @@ export default function ProductDetails() {
 
     const [product, setProduct] = useState<Product>();
 
-    const [navBarNotch, setNavBarNotch] = useState(0);
-
     const [scrollY] = useState(new Animated.Value(0));
 
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
@@ -70,10 +67,6 @@ export default function ProductDetails() {
     const params = route.params as ProductDetailsRouteParams;
 
     useEffect(() => {
-        if (Platform.OS === 'android' && StatusBar.currentHeight) {
-            setNavBarNotch(StatusBar.currentHeight);
-        }
-
         if (params.product) {
             navigation.setOptions({ header: () => <Header title={params.product.category.title} /> });
             setProduct(params.product);
@@ -379,10 +372,11 @@ export default function ProductDetails() {
                             <Animated.View style={[styles.containerCover,
                             {
                                 height: scrollY.interpolate({
-                                    inputRange: [0, 200 + (navBarNotch ? navBarNotch : 24)],
-                                    outputRange: [200 + (navBarNotch ? navBarNotch : 24), 100],
+                                    inputRange: [0, 200],
+                                    outputRange: [200, 100],
                                     extrapolate: 'clamp'
-                                })
+                                }),
+                                paddingTop: getStatusBarHeight() > 24 ? getStatusBarHeight() : 0,
                             }
                             ]}>
                                 <ImageBackground resizeMode='cover' source={{ uri: product.image }} style={styles.cover} />

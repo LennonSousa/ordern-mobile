@@ -38,7 +38,7 @@ export default function Header(
 
     return (
         <View style={[styles.container, { paddingTop: notchPaddingTop }]}>
-            <StatusBar barStyle="dark-content" />
+            <StatusBar />
             {
                 showGoBack ? <BorderlessButton onPress={() => { customGoBack ? navigation.navigate(customGoBack) : navigation.goBack() }} style={{ flex: 0.2 }}>
                     <Feather name="arrow-left" size={24} color="#cc0000" />

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import {
-    SafeAreaView,
     StyleSheet,
     ScrollView,
     View,
@@ -152,12 +151,6 @@ export default function LandingPage() {
 
     return (
         <View style={globalStyles.container}>
-            <StatusBar
-                animated
-                barStyle="light-content"
-                translucent
-                backgroundColor="transparent"
-            />
             {
                 restaurant ? <>
                     <Animated.View style={

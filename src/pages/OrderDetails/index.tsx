@@ -8,7 +8,6 @@ import * as Yup from 'yup';
 import api from '../../services/api';
 
 import { CustomerContext } from '../../context/customerContext';
-import Header from '../../components/PageHeader';
 import { Order } from '../../components/Orders';
 import OrderDetailsShimmer from '../../components/Shimmers/OrderDetails';
 import OrderItems from '../../components/OrderItems';
@@ -73,7 +72,6 @@ export default function OrderDetails() {
 
     return (
         <>
-            <Header title="Pedido" customGoBack={'OrdersList'} />
             {
                 selectedOrder ? <ScrollView
                     style={globalStyles.container}
