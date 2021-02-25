@@ -42,6 +42,10 @@ import globalStyles, {
 export default function LandingPage() {
     const navigation = useNavigation();
 
+    const STATUS_BAR_HEIGHT = getStatusBarHeight();
+    const HEADER_HEIGHT = STATUS_BAR_HEIGHT > 24 ? 140 + STATUS_BAR_HEIGHT : 140;
+    const TOOLS_HEIGHT = 70;
+
     const { restaurant, handleRestaurant } = useContext(RestaurantContext);
     const { categories, handleCategories } = useContext(CategoriesContext);
 
@@ -158,8 +162,8 @@ export default function LandingPage() {
                             styles.containerCover,
                             {
                                 height: scrollY.interpolate({
-                                    inputRange: [0, 140],
-                                    outputRange: [140, 70],
+                                    inputRange: [0, HEADER_HEIGHT],
+                                    outputRange: [HEADER_HEIGHT, STATUS_BAR_HEIGHT > 24 ? (TOOLS_HEIGHT + STATUS_BAR_HEIGHT) : TOOLS_HEIGHT],
                                     extrapolate: 'clamp'
                                 }),
                                 position: 'relative',
@@ -168,9 +172,7 @@ export default function LandingPage() {
                     >
                         <ImageBackground
                             source={{ uri: restaurant.cover }}
-                            style={[styles.cover, {
-                                paddingTop: getStatusBarHeight() > 24 ? getStatusBarHeight() : 0,
-                            }]}
+                            style={styles.cover}
                         >
                             <Animated.Image
                                 source={{ uri: restaurant.avatar }}
@@ -189,27 +191,28 @@ export default function LandingPage() {
                                         inputRange: [0, 110],
                                         outputRange: [1, 0.25],
                                         extrapolate: 'clamp'
-                                    })
+                                    }),
                                 }]}
                             ></Animated.Image>
                         </ImageBackground>
 
                         <Animated.View style={[styles.toolsHeader, styles.withShadow, {
                             backgroundColor: scrollY.interpolate({
-                                inputRange: [105, 140],
+                                inputRange: [105, STATUS_BAR_HEIGHT > 24 ? (HEADER_HEIGHT + STATUS_BAR_HEIGHT) : HEADER_HEIGHT],
                                 outputRange: ['transparent', colorHeaderBackground],
                                 extrapolate: 'clamp'
                             }),
                             shadowOpacity: scrollY.interpolate({
-                                inputRange: [105, 140],
+                                inputRange: [105, STATUS_BAR_HEIGHT > 24 ? (HEADER_HEIGHT + STATUS_BAR_HEIGHT) : HEADER_HEIGHT],
                                 outputRange: [0, 0.25],
                                 extrapolate: 'clamp'
                             }),
                             elevation: scrollY.interpolate({
-                                inputRange: [105, 140],
+                                inputRange: [105, STATUS_BAR_HEIGHT > 24 ? (HEADER_HEIGHT + STATUS_BAR_HEIGHT) : HEADER_HEIGHT],
                                 outputRange: [0, 5],
                                 extrapolate: 'clamp'
-                            })
+                            }),
+                            height: STATUS_BAR_HEIGHT > 24 ? (TOOLS_HEIGHT + STATUS_BAR_HEIGHT) : TOOLS_HEIGHT,
                         }]}>
                             <View style={
                                 {
@@ -401,7 +404,6 @@ const styles = StyleSheet.create({
 
     toolsHeader: {
         width: Dimensions.get('window').width,
-        height: 70,
         flexDirection: 'row',
         alignItems: 'flex-end',
         marginVertical: 10,

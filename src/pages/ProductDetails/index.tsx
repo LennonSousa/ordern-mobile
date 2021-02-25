@@ -12,9 +12,9 @@ import {
     View,
     Linking,
     Modal,
-    Animated,
-    StatusBar
+    Animated
 } from 'react-native';
+import { PanGestureHandler, PanGestureHandlerStateChangeEvent, State } from 'react-native-gesture-handler';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { Feather } from '@expo/vector-icons';
 
@@ -48,6 +48,10 @@ export default function ProductDetails() {
     const route = useRoute();
     const navigation = useNavigation();
 
+    const STATUS_BAR_HEIGHT = getStatusBarHeight();
+    const HEADER_HEIGHT = STATUS_BAR_HEIGHT > 24 ? 300 + STATUS_BAR_HEIGHT : 300;
+    const TOOLS_HEIGHT = 70;
+
     const { restaurant } = useContext(RestaurantContext);
     const { isOpened } = useContext(OpenedDaysContext);
     const { handleCategories } = useContext(CategoriesContext);
@@ -57,7 +61,7 @@ export default function ProductDetails() {
 
     const [product, setProduct] = useState<Product>();
 
-    const [scrollY] = useState(new Animated.Value(0));
+    const scrollY = new Animated.Value(0);
 
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
     const [errorMessage, setErrorMessage] = useState('');
@@ -65,6 +69,13 @@ export default function ProductDetails() {
     const [modalOnRequest, setModalOnRequest] = useState(false);
 
     const params = route.params as ProductDetailsRouteParams;
+
+    const animatedEvent = Animated.event([{
+        nativeEvent: {
+            contentOffset: { y: scrollY }
+        },
+    }],
+        { useNativeDriver: false });
 
     useEffect(() => {
         if (params.product) {
@@ -90,6 +101,10 @@ export default function ProductDetails() {
             });
         }
     }, [params.product]);
+
+    function onHandlerStateChange(event: PanGestureHandlerStateChangeEvent) {
+
+    }
 
     function handleNavigateToCategoryAdditionals(categoryAdditional: ProductCategory) {
         navigation.navigate('CategoryAdditionals', { productCategory: categoryAdditional });
@@ -354,137 +369,133 @@ export default function ProductDetails() {
     }
 
     return (
-        <View style={{ flex: 1, backgroundColor: colorBackground }}>
-            <StatusBar translucent backgroundColor="transparent" />
+        <View style={globalStyles.container}>
             {
                 product && selectedProduct ?
                     <>
-                        <ScrollView
-                            showsVerticalScrollIndicator={false}
-                            scrollEventThrottle={16}
-                            onScroll={Animated.event([{
-                                nativeEvent: {
-                                    contentOffset: { y: scrollY }
-                                },
-                            }],
-                                { useNativeDriver: false })}
-                        >
-                            <Animated.View style={[styles.containerCover,
+                        <Animated.View style={[styles.containerCover,
+                        {
+                            height: HEADER_HEIGHT,
+                            position: 'absolute',
+                            top: 0,
+                            bottom: 0,
+                            opacity: scrollY.interpolate({
+                                inputRange: [0, 300],
+                                outputRange: [1, 0],
+                                extrapolate: 'clamp'
+                            })
+                        }
+                        ]}>
+                            <ImageBackground resizeMode='cover' source={{ uri: product.image }} style={styles.cover} />
+                        </Animated.View>
+
+                        <ScrollView onScroll={animatedEvent} style={{
+                            flex: 1,
+                            top: HEADER_HEIGHT
+                        }}>
+                            <View>
+                                <Text style={styles.productTitle}>{product.title}</Text>
+                                <Text style={styles.productDescription}>{product.description}</Text>
+                            </View>
+
+                            <View style={styles.rowPrice}>
+                                {
+                                    product.discount ? <Text style={styles.productPriceDiscount}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text> :
+                                        <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text>
+                                }
+
+                                {
+                                    product.discount && <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.discount_price.toString().replace('.', ',')}`}</Text>
+                                }
+                            </View>
+
                             {
-                                height: scrollY.interpolate({
-                                    inputRange: [0, 200],
-                                    outputRange: [200, 100],
-                                    extrapolate: 'clamp'
-                                }),
-                                paddingTop: getStatusBarHeight() > 24 ? getStatusBarHeight() : 0,
-                            }
-                            ]}>
-                                <ImageBackground resizeMode='cover' source={{ uri: product.image }} style={styles.cover} />
-                            </Animated.View>
-
-                            <View style={globalStyles.container}>
-                                <View>
-                                    <Text style={styles.productTitle}>{product.title}</Text>
-                                    <Text style={styles.productDescription}>{product.description}</Text>
-                                </View>
-
-                                <View style={styles.rowPrice}>
+                                !product.price_one && <View style={styles.productValuesContainer}>
+                                    <Text style={styles.categoryAdditionalTitle} >Escolha uma opção:</Text>
                                     {
-                                        product.discount ? <Text style={styles.productPriceDiscount}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text> :
-                                            <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text>
-                                    }
-
-                                    {
-                                        product.discount && <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.discount_price.toString().replace('.', ',')}`}</Text>
-                                    }
-                                </View>
-
-                                {
-                                    !product.price_one && <View style={styles.productValuesContainer}>
-                                        <Text style={styles.categoryAdditionalTitle} >Escolha uma opção:</Text>
-                                        {
-                                            product.values.map(value => {
-                                                return <View key={value.id}>
-                                                    <ProductValues productValue={value} />
-                                                </View>
-                                            })
-                                        }
-                                    </View>
-                                }
-
-                                {
-                                    product && product.categoriesAdditional.map((categoryAdditional, index) => {
-                                        return (
-                                            <View key={index} style={styles.containerAdditionals}>
-                                                <View style={styles.rowAdditionals}>
-                                                    <TouchableHighlight
-                                                        underlayColor='#e6e6e6'
-                                                        onPress={() => { handleNavigateToCategoryAdditionals(categoryAdditional) }}>
-                                                        <View style={styles.rowTitleCategoryAdditionals}>
-                                                            <Text style={styles.categoryAdditionalTitle}>{categoryAdditional.title}</Text>
-                                                            <Feather name="chevron-right" style={styles.categoryAdditionalArrow} />
-                                                        </View>
-                                                    </TouchableHighlight>
-                                                </View>
-
-                                                <View style={styles.rowObrigatory}>
-                                                    <Text
-                                                        style={[styles.obrigatoryTitle, { backgroundColor: categoryAdditional.min > 0 ? colorPrimaryLight : colorTextMenuDescription }]}
-                                                    >
-                                                        {categoryAdditional.min > 0 ? "Obrigatório." : "Opcional."}
-                                                    </Text>
-                                                </View>
-
-                                                <View style={styles.rowTitleSelectedAdditionals} >
-                                                    {
-                                                        selectedProduct.categoiesAdditional.map(category => {
-                                                            if (categoryAdditional.id === category.id) {
-                                                                const additionals = category.selectedAdditionals.map(additional => {
-                                                                    return additional;
-                                                                });
-
-                                                                return additionals && additionals.map(item => {
-                                                                    return <View key={item.id} style={{ flexDirection: 'row', marginVertical: 2 }}>
-                                                                        <Text style={styles.selectedAdditionalsAmount}>{item.amount}</Text>
-                                                                        <Text style={styles.selectedAdditionals}>{item.title}</Text>
-                                                                    </View>
-                                                                });
-                                                            }
-                                                        })
-                                                    }
-                                                </View>
+                                        product.values.map(value => {
+                                            return <View key={value.id}>
+                                                <ProductValues productValue={value} />
                                             </View>
-                                        )
-                                    })
-                                }
-
-                                {/* Divider*/}
-                                <View style={styles.divider}></View>
-
-                                {/* Notes*/}
-                                <View style={styles.containerNotes}>
-                                    <View style={{ flexDirection: 'row' }}>
-                                        <Feather name="message-square" style={styles.iconNotes} />
-                                        <Text style={styles.titleNotes}>  Alguma observação?</Text>
-                                    </View>
-                                    <TextInput
-                                        multiline={true}
-                                        numberOfLines={3}
-                                        maxLength={140}
-                                        style={styles.inputNotes}
-                                        onChangeText={(e) => setSelectedProductNotes(e)}
-                                    />
+                                        })
+                                    }
                                 </View>
+                            }
 
-                                <View style={{
-                                    flex: 1,
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                }}>
-                                    <WaitingModal message={errorMessage} status={modalWaiting} />
+                            {
+                                product && product.categoriesAdditional.map((categoryAdditional, index) => {
+                                    return (
+                                        <View key={index} style={styles.containerAdditionals}>
+                                            <View style={styles.rowAdditionals}>
+                                                <TouchableHighlight
+                                                    underlayColor='#e6e6e6'
+                                                    onPress={() => { handleNavigateToCategoryAdditionals(categoryAdditional) }}>
+                                                    <View style={styles.rowTitleCategoryAdditionals}>
+                                                        <Text style={styles.categoryAdditionalTitle}>{categoryAdditional.title}</Text>
+                                                        <Feather name="chevron-right" style={styles.categoryAdditionalArrow} />
+                                                    </View>
+                                                </TouchableHighlight>
+                                            </View>
+
+                                            <View style={styles.rowObrigatory}>
+                                                <Text
+                                                    style={[styles.obrigatoryTitle, { backgroundColor: categoryAdditional.min > 0 ? colorPrimaryLight : colorTextMenuDescription }]}
+                                                >
+                                                    {categoryAdditional.min > 0 ? "Obrigatório." : "Opcional."}
+                                                </Text>
+                                            </View>
+
+                                            <View style={styles.rowTitleSelectedAdditionals} >
+                                                {
+                                                    selectedProduct.categoiesAdditional.map(category => {
+                                                        if (categoryAdditional.id === category.id) {
+                                                            const additionals = category.selectedAdditionals.map(additional => {
+                                                                return additional;
+                                                            });
+
+                                                            return additionals && additionals.map(item => {
+                                                                return <View key={item.id} style={{ flexDirection: 'row', marginVertical: 2 }}>
+                                                                    <Text style={styles.selectedAdditionalsAmount}>{item.amount}</Text>
+                                                                    <Text style={styles.selectedAdditionals}>{item.title}</Text>
+                                                                </View>
+                                                            });
+                                                        }
+                                                    })
+                                                }
+                                            </View>
+                                        </View>
+                                    )
+                                })
+                            }
+
+                            {/* Divider*/}
+                            <View style={styles.divider}></View>
+
+                            {/* Notes*/}
+                            <View style={styles.containerNotes}>
+                                <View style={{ flexDirection: 'row' }}>
+                                    <Feather name="message-square" style={styles.iconNotes} />
+                                    <Text style={styles.titleNotes}>  Alguma observação?</Text>
                                 </View>
+                                <TextInput
+                                    multiline={true}
+                                    numberOfLines={3}
+                                    maxLength={140}
+                                    style={styles.inputNotes}
+                                    onChangeText={(e) => setSelectedProductNotes(e)}
+                                />
                             </View>
                         </ScrollView>
+
+                        {/* Modal */}
+                        <View style={{
+                            flex: 1,
+                            justifyContent: "center",
+                            alignItems: "center",
+                        }}>
+                            <WaitingModal message={errorMessage} status={modalWaiting} />
+                        </View>
+
 
                         {/* Footer*/}
                         <Modal
