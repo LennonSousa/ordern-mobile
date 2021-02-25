@@ -162,14 +162,15 @@ export default function LandingPage() {
                                     outputRange: [140, 70],
                                     extrapolate: 'clamp'
                                 }),
-                                paddingTop: getStatusBarHeight() > 24 ? getStatusBarHeight() : 0,
                                 position: 'relative',
                             }
                         ]}
                     >
                         <ImageBackground
                             source={{ uri: restaurant.cover }}
-                            style={styles.cover}
+                            style={[styles.cover, {
+                                paddingTop: getStatusBarHeight() > 24 ? getStatusBarHeight() : 0,
+                            }]}
                         >
                             <Animated.Image
                                 source={{ uri: restaurant.avatar }}
