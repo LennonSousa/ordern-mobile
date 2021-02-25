@@ -55,7 +55,7 @@ export default function OrdersList() {
 
     return (
         <>
-            <Header title="Pedido" customGoBack={'Profile'} />
+            <Header title="Pedidos" showCancel={false} showGoBack={false} customGoBack={'Profile'} />
             <ScrollView
                 style={globalStyles.container}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}

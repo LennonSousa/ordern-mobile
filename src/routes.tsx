@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { StatusBar, Platform } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -36,9 +37,14 @@ import PrivacyTerms from './pages/PricacyTerms';
 function HomeTabs() {
     const { order } = useContext(ContextOrdering);
 
+    const [navBarNotch, setNavBarNotch] = useState(0);
     const [amountOrderItems, setAmountOrderItems] = useState(0);
 
     useEffect(() => {
+        if (Platform.OS === 'android' && StatusBar.currentHeight) {
+            setNavBarNotch(StatusBar.currentHeight);
+        }
+
         if (order) {
             let totalAmount = 0;
             order.orderItems.forEach(item => {
@@ -71,6 +77,17 @@ function HomeTabs() {
                         <Feather name="shopping-bag" size={size} color={color} />
                     ),
                     tabBarBadge: order ? amountOrderItems : undefined,
+                }}
+            />
+
+            <Tab.Screen
+                name="OrdersList"
+                component={OrdersList}
+                options={{
+                    tabBarLabel: 'Pedidos',
+                    tabBarIcon: ({ color, size }) => (
+                        <Feather name="file-text" size={size} color={color} />
+                    )
                 }}
             />
 
@@ -163,11 +180,6 @@ export default function Routes() {
                         headerShown: true,
                         header: () => <Header title="Suas informações" showCancel={false} />
                     }}
-                />
-
-                <Stack.Screen
-                    name="OrdersList"
-                    component={OrdersList}
                 />
 
                 <Stack.Screen

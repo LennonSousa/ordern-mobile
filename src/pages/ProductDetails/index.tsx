@@ -14,7 +14,8 @@ import {
     Modal,
     SafeAreaView,
     Animated,
-    StatusBar
+    StatusBar,
+    Platform
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
@@ -57,6 +58,8 @@ export default function ProductDetails() {
 
     const [product, setProduct] = useState<Product>();
 
+    const [navBarNotch, setNavBarNotch] = useState(0);
+
     const [scrollY] = useState(new Animated.Value(0));
 
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
@@ -67,6 +70,10 @@ export default function ProductDetails() {
     const params = route.params as ProductDetailsRouteParams;
 
     useEffect(() => {
+        if (Platform.OS === 'android' && StatusBar.currentHeight) {
+            setNavBarNotch(StatusBar.currentHeight);
+        }
+
         if (params.product) {
             navigation.setOptions({ header: () => <Header title={params.product.category.title} /> });
             setProduct(params.product);
@@ -372,8 +379,8 @@ export default function ProductDetails() {
                             <Animated.View style={[styles.containerCover,
                             {
                                 height: scrollY.interpolate({
-                                    inputRange: [0, 200],
-                                    outputRange: [230, 100],
+                                    inputRange: [0, 200 + (navBarNotch ? navBarNotch : 24)],
+                                    outputRange: [200 + (navBarNotch ? navBarNotch : 24), 100],
                                     extrapolate: 'clamp'
                                 })
                             }

@@ -13,11 +13,10 @@ import {
     ActivityIndicator,
     Modal,
     TouchableHighlight,
-    Animated,
-    NativeScrollEvent,
-    NativeSyntheticEvent
+    Animated
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
 
 import api from '../../services/api';
@@ -34,7 +33,6 @@ import { dayOfWeekAsInteger } from '../../utils/dayOfWeekAsInteger';
 import { convertMinutesToHours } from '../../utils/convertHourToMinutes';
 
 import globalStyles, {
-    colorBackground,
     colorHighLight,
     colorPrimaryLight,
     colorPrimaryDark,
@@ -54,9 +52,9 @@ export default function LandingPage() {
 
     const scrollY = new Animated.Value(0);
 
-    const [state, setState] = useState(true);
+    // const [state, setState] = useState(true);
 
-    const AnimatedStatusBar = Animated.createAnimatedComponent(StatusBar)
+    // const AnimatedStatusBar = Animated.createAnimatedComponent(StatusBar);
 
     const [businessTimeModal, setbusinessTimeModal] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
@@ -68,18 +66,18 @@ export default function LandingPage() {
     }],
         { useNativeDriver: false });
 
-    const onScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
-        let y = nativeEvent.contentOffset.y;
+    // const onScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
+    //     let y = nativeEvent.contentOffset.y;
 
-        scrollY.setValue(y); // set scroll animation value here
+    //     scrollY.setValue(y); // set scroll animation value here
 
-        if (y > 100 && state) {
-            setState(false);
-        }
-        if (y < 100 && !state) {
-            setState(true);
-        }
-    };
+    //     if (y > 100 && state) {
+    //         setState(false);
+    //     }
+    //     if (y < 100 && !state) {
+    //         setState(true);
+    //     }
+    // };
 
     useEffect(() => {
         api.get('restaurants')
@@ -156,7 +154,7 @@ export default function LandingPage() {
         <SafeAreaView style={globalStyles.container}>
             <StatusBar
                 animated
-                barStyle={state ? "light-content" : "dark-content"}
+                barStyle="light-content"
                 translucent
                 backgroundColor="transparent"
             />
@@ -171,7 +169,8 @@ export default function LandingPage() {
                                     outputRange: [140, 70],
                                     extrapolate: 'clamp'
                                 }),
-                                position: 'relative'
+                                paddingTop: getStatusBarHeight() > 24 ? getStatusBarHeight() : 0,
+                                position: 'relative',
                             }
                         ]}
                     >
@@ -284,7 +283,7 @@ export default function LandingPage() {
                     showsVerticalScrollIndicator={false}
                     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
                     scrollEventThrottle={16}
-                    onScroll={onScroll}
+                    onScroll={animatedEvent}
                 >
                     {
                         restaurant && restaurant.highlights && highlights.length > 0 && <View style={{ flex: 1, backgroundColor: 'white', paddingTop: 10 }}>

@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { useNavigation } from '@react-navigation/native';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, StatusBar } from 'react-native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { Feather } from '@expo/vector-icons';
 
@@ -8,13 +8,22 @@ import { ContextOrdering } from '../../context/orderingContext';
 
 interface HeaderProps {
     title: string;
+    notchPaddingTop?: number;
     showGoBack?: boolean;
     showCancel?: boolean;
     showClearBag?: boolean;
     customGoBack?: string;
 }
 
-export default function Header({ title, showGoBack = true, showCancel = true, showClearBag = false, customGoBack }: HeaderProps) {
+export default function Header(
+    {
+        title,
+        notchPaddingTop = 24,
+        showGoBack = true,
+        showCancel = true,
+        showClearBag = false,
+        customGoBack
+    }: HeaderProps) {
     const navigation = useNavigation();
 
     const { handleClearOrder } = useContext(ContextOrdering);
@@ -28,7 +37,8 @@ export default function Header({ title, showGoBack = true, showCancel = true, sh
     }
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { paddingTop: notchPaddingTop }]}>
+            <StatusBar barStyle="dark-content" />
             {
                 showGoBack ? <BorderlessButton onPress={() => { customGoBack ? navigation.navigate(customGoBack) : navigation.goBack() }} style={{ flex: 0.2 }}>
                     <Feather name="arrow-left" size={24} color="#cc0000" />
@@ -55,7 +65,7 @@ export default function Header({ title, showGoBack = true, showCancel = true, sh
 
 const styles = StyleSheet.create({
     container: {
-        height: 60,
+        height: 80,
         paddingHorizontal: 24,
         flexDirection: 'row',
         backgroundColor: '#f9fafc',

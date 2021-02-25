@@ -76,7 +76,7 @@ export default function Search() {
                                 <Image source={searchResult} style={
                                     {
                                         width: `90%`,
-                                        height: 100,
+                                        height: 150,
                                         resizeMode: 'contain'
                                     }
                                 } />
