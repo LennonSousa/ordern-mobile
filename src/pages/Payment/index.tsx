@@ -228,7 +228,7 @@ export default function Payment() {
     }
 
     return (
-        <SafeAreaView>
+        <SafeAreaView style={{ flex: 1 }}>
             <ScrollView style={globalStyles.container}>
                 <View style={globalStyles.row}>
                     <View style={globalStyles.column}>
