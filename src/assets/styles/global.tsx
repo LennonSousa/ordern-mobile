@@ -16,6 +16,7 @@ export const colorTextBase = '#6A6180';
 export const colorBorder = '#e6e6e6';
 export const colorInputBackground = '#F8F8FC';
 export const colorButtonBackground = '#fe3807';
+export const colorDisabledButtonBackground = '#8c8c8c';
 export const colorButtonText = '#FFFFFF';
 export const colorBoxBase = '#FFFFFF';
 export const colorBoxBooter = '#FAFAFC';
@@ -163,14 +164,23 @@ const globalStyles = StyleSheet.create({
     },
 
     buttonLogIn: {
-        backgroundColor: '#fe3807',
+        backgroundColor: colorButtonBackground,
         borderRadius: 5,
         marginVertical: 15,
         height: 50,
         justifyContent: 'center',
         width: '100%',
         alignItems: 'center',
-        padding: 20,
+    },
+
+    disabledButtonLogIn: {
+        backgroundColor: colorDisabledButtonBackground,
+        borderRadius: 5,
+        marginVertical: 15,
+        height: 50,
+        justifyContent: 'center',
+        width: '100%',
+        alignItems: 'center',
     },
 
     buttonTextLogIn: {

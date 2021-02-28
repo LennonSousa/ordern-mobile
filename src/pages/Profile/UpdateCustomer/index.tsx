@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { StyleSheet, View, Text, TouchableHighlight, ScrollView, Platform, ActivityIndicator, Modal } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, Platform, TouchableHighlight } from 'react-native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
-import { Feather, FontAwesome5 } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { parseISO, format, addHours } from 'date-fns';
 import { Formik } from 'formik';
@@ -12,10 +12,11 @@ import api from '../../../services/api';
 
 import { CustomerContext } from '../../../context/customerContext';
 import Input from '../../../components/Interfaces/Inputs';
+import Buttons from '../../../components/Interfaces/Buttons';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
 import WaitingModal, { statusModal } from '../../../components/Interfaces/WaitingModal';
 
-import globalStyles, { colorPrimaryDark } from '../../../assets/styles/global';
+import globalStyles from '../../../assets/styles/global';
 
 export default function CustomerUpdate() {
     const navigation = useNavigation();
@@ -23,6 +24,7 @@ export default function CustomerUpdate() {
 
     const [show, setShow] = useState(false);
 
+    const [fieldsFormTouched, setFieldsFormTouched] = useState(false);
     const [birth, setBirth] = useState(new Date());
 
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
@@ -76,6 +78,8 @@ export default function CustomerUpdate() {
                             setTimeout(() => {
                                 setModalWaiting("hidden");
                             }, 1500);
+
+                            setFieldsFormTouched(false);
                         }
                         catch (err) {
                             setModalWaiting("error");
@@ -87,7 +91,7 @@ export default function CustomerUpdate() {
                     }}
                     validationSchema={validatiionSchema}
                 >
-                    {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
+                    {({ handleChange, handleBlur, handleSubmit, values, errors, setFieldValue, isValid }) => (
                         <>
                             <View style={globalStyles.fieldsRow}>
                                 <View style={globalStyles.fieldsColumn}>
@@ -110,7 +114,7 @@ export default function CustomerUpdate() {
                                         placeholder='Obrigatório'
                                         textContentType='name'
                                         autoCapitalize='words'
-                                        onChangeText={handleChange('name')}
+                                        onChangeText={(e) => { setFieldValue('name', e, true); setFieldsFormTouched(true); }}
                                         onBlur={handleBlur('name')}
                                         value={values.name}
                                     />
@@ -139,7 +143,7 @@ export default function CustomerUpdate() {
                                         title='CPF'
                                         placeholder='Opcional'
                                         keyboardType='number-pad'
-                                        onChangeText={handleChange('cpf')}
+                                        onChangeText={(e) => { setFieldValue('cpf', e, true); setFieldsFormTouched(true); }}
                                         onBlur={handleBlur('cpf')}
                                         value={values.cpf}
                                     />
@@ -169,6 +173,7 @@ export default function CustomerUpdate() {
                                             onChange={(birthDate, selectedDate) => {
                                                 setShow(Platform.OS === 'ios');
                                                 selectedDate && setBirth(selectedDate);
+                                                selectedDate && selectedDate !== birth && setFieldsFormTouched(true);
                                             }}
                                         />
                                     }
@@ -183,7 +188,8 @@ export default function CustomerUpdate() {
                                         placeholder='Opcional'
                                         textContentType='telephoneNumber'
                                         keyboardType='phone-pad'
-                                        onChangeText={handleChange('phone')}
+
+                                        onChangeText={(e) => { setFieldValue('phone', e, true); setFieldsFormTouched(true); }}
                                         onBlur={handleBlur('phone')}
                                         value={values.phone}
                                     />
@@ -214,9 +220,7 @@ export default function CustomerUpdate() {
                             </View>
 
                             <View>
-                                <TouchableHighlight underlayColor='#cc0000' style={globalStyles.buttonLogIn} onPress={handleSubmit as any}>
-                                    <Text style={globalStyles.footerButtonText}>Atualizar</Text>
-                                </TouchableHighlight>
+                                <Buttons disabled={fieldsFormTouched && isValid ? false : true} title="Atualizar" onPress={handleSubmit as any} />
                             </View>
                         </>
                     )}

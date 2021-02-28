@@ -12,6 +12,7 @@ import Header from '../../components/PageHeader';
 import Input from '../../components/Interfaces/Inputs';
 import PasswordInput from '../../components/Interfaces/PasswordInput';
 import InvalidFeedback from '../../components/Interfaces/InvalidFeedback';
+import Buttons from '../../components/Interfaces/Buttons';
 import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingModal';
 
 import globalStyles from '../../assets/styles/global';
@@ -239,9 +240,7 @@ export default function Profile() {
 
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
-                                        <TouchableHighlight underlayColor='#cc0000' style={styles.buttonLogIn} onPress={handleSubmit as any}>
-                                            <Text style={styles.buttonTextLogIn}>Entrar</Text>
-                                        </TouchableHighlight>
+                                        <Buttons title="Entrar" onPress={handleSubmit as any} />
                                     </View>
                                 </View>
 
@@ -362,6 +361,7 @@ const styles = StyleSheet.create({
 
     fieldsLogIn: {
         marginVertical: 8,
+        height: 50,
     },
 
     buttonLogIn: {
@@ -372,7 +372,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         width: '100%',
         alignItems: 'center',
-        padding: 20,
     },
 
     buttonTextLogIn: {

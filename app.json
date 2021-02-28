@@ -2,7 +2,7 @@
   "expo": {
     "name": "Casa de carnes Israel",
     "slug": "casaDeCarnesIsrael",
-    "version": "1.9.4",
+    "version": "1.9.5",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {

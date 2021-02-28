@@ -12,10 +12,10 @@ import {
     View,
     Linking,
     Modal,
-    Animated
+    Animated,
 } from 'react-native';
-import { PanGestureHandler, PanGestureHandlerStateChangeEvent, State } from 'react-native-gesture-handler';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
 
 import api from '../../services/api';
@@ -33,24 +33,31 @@ import ProductValues from '../../components/ProductValues';
 import verifyProductAvailable from '../../utils/verifyProductAvailable';
 import ProductDetailsShimmer from '../../components/Shimmers/ProductDetails';
 import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingModal';
-import { colorHighLight, colorPrimaryDark, colorPrimaryLight, colorTextMenuDescription } from '../../assets/styles/global';
 import { OrderItem } from '../../components/OrderItems';
 import PageFooter from '../../components/PageFooter';
+import Buttons from '../../components/Interfaces/Buttons';
 
-import globalStyles, { colorBackground } from '../../assets/styles/global';
+import globalStyles, {
+    colorHighLight,
+    colorPrimaryDark,
+    colorPrimaryLight,
+    colorTextMenuDescription,
+    colorHeaderBackground,
+    colorBackground,
+} from '../../assets/styles/global';
 import Header from '../../components/PageHeader';
 
 interface ProductDetailsRouteParams {
     product: Product;
 }
 
+const STATUS_BAR_HEIGHT = getStatusBarHeight();
+const HEADER_HEIGHT = STATUS_BAR_HEIGHT > 24 ? 250 + STATUS_BAR_HEIGHT : 250;
+const TOOLS_HEIGHT = 70;
+
 export default function ProductDetails() {
     const route = useRoute();
     const navigation = useNavigation();
-
-    const STATUS_BAR_HEIGHT = getStatusBarHeight();
-    const HEADER_HEIGHT = STATUS_BAR_HEIGHT > 24 ? 300 + STATUS_BAR_HEIGHT : 300;
-    const TOOLS_HEIGHT = 70;
 
     const { restaurant } = useContext(RestaurantContext);
     const { isOpened } = useContext(OpenedDaysContext);
@@ -61,14 +68,14 @@ export default function ProductDetails() {
 
     const [product, setProduct] = useState<Product>();
 
-    const scrollY = new Animated.Value(0);
-
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
     const [errorMessage, setErrorMessage] = useState('');
 
     const [modalOnRequest, setModalOnRequest] = useState(false);
 
     const params = route.params as ProductDetailsRouteParams;
+
+    const scrollY = new Animated.Value(0);
 
     const animatedEvent = Animated.event([{
         nativeEvent: {
@@ -101,10 +108,6 @@ export default function ProductDetails() {
             });
         }
     }, [params.product]);
-
-    function onHandlerStateChange(event: PanGestureHandlerStateChangeEvent) {
-
-    }
 
     function handleNavigateToCategoryAdditionals(categoryAdditional: ProductCategory) {
         navigation.navigate('CategoryAdditionals', { productCategory: categoryAdditional });
@@ -369,181 +372,249 @@ export default function ProductDetails() {
     }
 
     return (
-        <View style={globalStyles.container}>
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+            <View style={{ flex: 1, }} >
+                <View style={{
+                    flex: 1,
+                }}>
+                    <Animated.View style={[styles.toolsHeader, styles.withShadow, {
+                        paddingTop: STATUS_BAR_HEIGHT,
+                        backgroundColor: scrollY.interpolate({
+                            inputRange: [0, 5],
+                            outputRange: ['transparent', colorHeaderBackground],
+                            extrapolate: 'clamp'
+                        }),
+                        shadowOpacity: scrollY.interpolate({
+                            inputRange: [0, 5],
+                            outputRange: [0, 0.25],
+                            extrapolate: 'clamp'
+                        }),
+                        elevation: scrollY.interpolate({
+                            inputRange: [0, 5],
+                            outputRange: [0, 5],
+                            extrapolate: 'clamp'
+                        }),
+                    }]}>
+                        <View style={{ flex: 0.2, alignItems: 'center' }}>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    navigation.goBack()
+                                }}
+                                style={{
+                                    width: 40,
+                                    height: 40,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                                    borderRadius: 50,
+                                }}
+                            >
+                                <Feather name="arrow-left" size={20} color="#cc0000" />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={{ flex: 0.6 }}>
+                            <Animated.Text
+                                style={[styles.toolsHeaderTitle, {
+                                    opacity: scrollY.interpolate({
+                                        inputRange: [0, 5],
+                                        outputRange: [0, 1],
+                                        extrapolate: 'clamp'
+                                    }),
+                                }]}>{product?.title}
+                            </Animated.Text>
+                        </View>
+
+                        <View style={{ flex: 0.2, alignItems: 'center' }}>
+                        </View>
+                    </Animated.View>
+
+                    {
+                        product && selectedProduct && <>
+                            <ScrollView scrollEventThrottle={16} onScroll={animatedEvent} style={{ flex: 1, backgroundColor: colorBackground }}>
+                                <Animated.View style={{
+                                    height: scrollY.interpolate({
+                                        inputRange: [0, HEADER_HEIGHT],
+                                        outputRange: [HEADER_HEIGHT, STATUS_BAR_HEIGHT > 24 ? (TOOLS_HEIGHT + STATUS_BAR_HEIGHT) : TOOLS_HEIGHT],
+                                        extrapolate: 'clamp'
+                                    }),
+                                    opacity: scrollY.interpolate({
+                                        inputRange: [0, HEADER_HEIGHT],
+                                        outputRange: [1, 0],
+                                        extrapolate: 'clamp'
+                                    }),
+                                }}
+                                >
+                                    <View style={{ flex: 1, position: 'absolute', height: '100%', width: '100%', zIndex: 5, }}>
+                                        <LinearGradient
+                                            // Background Linear Gradient
+                                            colors={['rgba(0, 0, 0, 0.35)', 'transparent']}
+                                            style={{ flex: 1 }}
+                                        />
+                                    </View>
+                                    <ImageBackground resizeMode='cover' source={{ uri: product.image }} style={styles.cover} />
+                                </Animated.View>
+
+                                <View style={globalStyles.container}>
+                                    <View>
+                                        <Text style={styles.productTitle}>{product.title}</Text>
+                                        <Text style={styles.productDescription}>{product.description}</Text>
+                                    </View>
+
+                                    <View style={styles.rowPrice}>
+                                        {
+                                            product.discount ? <Text style={styles.productPriceDiscount}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text> :
+                                                <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text>
+                                        }
+
+                                        {
+                                            product.discount && <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.discount_price.toString().replace('.', ',')}`}</Text>
+                                        }
+                                    </View>
+
+                                    {
+                                        !product.price_one && <View style={styles.productValuesContainer}>
+                                            <Text style={styles.categoryAdditionalTitle} >Escolha uma opção:</Text>
+                                            {
+                                                product.values.map(value => {
+                                                    return <View key={value.id}>
+                                                        <ProductValues productValue={value} />
+                                                    </View>
+                                                })
+                                            }
+                                        </View>
+                                    }
+
+                                    {
+                                        product && product.categoriesAdditional.map((categoryAdditional, index) => {
+                                            return (
+                                                <View key={index} style={styles.containerAdditionals}>
+                                                    <View style={styles.rowAdditionals}>
+                                                        <TouchableHighlight
+                                                            underlayColor='#e6e6e6'
+                                                            onPress={() => { handleNavigateToCategoryAdditionals(categoryAdditional) }}>
+                                                            <View style={styles.rowTitleCategoryAdditionals}>
+                                                                <Text style={styles.categoryAdditionalTitle}>{categoryAdditional.title}</Text>
+                                                                <Feather name="chevron-right" style={styles.categoryAdditionalArrow} />
+                                                            </View>
+                                                        </TouchableHighlight>
+                                                    </View>
+
+                                                    <View style={styles.rowObrigatory}>
+                                                        <Text
+                                                            style={[styles.obrigatoryTitle, { backgroundColor: categoryAdditional.min > 0 ? colorPrimaryLight : colorTextMenuDescription }]}
+                                                        >
+                                                            {categoryAdditional.min > 0 ? "Obrigatório." : "Opcional."}
+                                                        </Text>
+                                                    </View>
+
+                                                    <View style={styles.rowTitleSelectedAdditionals} >
+                                                        {
+                                                            selectedProduct.categoiesAdditional.map(category => {
+                                                                if (categoryAdditional.id === category.id) {
+                                                                    const additionals = category.selectedAdditionals.map(additional => {
+                                                                        return additional;
+                                                                    });
+
+                                                                    return additionals && additionals.map(item => {
+                                                                        return <View key={item.id} style={{ flexDirection: 'row', marginVertical: 2 }}>
+                                                                            <Text style={styles.selectedAdditionalsAmount}>{item.amount}</Text>
+                                                                            <Text style={styles.selectedAdditionals}>{item.title}</Text>
+                                                                        </View>
+                                                                    });
+                                                                }
+                                                            })
+                                                        }
+                                                    </View>
+                                                </View>
+                                            )
+                                        })
+                                    }
+
+                                    {/* Divider*/}
+                                    <View style={styles.divider}></View>
+
+                                    {/* Notes*/}
+                                    <View style={styles.containerNotes}>
+                                        <View style={{ flexDirection: 'row' }}>
+                                            <Feather name="message-square" style={styles.iconNotes} />
+                                            <Text style={styles.titleNotes}>  Alguma observação?</Text>
+                                        </View>
+                                        <TextInput
+                                            multiline={true}
+                                            numberOfLines={3}
+                                            maxLength={140}
+                                            style={styles.inputNotes}
+                                            onChangeText={(e) => setSelectedProductNotes(e)}
+                                        />
+                                    </View>
+
+                                    {/* Modal */}
+                                    <View style={{
+                                        flex: 1,
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                    }}>
+                                        <WaitingModal message={errorMessage} status={modalWaiting} />
+                                    </View>
+
+
+                                    {/* Footer*/}
+                                    <Modal
+                                        animationType="slide"
+                                        transparent={true}
+                                        visible={modalOnRequest}
+                                    >
+                                        <View style={{
+                                            flex: 1,
+                                            justifyContent: "center",
+                                            alignItems: "center",
+                                        }}>
+                                            <View style={styles.modalView}>
+                                                <View style={{ marginVertical: 5 }}>
+                                                    <Feather name="message-square" size={48} color="#fe3807" />
+                                                </View>
+
+                                                <View>
+                                                    <View style={{ marginVertical: 5 }}>
+                                                        <Text style={[globalStyles.subTitlePrimary, { textAlign: 'center' }]}>Para comprar este produto você precisa
+                                        primeiro consultar a quantidade e o total com um atendente.</Text>
+                                                    </View>
+
+                                                    <View style={{ flexDirection: 'row', marginTop: 5, width: '100%' }}>
+                                                        <View style={{ flex: 0.5, marginHorizontal: 2 }}>
+                                                            <TouchableHighlight
+                                                                underlayColor={colorPrimaryDark}
+                                                                style={globalStyles.footerButton}
+                                                                onPress={() => { setModalOnRequest(false) }}
+                                                            >
+                                                                <Text style={globalStyles.footerButtonText}>Cancelar</Text>
+                                                            </TouchableHighlight>
+                                                        </View>
+                                                        <View style={{ flex: 0.5, marginHorizontal: 2 }}>
+                                                            <TouchableHighlight
+                                                                underlayColor={colorPrimaryDark}
+                                                                style={globalStyles.footerButton}
+                                                                onPress={handleOnRequest}
+                                                            >
+                                                                <Text style={globalStyles.footerButtonText}>Consultar</Text>
+                                                            </TouchableHighlight>
+                                                        </View>
+                                                    </View>
+                                                </View>
+                                            </View>
+                                        </View>
+                                    </Modal>
+                                </View>
+
+                            </ScrollView>
+                        </>
+                    }
+                </View>
+            </View>
+
             {
                 product && selectedProduct ?
                     <>
-                        <Animated.View style={[styles.containerCover,
-                        {
-                            height: HEADER_HEIGHT,
-                            position: 'absolute',
-                            top: 0,
-                            bottom: 0,
-                            opacity: scrollY.interpolate({
-                                inputRange: [0, 300],
-                                outputRange: [1, 0],
-                                extrapolate: 'clamp'
-                            })
-                        }
-                        ]}>
-                            <ImageBackground resizeMode='cover' source={{ uri: product.image }} style={styles.cover} />
-                        </Animated.View>
-
-                        <ScrollView onScroll={animatedEvent} style={{
-                            flex: 1,
-                            top: HEADER_HEIGHT
-                        }}>
-                            <View>
-                                <Text style={styles.productTitle}>{product.title}</Text>
-                                <Text style={styles.productDescription}>{product.description}</Text>
-                            </View>
-
-                            <View style={styles.rowPrice}>
-                                {
-                                    product.discount ? <Text style={styles.productPriceDiscount}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text> :
-                                        <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text>
-                                }
-
-                                {
-                                    product.discount && <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.discount_price.toString().replace('.', ',')}`}</Text>
-                                }
-                            </View>
-
-                            {
-                                !product.price_one && <View style={styles.productValuesContainer}>
-                                    <Text style={styles.categoryAdditionalTitle} >Escolha uma opção:</Text>
-                                    {
-                                        product.values.map(value => {
-                                            return <View key={value.id}>
-                                                <ProductValues productValue={value} />
-                                            </View>
-                                        })
-                                    }
-                                </View>
-                            }
-
-                            {
-                                product && product.categoriesAdditional.map((categoryAdditional, index) => {
-                                    return (
-                                        <View key={index} style={styles.containerAdditionals}>
-                                            <View style={styles.rowAdditionals}>
-                                                <TouchableHighlight
-                                                    underlayColor='#e6e6e6'
-                                                    onPress={() => { handleNavigateToCategoryAdditionals(categoryAdditional) }}>
-                                                    <View style={styles.rowTitleCategoryAdditionals}>
-                                                        <Text style={styles.categoryAdditionalTitle}>{categoryAdditional.title}</Text>
-                                                        <Feather name="chevron-right" style={styles.categoryAdditionalArrow} />
-                                                    </View>
-                                                </TouchableHighlight>
-                                            </View>
-
-                                            <View style={styles.rowObrigatory}>
-                                                <Text
-                                                    style={[styles.obrigatoryTitle, { backgroundColor: categoryAdditional.min > 0 ? colorPrimaryLight : colorTextMenuDescription }]}
-                                                >
-                                                    {categoryAdditional.min > 0 ? "Obrigatório." : "Opcional."}
-                                                </Text>
-                                            </View>
-
-                                            <View style={styles.rowTitleSelectedAdditionals} >
-                                                {
-                                                    selectedProduct.categoiesAdditional.map(category => {
-                                                        if (categoryAdditional.id === category.id) {
-                                                            const additionals = category.selectedAdditionals.map(additional => {
-                                                                return additional;
-                                                            });
-
-                                                            return additionals && additionals.map(item => {
-                                                                return <View key={item.id} style={{ flexDirection: 'row', marginVertical: 2 }}>
-                                                                    <Text style={styles.selectedAdditionalsAmount}>{item.amount}</Text>
-                                                                    <Text style={styles.selectedAdditionals}>{item.title}</Text>
-                                                                </View>
-                                                            });
-                                                        }
-                                                    })
-                                                }
-                                            </View>
-                                        </View>
-                                    )
-                                })
-                            }
-
-                            {/* Divider*/}
-                            <View style={styles.divider}></View>
-
-                            {/* Notes*/}
-                            <View style={styles.containerNotes}>
-                                <View style={{ flexDirection: 'row' }}>
-                                    <Feather name="message-square" style={styles.iconNotes} />
-                                    <Text style={styles.titleNotes}>  Alguma observação?</Text>
-                                </View>
-                                <TextInput
-                                    multiline={true}
-                                    numberOfLines={3}
-                                    maxLength={140}
-                                    style={styles.inputNotes}
-                                    onChangeText={(e) => setSelectedProductNotes(e)}
-                                />
-                            </View>
-                        </ScrollView>
-
-                        {/* Modal */}
-                        <View style={{
-                            flex: 1,
-                            justifyContent: "center",
-                            alignItems: "center",
-                        }}>
-                            <WaitingModal message={errorMessage} status={modalWaiting} />
-                        </View>
-
-
-                        {/* Footer*/}
-                        <Modal
-                            animationType="slide"
-                            transparent={true}
-                            visible={modalOnRequest}
-                        >
-                            <View style={{
-                                flex: 1,
-                                justifyContent: "center",
-                                alignItems: "center",
-                            }}>
-                                <View style={styles.modalView}>
-                                    <View style={{ marginVertical: 5 }}>
-                                        <Feather name="message-square" size={48} color="#fe3807" />
-                                    </View>
-
-                                    <View>
-                                        <View style={{ marginVertical: 5 }}>
-                                            <Text style={[globalStyles.subTitlePrimary, { textAlign: 'center' }]}>Para comprar este produto você precisa
-                                        primeiro consultar a quantidade e o total com um atendente.</Text>
-                                        </View>
-
-                                        <View style={{ flexDirection: 'row', marginTop: 5, width: '100%' }}>
-                                            <View style={{ flex: 0.5, marginHorizontal: 2 }}>
-                                                <TouchableHighlight
-                                                    underlayColor={colorPrimaryDark}
-                                                    style={globalStyles.footerButton}
-                                                    onPress={() => { setModalOnRequest(false) }}
-                                                >
-                                                    <Text style={globalStyles.footerButtonText}>Cancelar</Text>
-                                                </TouchableHighlight>
-                                            </View>
-                                            <View style={{ flex: 0.5, marginHorizontal: 2 }}>
-                                                <TouchableHighlight
-                                                    underlayColor={colorPrimaryDark}
-                                                    style={globalStyles.footerButton}
-                                                    onPress={handleOnRequest}
-                                                >
-                                                    <Text style={globalStyles.footerButtonText}>Consultar</Text>
-                                                </TouchableHighlight>
-                                            </View>
-                                        </View>
-                                    </View>
-                                </View>
-                            </View>
-                        </Modal>
-
                         <PageFooter>
                             {
                                 params.product.on_request ? <View style={{ flex: 1 }} >
@@ -581,23 +652,11 @@ export default function ProductDetails() {
                                         </View>
 
                                         <View style={{ flex: 0.5 }}>
-                                            <TouchableHighlight
-                                                underlayColor="#ff0000"
-                                                onPress={handleAddProductToCart}
+                                            <Buttons
                                                 disabled={selectedProduct?.price === 0.00 || !isOpened ? true : false}
-                                                style={globalStyles.footerButton}
-                                            >
-                                                <View style={styles.footerContainerButtonRow}>
-                                                    <View style={styles.footerContainerButtonColumnText}>
-                                                        <Text style={styles.textButtons}>Adicionar</Text>
-                                                    </View>
-                                                    <View style={styles.footerContainerButtonColumnTotal}>
-                                                        <Text style={styles.textButtons}>
-                                                            {`R$ ${selectedProduct && Number(selectedProduct.total).toFixed(2).toString().replace('.', ',')}`}
-                                                        </Text>
-                                                    </View>
-                                                </View>
-                                            </TouchableHighlight>
+                                                title={`Adicionar  R$ ${selectedProduct && Number(selectedProduct.total).toFixed(2).toString().replace('.', ',')}`}
+                                                onPress={handleAddProductToCart}
+                                            />
                                         </View>
                                     </>
                             }
@@ -610,10 +669,6 @@ export default function ProductDetails() {
 }
 
 const styles = StyleSheet.create({
-    containerCover: {
-        alignItems: 'center',
-    },
-
     cover: {
         width: Dimensions.get('window').width,
         height: '100%',
@@ -621,11 +676,37 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
 
+    toolsHeader: {
+        width: Dimensions.get('window').width,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'absolute',
+        height: 70,
+        zIndex: 5
+    },
+
+    withShadow: {
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowColor: "#000",
+        shadowRadius: 3.84,
+    },
+
+    toolsHeaderTitle: {
+        fontFamily: 'Nunito_600SemiBold',
+        color: '#262626',
+        fontSize: 18,
+        flex: 0.6,
+        textAlign: 'center',
+    },
+
     productTitle: {
         fontFamily: 'Nunito_600SemiBold',
         fontSize: 22,
         color: '#262626',
-        paddingHorizontal: 15,
         marginVertical: 5
     },
 
@@ -633,12 +714,10 @@ const styles = StyleSheet.create({
         fontFamily: 'Nunito_300Light',
         fontSize: 16,
         color: '#8c8c8c',
-        paddingHorizontal: 20
     },
 
     rowPrice: {
         flexDirection: 'row',
-        paddingHorizontal: 15,
         marginVertical: 8
     },
 

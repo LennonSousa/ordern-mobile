@@ -37,7 +37,7 @@ export default function Shipment() {
     useEffect(() => {
         setModalWaiting("waiting");
 
-        api.get('restaurant/delivery-groups').then(res => {
+        api.get('store/delivery-groups').then(res => {
             setRestaurantDeliveryGroups(res.data);
 
             setModalWaiting("hidden");
