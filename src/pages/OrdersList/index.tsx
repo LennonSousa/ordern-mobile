@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, RefreshControl, Image, StyleSheet } from 'react-native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
@@ -7,15 +7,20 @@ import { format } from 'date-fns';
 
 import api from '../../services/api';
 
+import { AuthContext } from '../../context/authContext';
 import { CustomerContext } from '../../context/customerContext';
 import { Order } from '../../components/Orders';
 import OrdersListShimmer from '../../components/Shimmers/OrdersList';
 import Header from '../../components/PageHeader';
 
 import globalStyles, { colorPrimaryLight, colorHighLight } from '../../assets/styles/global';
+import emptyOrderList from '../../assets/images/orders-list.png';
+import orderListSignIn from '../../assets/images/orders-list-sign-in.png'
 
 export default function OrdersList() {
     const navigation = useNavigation();
+
+    const { signed } = useContext(AuthContext);
     const { customer } = useContext(CustomerContext);
 
     const [ordersList, setOrdersList] = useState<Order[]>();
@@ -76,41 +81,85 @@ export default function OrdersList() {
                 </View>
 
                 {
-                    ordersList ? ordersList.map((order, index) => {
-                        return <View key={index} style={globalStyles.containerItem}>
-                            <View style={globalStyles.fieldsRow}>
-                                <View style={globalStyles.fieldsColumn}>
-                                    <View style={globalStyles.menuRow}>
-                                        <View style={{ flex: 1 }}>
-                                            <BorderlessButton onPress={() => { navigation.navigate('OrderDetails', { id: order.id }); }}>
-                                                <View style={{ flexDirection: 'row', marginBottom: 5 }}>
-                                                    <View style={{ flex: 0.7 }}>
-                                                        <Text style={{ color: '#8c8c8c' }}>{`Nº ${order.tracker}`}</Text>
-                                                    </View>
-                                                    <View style={{ flex: 0.3 }}>
-                                                        <Text style={{ color: '#8c8c8c', textAlign: 'right' }}>{`R$ ${Number(order.total).toFixed(2).replace('.', ',')}`}</Text>
-                                                    </View>
+                    signed ? (
+                        ordersList ? (
+                            ordersList.length > 0 ? ordersList.map((order, index) => {
+                                return <View key={index} style={globalStyles.containerItem}>
+                                    <View style={globalStyles.fieldsRow}>
+                                        <View style={globalStyles.fieldsColumn}>
+                                            <View style={globalStyles.menuRow}>
+                                                <View style={{ flex: 1 }}>
+                                                    <BorderlessButton onPress={() => { navigation.navigate('OrderDetails', { id: order.id }); }}>
+                                                        <View style={{ flexDirection: 'row', marginBottom: 5 }}>
+                                                            <View style={{ flex: 0.7 }}>
+                                                                <Text style={{ color: '#8c8c8c' }}>{`Nº ${order.tracker}`}</Text>
+                                                            </View>
+                                                            <View style={{ flex: 0.3 }}>
+                                                                <Text style={{ color: '#8c8c8c', textAlign: 'right' }}>{`R$ ${Number(order.total).toFixed(2).replace('.', ',')}`}</Text>
+                                                            </View>
+                                                        </View>
+                                                        <View style={{ flexDirection: 'row', marginTop: 5 }} >
+                                                            <View style={globalStyles.colTitleButtonItem}>
+                                                                <Text style={{ color: order.orderStatus.order === 4 ? colorHighLight : colorPrimaryLight }}>{`${order.orderStatus.title}`}</Text>
+                                                            </View>
+                                                            <View style={globalStyles.colTitleButtonItem}>
+                                                                <Text style={{ color: '#8c8c8c', textAlign: 'right' }}>{format(new Date(order.ordered), "dd/MM/yyyy' às 'HH:mm")}</Text>
+                                                            </View>
+                                                        </View>
+                                                    </BorderlessButton>
                                                 </View>
-                                                <View style={{ flexDirection: 'row', marginTop: 5 }} >
-                                                    <View style={globalStyles.colTitleButtonItem}>
-                                                        <Text style={{ color: order.orderStatus.order === 4 ? colorHighLight : colorPrimaryLight }}>{`${order.orderStatus.title}`}</Text>
-                                                    </View>
-                                                    <View style={globalStyles.colTitleButtonItem}>
-                                                        <Text style={{ color: '#8c8c8c', textAlign: 'right' }}>{format(new Date(order.ordered), "dd/MM/yyyy' às 'HH:mm")}</Text>
-                                                    </View>
-                                                </View>
-                                            </BorderlessButton>
-                                        </View>
 
+                                            </View>
+                                        </View>
+                                    </View>
+                                </View>
+                            }
+                            ) : <View style={globalStyles.container}>
+                                <View style={[globalStyles.row, { marginVertical: 0, height: 250 }]}>
+                                    <View style={[globalStyles.column, { alignItems: 'center' }]}>
+                                        <Image source={emptyOrderList} style={styles.imageContent} />
+                                    </View>
+                                </View>
+                                <View style={[globalStyles.row, { marginVertical: 0 }]}>
+                                    <View style={[globalStyles.column, { alignItems: 'center' }]}>
+                                        <Text style={globalStyles.titlePrimaryLight}>Ainda sem pedidos?</Text>
+                                        <Text style={globalStyles.textDescription}>Não perca tempo, faça o seu primeiro pedido.</Text>
                                     </View>
                                 </View>
                             </View>
+                        ) :
+                            <OrdersListShimmer />
+                    ) : <View style={globalStyles.container}>
+                        <View style={[globalStyles.row, { marginVertical: 0, height: 250 }]}>
+                            <View style={[globalStyles.column, { alignItems: 'center' }]}>
+                                <Image source={orderListSignIn} style={styles.imageContent} />
+                            </View>
                         </View>
-                    }
-                    ) :
-                        <OrdersListShimmer />
+                        <View style={[globalStyles.row, { marginVertical: 0 }]}>
+                            <View style={[globalStyles.column, { alignItems: 'center' }]}>
+                                <Text style={globalStyles.titlePrimaryLight}>Entre para continuar.</Text>
+                                <Text style={globalStyles.textDescription}>Entre com a sua conta no aplicativo.</Text>
+                            </View>
+                        </View>
+
+                        <View style={globalStyles.fieldsRow}>
+                            <View style={globalStyles.fieldsColumn}>
+                                <BorderlessButton onPress={() => { navigation.navigate('Profile') }}>
+                                    <Text style={globalStyles.buttonTextSignIn}>Entrar</Text>
+                                </BorderlessButton>
+                            </View>
+                        </View>
+                    </View>
                 }
             </ScrollView>
         </>
     )
 }
+
+const styles = StyleSheet.create(
+    {
+        imageContent: {
+            height: '90%',
+            resizeMode: 'contain'
+        },
+    });

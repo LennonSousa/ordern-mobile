@@ -5,6 +5,7 @@ import Routes from './src/routes';
 
 import { RestaurantProvider } from './src/context/restaurantContext';
 import { OpenedDaysProvider } from './src/context/openedDaysContext';
+import { HighlightsProvider } from './src/context/highlightsContext';
 import { CategoriesProvider } from './src/context/categoriesContext';
 import { AuthProvider } from './src/context/authContext';
 import { CustomerProvider } from './src/context/customerContext';
@@ -28,17 +29,19 @@ export default function App() {
   return (
     <RestaurantProvider>
       <OpenedDaysProvider>
-        <CategoriesProvider>
-          <CustomerProvider>
-            <AuthProvider>
-              <OrderingProvider>
-                <SelectedProductProvider>
-                  <Routes />
-                </SelectedProductProvider>
-              </OrderingProvider>
-            </AuthProvider>
-          </CustomerProvider>
-        </CategoriesProvider>
+        <HighlightsProvider>
+          <CategoriesProvider>
+            <CustomerProvider>
+              <AuthProvider>
+                <OrderingProvider>
+                  <SelectedProductProvider>
+                    <Routes />
+                  </SelectedProductProvider>
+                </OrderingProvider>
+              </AuthProvider>
+            </CustomerProvider>
+          </CategoriesProvider>
+        </HighlightsProvider>
       </OpenedDaysProvider>
     </RestaurantProvider>
   );

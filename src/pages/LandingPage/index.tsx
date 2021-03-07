@@ -5,7 +5,6 @@ import {
     View,
     Dimensions,
     ImageBackground,
-    StatusBar,
     RefreshControl,
     Text,
     TouchableOpacity,
@@ -22,9 +21,10 @@ import api from '../../services/api';
 
 import { RestaurantContext } from '../../context/restaurantContext';
 import { OpenedDaysContext } from '../../context/openedDaysContext';
+import { HighlightsContext } from '../../context/highlightsContext';
 import { CategoriesContext } from '../../context/categoriesContext';
 
-import Highlights, { Highlight } from '../../components/Highlights';
+import Highlights from '../../components/Highlights';
 import CategoryItem from '../../components/Categories';
 import LandingPageShimmer from '../../components/Shimmers/Landing';
 import CategoriesShimmer from '../../components/Shimmers/Categories';
@@ -47,11 +47,10 @@ export default function LandingPage() {
     const TOOLS_HEIGHT = 70;
 
     const { restaurant, handleRestaurant } = useContext(RestaurantContext);
+    const { highlights, handleHighlights } = useContext(HighlightsContext);
     const { categories, handleCategories } = useContext(CategoriesContext);
 
     const { isOpened, openedDays, handleOpenedDays } = useContext(OpenedDaysContext);
-
-    const [highlights, setHighlights] = useState<Highlight[]>([]);
 
     const scrollY = new Animated.Value(0);
 
@@ -89,7 +88,7 @@ export default function LandingPage() {
 
                 api.get('highlights/landing')
                     .then(res => {
-                        setHighlights(res.data);
+                        handleHighlights(res.data);
 
                         api.get('categories')
                             .then(res => {
@@ -126,7 +125,7 @@ export default function LandingPage() {
 
                     api.get('highlights/landing')
                         .then(res => {
-                            setHighlights(res.data);
+                            handleHighlights(res.data);
 
                             api.get('categories')
                                 .then(res => {
@@ -283,7 +282,7 @@ export default function LandingPage() {
                     onScroll={animatedEvent}
                 >
                     {
-                        restaurant && restaurant.highlights && highlights.length > 0 && <View style={{ flex: 1, backgroundColor: 'white', paddingTop: 10 }}>
+                        restaurant && restaurant.highlights && highlights && highlights.length > 0 && <View style={{ flex: 1, backgroundColor: 'white', paddingTop: 10 }}>
                             <Text style={globalStyles.titlePrimaryLight}>{restaurant.highlights_title}</Text>
 
                             <View style={{ height: 200, marginTop: 20 }}>

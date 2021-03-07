@@ -1,7 +1,10 @@
 import React, { useContext, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View, TouchableHighlight, Image, Dimensions, StatusBar } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, TouchableHighlight, Image, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
+import { RestaurantContext } from '../../context/restaurantContext';
+import { HighlightsContext } from '../../context/highlightsContext';
+import Highlights from '../../components/Highlights';
 import { OpenedDaysContext } from '../../context/openedDaysContext';
 import { CustomerContext } from '../../context/customerContext';
 import { CategoriesContext } from '../../context/categoriesContext';
@@ -23,6 +26,8 @@ interface NotAvailableProduct {
 }
 
 export default function Cart() {
+    const { restaurant } = useContext(RestaurantContext);
+    const { highlights } = useContext(HighlightsContext);
     const { isOpened } = useContext(OpenedDaysContext);
     const { customer } = useContext(CustomerContext);
     const { handleCategories } = useContext(CategoriesContext);
@@ -124,19 +129,42 @@ export default function Cart() {
                     }}>
                         <WaitingModal message={errorMessage} status={modalWaiting} />
                     </View>
-                </ScrollView> : <View style={globalStyles.container}>
-                        <View style={[globalStyles.row, { marginVertical: 0 }]}>
-                            <View style={[globalStyles.column, { alignItems: 'center' }]}>
-                                <Image source={emptyCart} style={styles.imageEmptyCart} />
-                            </View>
-                        </View>
-                        <View style={[globalStyles.row, { marginVertical: 0 }]}>
-                            <View style={[globalStyles.column, { alignItems: 'center' }]}>
-                                <Text style={globalStyles.titlePrimaryLight}>Sacola vazia!</Text>
-                                <Text style={globalStyles.textDescription}>Aproveite e adicione items para comprar.</Text>
-                            </View>
+                </ScrollView> : <ScrollView style={globalStyles.container}>
+                    <View style={[globalStyles.row, { marginVertical: 0, height: 250 }]}>
+                        <View style={[globalStyles.column, { alignItems: 'center' }]}>
+                            <Image source={emptyCart} style={styles.imageEmptyCart} />
                         </View>
                     </View>
+                    <View style={[globalStyles.row, { marginVertical: 0 }]}>
+                        <View style={[globalStyles.column, { alignItems: 'center' }]}>
+                            <Text style={globalStyles.titlePrimaryLight}>Sacola vazia!</Text>
+                            <Text style={globalStyles.textDescription}>Aproveite e adicione items para comprar.</Text>
+                        </View>
+                    </View>
+
+
+                    <View style={[globalStyles.row, { marginVertical: 0 }]}>
+                        {
+                            restaurant && restaurant.highlights && highlights && highlights.length > 0 && <View style={{ flex: 1, backgroundColor: 'white', marginVertical: 20 }}>
+                                <Text style={globalStyles.titlePrimaryLight}>{restaurant.highlights_title}</Text>
+
+                                <View style={{ height: 200, marginTop: 20 }}>
+                                    <ScrollView
+                                        horizontal={true}
+                                        showsHorizontalScrollIndicator={false}
+                                    >
+                                        {
+                                            highlights && highlights.map((highlight, index) => {
+                                                return <Highlights key={index} highlight={highlight} />
+                                            })
+                                        }
+                                    </ScrollView>
+                                </View>
+                            </View>
+                        }
+                    </View>
+
+                </ScrollView>
 
             }
 
@@ -165,7 +193,7 @@ export default function Cart() {
 const styles = StyleSheet.create(
     {
         imageEmptyCart: {
-            height: `${(22 * Dimensions.get('window').width) / 100}%`,
+            height: '90%',
             resizeMode: 'contain'
         },
     });

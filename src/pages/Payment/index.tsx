@@ -124,8 +124,6 @@ export default function Payment() {
                             });
 
                         if (paymentResponse.status === 200) {
-                            setModalWaiting("success");
-
                             let itemsToOrder = order.orderItems.map(item => {
                                 return {
                                     amount: item.amount,
@@ -164,6 +162,8 @@ export default function Payment() {
                                 orderStatus: 1,
                                 orderItems: itemsToOrder
                             });
+
+                            setModalWaiting("order-confirmed");
 
                             setTimeout(() => {
                                 setModalWaiting("hidden");
