@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View, TouchableHighlight, TouchableOpacit
 import { useNavigation } from '@react-navigation/native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
+import { format } from 'date-fns';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 
@@ -11,6 +12,7 @@ import stripeapi from '../../services/stripeapi';
 import stripeErrorCodes from '../../utils/stripeErrorCodes';
 
 import { CustomerContext } from '../../context/customerContext';
+import { OrdersContext } from '../../context/ordersContext';
 import { ContextOrdering } from '../../context/orderingContext';
 import { PaymentDelivery } from '../../components/PaymentsDelivery';
 import { PaymentStripe } from '../../components/PaymentStripe';
@@ -46,6 +48,7 @@ const changeValidatiionSchema = Yup.object().shape({
 export default function Payment() {
     const navigation = useNavigation();
     const { customer } = useContext(CustomerContext);
+    const { handleOrders } = useContext(OrdersContext);
     const { order, handleClearOrder } = useContext(ContextOrdering);
 
     const [selectedCard, setSelectedCard] = useState<CustomerPayment>();
@@ -144,9 +147,6 @@ export default function Payment() {
                                 tracker: order.tracker,
                                 client_id: customer.id,
                                 client: customer.name,
-                                ordered: new Date(),
-                                delivery: new Date(),
-                                delivered: new Date(),
                                 sub_total: order.sub_total,
                                 cupom: order.cupom,
                                 delivery_tax: order.delivery_tax,
@@ -163,6 +163,10 @@ export default function Payment() {
                                 orderItems: itemsToOrder
                             });
 
+                            const orders = await api.get(`customer/orders/${customer.id}`);
+
+                            handleOrders(orders.data);
+
                             setModalWaiting("order-confirmed");
 
                             setTimeout(() => {
@@ -170,7 +174,7 @@ export default function Payment() {
                                 handleClearOrder();
 
                                 navigation.navigate('OrderDetails', { id: res.data.id });
-                            }, 1500);
+                            }, 2000);
                         }
                         else {
                             setModalWaiting("error");
@@ -583,9 +587,6 @@ export default function Payment() {
                                         tracker: order.tracker,
                                         client_id: customer.id,
                                         client: customer.name,
-                                        ordered: new Date(),
-                                        delivery: new Date(),
-                                        delivered: new Date(),
                                         sub_total: order.sub_total,
                                         cupom: order.cupom,
                                         delivery_tax: order.delivery_tax,
@@ -602,14 +603,18 @@ export default function Payment() {
                                         orderItems: itemsToOrder
                                     });
 
-                                    setModalWaiting("success");
+                                    const orders = await api.get(`customer/orders/${customer.id}`);
+
+                                    handleOrders(orders.data);
+
+                                    setModalWaiting("order-confirmed");
 
                                     setTimeout(() => {
                                         setModalWaiting("hidden");
                                         handleClearOrder();
 
                                         navigation.navigate('OrderDetails', { id: res.data.id });
-                                    }, 1500);
+                                    }, 2000);
                                 }
                             }
                             catch {
@@ -687,30 +692,30 @@ export default function Payment() {
                                                                 </TouchableHighlight>
                                                             </View>
                                                         </> : <>
-                                                                <View style={{ flex: 0.5, marginHorizontal: 2 }}>
-                                                                    <TouchableHighlight
-                                                                        underlayColor={colorPrimaryDark}
-                                                                        style={globalStyles.footerButton}
-                                                                        onPress={() => {
-                                                                            setFieldValue('change', false);
-                                                                            handleSubmit() as any;
-                                                                        }}
-                                                                    >
-                                                                        <Text style={globalStyles.footerButtonText}>Não</Text>
-                                                                    </TouchableHighlight>
-                                                                </View>
-                                                                <View style={{ flex: 0.5, marginHorizontal: 2 }}>
-                                                                    <TouchableHighlight
-                                                                        underlayColor={colorPrimaryDark}
-                                                                        style={globalStyles.footerButton}
-                                                                        onPress={() => {
-                                                                            setFieldValue('change', true);
-                                                                        }}
-                                                                    >
-                                                                        <Text style={globalStyles.footerButtonText}>Sim</Text>
-                                                                    </TouchableHighlight>
-                                                                </View>
-                                                            </>
+                                                            <View style={{ flex: 0.5, marginHorizontal: 2 }}>
+                                                                <TouchableHighlight
+                                                                    underlayColor={colorPrimaryDark}
+                                                                    style={globalStyles.footerButton}
+                                                                    onPress={() => {
+                                                                        setFieldValue('change', false);
+                                                                        handleSubmit() as any;
+                                                                    }}
+                                                                >
+                                                                    <Text style={globalStyles.footerButtonText}>Não</Text>
+                                                                </TouchableHighlight>
+                                                            </View>
+                                                            <View style={{ flex: 0.5, marginHorizontal: 2 }}>
+                                                                <TouchableHighlight
+                                                                    underlayColor={colorPrimaryDark}
+                                                                    style={globalStyles.footerButton}
+                                                                    onPress={() => {
+                                                                        setFieldValue('change', true);
+                                                                    }}
+                                                                >
+                                                                    <Text style={globalStyles.footerButtonText}>Sim</Text>
+                                                                </TouchableHighlight>
+                                                            </View>
+                                                        </>
                                                     }
                                                 </View>
 

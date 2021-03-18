@@ -9,7 +9,7 @@ import api from '../../services/api';
 
 import { AuthContext } from '../../context/authContext';
 import { CustomerContext } from '../../context/customerContext';
-import { Order } from '../../components/Orders';
+import { OrdersContext } from '../../context/ordersContext';
 import OrdersListShimmer from '../../components/Shimmers/OrdersList';
 import Header from '../../components/PageHeader';
 
@@ -22,41 +22,44 @@ export default function OrdersList() {
 
     const { signed } = useContext(AuthContext);
     const { customer } = useContext(CustomerContext);
+    const { orders, handleOrders } = useContext(OrdersContext);
 
-    const [ordersList, setOrdersList] = useState<Order[]>();
-
-    const [refreshing, setRefreshing] = React.useState(false);
+    const [refreshing, setRefreshing] = React.useState(true);
 
     useEffect(() => {
-        if (customer) {
-            setOrdersList(undefined);
-
+        if (customer && orders?.length === 0) {
             api.get(`customer/orders/${customer.id}`).then(res => {
-                setOrdersList(res.data);
+                setRefreshing(false);
+
+                handleOrders(res.data);
             })
                 .catch(() => {
-                    setOrdersList(undefined);
+                    setRefreshing(false);
+
+                    console.log('Orders list failed');
                 });
         }
-    }, [customer]);
+        else
+            setRefreshing(false);
+
+    }, [customer, orders]);
 
     const onRefresh = React.useCallback(() => {
         setRefreshing(true);
-        setOrdersList(undefined);
-    }, []);
 
-    useEffect(() => {
-        if (customer && refreshing) {
+        if (customer) {
             api.get(`customer/orders/${customer.id}`).then(res => {
-                setOrdersList(res.data);
+                setRefreshing(false);
+
+                handleOrders(res.data);
             })
                 .catch(() => {
-                    setOrdersList(undefined);
-                });
+                    setRefreshing(false);
 
-            setRefreshing(false);
+                    console.log('Orders list failed');
+                });
         }
-    }, [refreshing]);
+    }, []);
 
     return (
         <>
@@ -82,8 +85,8 @@ export default function OrdersList() {
 
                 {
                     signed ? (
-                        ordersList ? (
-                            ordersList.length > 0 ? ordersList.map((order, index) => {
+                        !refreshing ? (
+                            orders && orders.length > 0 ? orders.map((order, index) => {
                                 return <View key={index} style={globalStyles.containerItem}>
                                     <View style={globalStyles.fieldsRow}>
                                         <View style={globalStyles.fieldsColumn}>

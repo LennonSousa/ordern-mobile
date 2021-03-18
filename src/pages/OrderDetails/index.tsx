@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { View, Text, TouchableHighlight, ScrollView, RefreshControl } from 'react-native';
-import { useRoute, useFocusEffect } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -8,6 +8,7 @@ import * as Yup from 'yup';
 import api from '../../services/api';
 
 import { CustomerContext } from '../../context/customerContext';
+import { OrdersContext } from '../../context/ordersContext';
 import { Order } from '../../components/Orders';
 import OrderDetailsShimmer from '../../components/Shimmers/OrderDetails';
 import OrderItems from '../../components/OrderItems';
@@ -25,12 +26,13 @@ interface OrderDetailsRouteParams {
 export default function OrderDetails() {
     const route = useRoute();
     const { customer } = useContext(CustomerContext);
+    const { orders, handleOrders } = useContext(OrdersContext);
 
     const params = route.params as OrderDetailsRouteParams;
 
     const [selectedOrder, setSelectedOrder] = useState<Order>();
 
-    const [refreshing, setRefreshing] = React.useState(false);
+    const [refreshing, setRefreshing] = React.useState(true);
 
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
     const [errorMessage, setErrorMessage] = useState('');
@@ -39,41 +41,48 @@ export default function OrderDetails() {
         reasonCancellation: Yup.string().required('Obrigatório!')
     });
 
-    useFocusEffect(() => {
-        if (params.id) {
-            api.get(`orders/${params.id}`).then(res => {
-
-                setSelectedOrder(res.data);
-            })
-                .catch(() => {
-                    setSelectedOrder(undefined);
-                });
-        }
-    });
-
-    const onRefresh = useCallback(() => {
-        setRefreshing(true);
-        setSelectedOrder(undefined);
-    }, []);
-
     useEffect(() => {
-        if (params.id && refreshing) {
-            api.get(`orders/${params.id}`).then(res => {
-
-                setSelectedOrder(res.data);
-            })
-                .catch(() => {
-                    setSelectedOrder(undefined);
-                });
+        if (customer && orders && params.id) {
+            orders.map(order => {
+                if (order.id === params.id) {
+                    setSelectedOrder(order);
+                }
+            });
 
             setRefreshing(false);
         }
-    }, [refreshing]);
+        else
+            setRefreshing(false);
+
+    }, [customer, orders, params.id]);
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+
+        if (customer) {
+            api.get(`customer/orders/${customer.id}`).then(res => {
+
+                const ordersList: Order[] = res.data;
+
+                ordersList.map(order => {
+                    if (order.id === params.id) {
+                        setSelectedOrder(order);
+                    }
+                });
+
+                handleOrders(res.data);
+                setRefreshing(false);
+            })
+                .catch(() => {
+                    setRefreshing(false);
+                });
+        }
+    }, []);
 
     return (
         <>
             {
-                selectedOrder ? <ScrollView
+                !refreshing ? <ScrollView
                     style={globalStyles.container}
                     refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
                 >
@@ -240,7 +249,7 @@ export default function OrderDetails() {
                     }
 
                     {
-                        customer && selectedOrder.orderStatus.order !== 4 && <Formik
+                        customer && selectedOrder && selectedOrder.orderStatus.order !== 4 && <Formik
                             initialValues={{
                                 reasonCancellation: selectedOrder.reason_cancellation
                             }}

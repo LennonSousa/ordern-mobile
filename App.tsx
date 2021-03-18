@@ -9,6 +9,7 @@ import { HighlightsProvider } from './src/context/highlightsContext';
 import { CategoriesProvider } from './src/context/categoriesContext';
 import { AuthProvider } from './src/context/authContext';
 import { CustomerProvider } from './src/context/customerContext';
+import { OrdersProvider } from './src/context/ordersContext';
 
 import { OrderingProvider } from './src/context/orderingContext';
 import { SelectedProductProvider } from './src/context/selectedProductContext';
@@ -33,11 +34,13 @@ export default function App() {
           <CategoriesProvider>
             <CustomerProvider>
               <AuthProvider>
-                <OrderingProvider>
-                  <SelectedProductProvider>
-                    <Routes />
-                  </SelectedProductProvider>
-                </OrderingProvider>
+                <OrdersProvider>
+                  <OrderingProvider>
+                    <SelectedProductProvider>
+                      <Routes />
+                    </SelectedProductProvider>
+                  </OrderingProvider>
+                </OrdersProvider>
               </AuthProvider>
             </CustomerProvider>
           </CategoriesProvider>
