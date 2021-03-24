@@ -29,7 +29,7 @@
       "package": "com.casadecarnesisrael.pedidosentregas",
       "config": {
         "googleMaps": {
-          "apiKey": "AIzaSyCux984Et-DzPZj_PxRvCqS5FmrxA2zfEc"
+          "apiKey": "exemple"
         }
       },
       "versionCode": 2,
