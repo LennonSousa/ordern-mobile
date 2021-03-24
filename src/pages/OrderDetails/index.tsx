@@ -4,6 +4,8 @@ import { useRoute } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+import { format } from 'date-fns';
+import br from 'date-fns/locale/pt-BR';
 
 import api from '../../services/api';
 
@@ -16,7 +18,7 @@ import Input from '../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../components/Interfaces/InvalidFeedback';
 import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingModal';
 
-import globalStyles, { colorPrimaryLight, colorHighLight, colorTextMenuDescription } from '../../assets/styles/global';
+import globalStyles, { colorPrimaryLight, colorSecundaryDark, colorHighLight, colorTextMenuDescription } from '../../assets/styles/global';
 import { OrderStatus } from '../../components/OrderStatus';
 
 interface OrderDetailsRouteParams {
@@ -93,6 +95,36 @@ export default function OrderDetails() {
                                 <View style={globalStyles.fieldsColumn}>
                                     <View style={globalStyles.menuRow}>
                                         <View style={globalStyles.menuColumn}>
+                                            <Text style={globalStyles.textsMenu}>Número do pedido</Text>
+                                        </View>
+                                    </View>
+                                    <View style={globalStyles.menuDescriptionRow}>
+                                        <View style={globalStyles.menuDescriptionColumn}>
+                                            <Text style={globalStyles.textsDescriptionMenu}>{selectedOrder.tracker}</Text>
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
+
+                            <View style={globalStyles.fieldsRow}>
+                                <View style={globalStyles.fieldsColumn}>
+                                    <View style={globalStyles.menuRow}>
+                                        <View style={globalStyles.menuColumn}>
+                                            <Text style={globalStyles.textsMenu}>Pedido em:</Text>
+                                        </View>
+                                    </View>
+                                    <View style={globalStyles.menuDescriptionRow}>
+                                        <View style={globalStyles.menuDescriptionColumn}>
+                                            <Text style={globalStyles.textsDescriptionMenu}>{format(new Date(selectedOrder.ordered_at), 'PPPpp', { locale: br })}</Text>
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
+
+                            <View style={globalStyles.fieldsRow}>
+                                <View style={globalStyles.fieldsColumn}>
+                                    <View style={globalStyles.menuRow}>
+                                        <View style={globalStyles.menuColumn}>
                                             <Text style={
                                                 [globalStyles.titlePrimaryLight,
                                                 {
@@ -107,6 +139,173 @@ export default function OrderDetails() {
                                     <View style={globalStyles.menuRow}>
                                         <View style={globalStyles.menuColumn}>
                                             <Text style={globalStyles.textDescription}>{selectedOrder.orderStatus.description}</Text>
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
+
+                            <View style={globalStyles.fieldsRow}>
+                                <View style={{ flex: 1 }}>
+                                    <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                        <View style={globalStyles.column}>
+                                            <Feather
+                                                style={{ textAlign: 'center' }}
+                                                name="loader"
+                                                size={20}
+                                                color={
+                                                    selectedOrder.orderStatus.order > 0 && selectedOrder.orderStatus.order !== 6 ? colorPrimaryLight : colorSecundaryDark
+                                                }
+                                            />
+                                        </View>
+                                    </View>
+                                    <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                        <View style={globalStyles.column}>
+                                            <Text style={[globalStyles.textDescription, { textAlign: 'center', fontSize: 12 }]}>Aceitar</Text>
+                                        </View>
+                                    </View>
+                                    <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                        <View style={globalStyles.column}>
+                                            <Text style={[globalStyles.textDescription, { textAlign: 'center', fontSize: 10 }]}> </Text>
+                                        </View>
+                                    </View>
+                                </View>
+
+                                <View style={{ flex: 1 }}>
+                                    <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                        <View style={globalStyles.column}>
+                                            <Feather
+                                                style={{ textAlign: 'center' }}
+                                                name="minus" size={20}
+                                                color={
+                                                    selectedOrder.orderStatus.order >= 1 && selectedOrder.orderStatus.order !== 6 ? colorPrimaryLight : colorSecundaryDark
+                                                }
+                                            />
+                                        </View>
+                                    </View>
+                                </View>
+
+                                <View style={{ flex: 1 }}>
+                                    <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                        <View style={globalStyles.column}>
+                                            <Feather
+                                                style={{ textAlign: 'center' }}
+                                                name="clock"
+                                                size={20}
+                                                color={
+                                                    selectedOrder.orderStatus.order >= 1 && selectedOrder.orderStatus.order !== 6 ? colorPrimaryLight : colorSecundaryDark
+                                                }
+                                            />
+                                        </View>
+                                    </View>
+                                    <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                        <View style={globalStyles.column}>
+                                            <Text style={[globalStyles.textDescription, { textAlign: 'center', fontSize: 12 }]}>Preparo</Text>
+                                        </View>
+                                    </View>
+                                    <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                        <View style={globalStyles.column}>
+                                            <Text style={[globalStyles.textDescription, { textAlign: 'center', fontSize: 10 }]}> </Text>
+                                        </View>
+                                    </View>
+                                </View>
+
+                                <View style={{ flex: 1 }}>
+                                    <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                        <View style={globalStyles.column}>
+                                            <Feather
+                                                style={{ textAlign: 'center' }}
+                                                name="minus"
+                                                size={20}
+                                                color={
+                                                    selectedOrder.orderStatus.order >= 2 && selectedOrder.orderStatus.order !== 6 ? colorPrimaryLight : colorSecundaryDark
+                                                }
+                                            />
+                                        </View>
+                                    </View>
+                                </View>
+
+                                <View style={{ flex: 1 }}>
+                                    <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                        <View style={globalStyles.column}>
+                                            <Feather
+                                                style={{ textAlign: 'center' }}
+                                                name="truck"
+                                                size={20}
+                                                color={
+                                                    selectedOrder.orderStatus.order >= 2 && selectedOrder.orderStatus.order !== 6 ? colorPrimaryLight : colorSecundaryDark
+                                                }
+                                            />
+                                        </View>
+                                    </View>
+                                    <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                        <View style={globalStyles.column}>
+                                            <Text style={[globalStyles.textDescription, { textAlign: 'center', fontSize: 12 }]}>
+                                                {
+                                                    selectedOrder.delivery_type === 'pickup' ? "Retirar" : "Entrega"
+                                                }
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                        <View style={globalStyles.column}>
+                                            {
+                                                selectedOrder.orderStatus.order >= 1 ? selectedOrder.orderStatus.order !== 6 &&
+                                                    <Text
+                                                        style={[globalStyles.textDescription, { textAlign: 'center', fontSize: 10 }]}>
+                                                        {
+                                                            format(new Date(selectedOrder.placed_at), 'HH:mm')
+                                                        }
+                                                    </Text> :
+                                                    <Text style={[globalStyles.textDescription, { textAlign: 'center', fontSize: 10 }]}> </Text>
+                                            }
+                                        </View>
+                                    </View>
+                                </View>
+
+                                <View style={{ flex: 1 }}>
+                                    <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                        <View style={globalStyles.column}>
+                                            <Feather
+                                                style={{ textAlign: 'center' }}
+                                                name="minus" size={20}
+                                                color={
+                                                    selectedOrder.orderStatus.order === 4 ? colorPrimaryLight : colorSecundaryDark
+                                                }
+                                            />
+                                        </View>
+                                    </View>
+                                </View>
+
+                                <View style={{ flex: 1 }}>
+                                    <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                        <View style={globalStyles.column}>
+                                            <Feather
+                                                style={{ textAlign: 'center' }}
+                                                name="check-circle"
+                                                size={20}
+                                                color={
+                                                    selectedOrder.orderStatus.order === 4 ? colorHighLight : colorSecundaryDark
+                                                }
+                                            />
+                                        </View>
+                                    </View>
+                                    <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                        <View style={globalStyles.column}>
+                                            <Text style={[globalStyles.textDescription, { textAlign: 'center', fontSize: 12 }]}>Entregue</Text>
+                                        </View>
+                                    </View>
+                                    <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                        <View style={globalStyles.column}>
+                                            {
+                                                selectedOrder.orderStatus.order === 4 ?
+                                                    <Text
+                                                        style={[globalStyles.textDescription, { textAlign: 'center', fontSize: 10 }]}>
+                                                        {
+                                                            format(new Date(selectedOrder.delivered_at), 'HH:mm')
+                                                        }
+                                                    </Text> :
+                                                    <Text style={[globalStyles.textDescription, { textAlign: 'center', fontSize: 10 }]}> </Text>
+                                            }
                                         </View>
                                     </View>
                                 </View>

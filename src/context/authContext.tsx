@@ -75,7 +75,7 @@ const AuthProvider: React.FC = ({ children }) => {
                 password
             });
 
-            const { id, name, cpf, birth, phone, email, active, paused, address, payment, token } = res.data;
+            const { id, name, cpf, birth, phone, email, active, paused, created_at, address, payment, token } = res.data;
 
             handleCustomer(
                 {
@@ -86,6 +86,7 @@ const AuthProvider: React.FC = ({ children }) => {
                     phone,
                     active,
                     paused,
+                    created_at,
                     email,
                     address,
                     payment

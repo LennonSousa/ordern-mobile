@@ -9,9 +9,10 @@ export interface Order {
     tracker: string;
     client_id: number;
     client: string;
-    ordered: Date;
-    delivery: Date;
-    delivered: Date;
+    ordered_at: Date;
+    delivery_in: Date;
+    placed_at: Date;
+    delivered_at: Date;
     sub_total: number;
     cupom: string;
     delivery_tax: number;
@@ -24,6 +25,7 @@ export interface Order {
     paid: boolean;
     address: string;
     reason_cancellation: string;
+    cancelled_at: Date;
     orderStatus: OrderStatus;
     orderItems: OrderItem[];
 }

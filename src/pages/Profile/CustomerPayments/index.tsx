@@ -18,10 +18,18 @@ import Input from '../../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
 import WaitingModal, { statusModal } from '../../../components/Interfaces/WaitingModal';
 
+const validatiionSchema = Yup.object().shape({
+        card_number: Yup.string().required('Obrigatório!').max(16, 'Deve conter no máximo 16 caracteres!'),
+        exp_month: Yup.string().required('Obigatório!').min(2, 'Mês inválido!'),
+        exp_year: Yup.string().required('Obrigatório!').min(4, 'Ano inválido!'),
+        name: Yup.string().required('Obigatório!'),
+        cpf: Yup.string().required('Obigatório!')
+    });
+
 export default function PaymentsCustomer() {
     const { customer, handleCustomer } = useContext(CustomerContext);
 
-    // Customer address
+    // Customer payments
     const [selectedCustomerPayment, setSelectedCustomerPayment] = useState<CustomerPayment | null>();
 
     const [containerNewPayment, setContainerNewPayment] = useState(false);
@@ -30,15 +38,7 @@ export default function PaymentsCustomer() {
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
     const [errorMessage, setErrorMessage] = useState('');
 
-    const validatiionSchema = Yup.object().shape({
-        card_number: Yup.string().required('Obrigatório!').max(16, 'Deve conter no máximo 16 caracteres!'),
-        exp_month: Yup.string().required('Obigatório!').min(2, 'Mês inválido!'),
-        exp_year: Yup.string().required('Obrigatório!').min(4, 'Ano inválido!'),
-        name: Yup.string().required('Obigatório!'),
-        cpf: Yup.string().required('Obigatório!')
-    });
-
-    function handleAddressCustomer(id: number) {
+    function handleCustomerPayment(id: number) {
         if (customer) {
             customer.payment.forEach(payment => {
                 if (payment.id === id) {
@@ -52,7 +52,7 @@ export default function PaymentsCustomer() {
         }
     }
 
-    async function handleDeleteAddress(id: number) {
+    async function handleDeletePayment(id: number) {
         try {
             if (customer) {
                 setModalWaiting("waiting");
@@ -112,7 +112,7 @@ export default function PaymentsCustomer() {
                 {
                     containerNewPayment && <Formik
                         initialValues={{
-                            card_number: selectedCustomerPayment ? `************${selectedCustomerPayment.card_number.slice(selectedCustomerPayment.card_number.length - 4)}` : '',
+                            card_number: selectedCustomerPayment ? `************${selectedCustomerPayment.card_number}` : '',
                             brand: selectedCustomerPayment ? selectedCustomerPayment.brand : '',
                             exp_month: selectedCustomerPayment ? selectedCustomerPayment.exp_month : '',
                             exp_year: selectedCustomerPayment ? selectedCustomerPayment.exp_year : '',
@@ -280,7 +280,7 @@ export default function PaymentsCustomer() {
                                                     </TouchableOpacity> :
                                                         selectedCustomerPayment && <TouchableOpacity
                                                             style={styles.buttonConfirm}
-                                                            onPress={() => { selectedCustomerPayment && handleDeleteAddress(selectedCustomerPayment.id) }}
+                                                            onPress={() => { selectedCustomerPayment && handleDeletePayment(selectedCustomerPayment.id) }}
                                                         >
                                                             <View style={{ alignItems: 'center' }}>
                                                                 <Feather name="info" size={24} color="#ffffff" />
@@ -315,7 +315,7 @@ export default function PaymentsCustomer() {
                                 <View style={styles.fieldsColumn}>
                                     <View style={styles.menuRow}>
                                         <View style={styles.colTitleButtonItem}>
-                                            <BorderlessButton onPress={() => { handleAddressCustomer(payment.id) }}>
+                                            <BorderlessButton onPress={() => { handleCustomerPayment(payment.id) }}>
                                                 <View style={{ flexDirection: 'row' }}>
                                                     <View style={styles.colTitleButtonItem}>
                                                         <Text style={{ color: '#8c8c8c' }}>{`****${payment.card_number.slice(payment.card_number.length - 4)} - ${payment.brand}`}</Text>

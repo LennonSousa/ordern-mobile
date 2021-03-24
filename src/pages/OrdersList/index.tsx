@@ -106,7 +106,7 @@ export default function OrdersList() {
                                                                 <Text style={{ color: order.orderStatus.order === 4 ? colorHighLight : colorPrimaryLight }}>{`${order.orderStatus.title}`}</Text>
                                                             </View>
                                                             <View style={globalStyles.colTitleButtonItem}>
-                                                                <Text style={{ color: '#8c8c8c', textAlign: 'right' }}>{format(new Date(order.ordered), "dd/MM/yyyy' às 'HH:mm")}</Text>
+                                                                <Text style={{ color: '#8c8c8c', textAlign: 'right' }}>{format(new Date(order.ordered_at), "dd/MM/yyyy' às 'HH:mm")}</Text>
                                                             </View>
                                                         </View>
                                                     </BorderlessButton>

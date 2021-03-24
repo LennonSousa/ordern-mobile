@@ -3,7 +3,6 @@ import { ScrollView, StyleSheet, Text, View, TouchableHighlight, TouchableOpacit
 import { useNavigation } from '@react-navigation/native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
-import { format } from 'date-fns';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 
@@ -14,6 +13,7 @@ import stripeErrorCodes from '../../utils/stripeErrorCodes';
 import { CustomerContext } from '../../context/customerContext';
 import { OrdersContext } from '../../context/ordersContext';
 import { ContextOrdering } from '../../context/orderingContext';
+
 import { PaymentDelivery } from '../../components/PaymentsDelivery';
 import { PaymentStripe } from '../../components/PaymentStripe';
 import { CustomerPayment } from '../../components/CustomerPayments';
@@ -70,31 +70,33 @@ export default function Payment() {
     const [changeAskModalWaiting, setChangeAskModalWaiting] = useState(false);
 
     useEffect(() => {
-        api.get('payments/delivery').then(res => {
-            setPaymentsDelivery(res.data);
-        }).catch(() => {
-            console.log("Error get payments delivery.");
-        });
+        if (customer) {
+            api.get('payments/delivery').then(res => {
+                setPaymentsDelivery(res.data);
+            }).catch(() => {
+                console.log("Error get payments delivery.");
+            });
 
-        api.get('payments/stripe').then(res => {
-            if (res.status === 200)
-                setPaymentStripe(res.data);
-        }).catch(() => {
-            console.log("Error get payment stripe.");
-        });
+            api.get('payments/stripe').then(res => {
+                if (res.status === 200)
+                    setPaymentStripe(res.data);
+            }).catch(() => {
+                console.log("Error get payment stripe.");
+            });
 
-        api.get('payments/credit-brands').then(res => {
-            setCreditBrands(res.data);
-        }).catch(() => {
-            console.log("Error get credit brands.");
-        });
+            api.get('payments/credit-brands').then(res => {
+                setCreditBrands(res.data);
+            }).catch(() => {
+                console.log("Error get credit brands.");
+            });
 
-        api.get('payments/debit-brands').then(res => {
-            setDebitBrands(res.data);
-        }).catch(() => {
-            console.log("Error get debit brands.");
-        });
-    }, []);
+            api.get('payments/debit-brands').then(res => {
+                setDebitBrands(res.data);
+            }).catch(() => {
+                console.log("Error get debit brands.");
+            });
+        }
+    }, [customer]);
 
     useEffect(() => {
         if (selectedPaymentType === "credit")
@@ -147,6 +149,7 @@ export default function Payment() {
                                 tracker: order.tracker,
                                 client_id: customer.id,
                                 client: customer.name,
+                                delivery_in: new Date,
                                 sub_total: order.sub_total,
                                 cupom: order.cupom,
                                 delivery_tax: order.delivery_tax,
@@ -355,7 +358,7 @@ export default function Payment() {
                 }
 
                 {
-                    paymentStripe && paymentStripe.active && customer && customer.payment ? customer.payment.map((payment, index) => {
+                    paymentStripe && paymentStripe.active && customer ? customer.payment.map((payment, index) => {
                         return <View key={index} style={globalStyles.containerItem}>
                             <BorderlessButton onPress={() => { setSelectedCard(payment); setSelectedPaymentType("on-line"); }}>
                                 <View style={globalStyles.row}>
@@ -364,7 +367,7 @@ export default function Payment() {
                                             <View style={globalStyles.colTitleButtonItem}>
                                                 <View style={{ flexDirection: 'row' }}>
                                                     <View style={globalStyles.colTitleButtonItem}>
-                                                        <Text style={{ color: '#8c8c8c' }}>{`****${payment.card_number.slice(payment.card_number.length - 4)} - ${payment.brand}`}</Text>
+                                                        <Text style={{ color: '#8c8c8c' }}>{`****${payment.card_number} - ${payment.brand}`}</Text>
                                                     </View>
                                                     <View style={globalStyles.colIconButtonItem}>
                                                         {
@@ -472,16 +475,26 @@ export default function Payment() {
                         }
                     }
                     onSubmit={async values => {
-                        if (selectedCard && selectedPaymentType === "on-line") {
-                            requestPayment({
-                                'card[number]': selectedCard.card_number,
-                                'card[exp_month]': selectedCard.exp_month.substring(0, 2),
-                                'card[exp_year]': selectedCard.exp_year.substring(2, 4),
-                                'card[cvc]': values.cvc,
-                                'card[name]': selectedCard.name
-                            });
-                        }
+                        try {
+                            if (selectedCard && selectedPaymentType === "on-line") {
+                                const customerPaymentRes = await api.get(`customer/payment/${selectedCard.id}`);
 
+                                requestPayment({
+                                    'card[number]': customerPaymentRes.data.card_number,
+                                    'card[exp_month]': selectedCard.exp_month.substring(0, 2),
+                                    'card[exp_year]': selectedCard.exp_year.substring(2, 4),
+                                    'card[cvc]': values.cvc,
+                                    'card[name]': selectedCard.name
+                                });
+                            }
+                        }
+                        catch (err) {
+                            setModalWaiting("error");
+
+                            setErrorMessage('Erro na transação. Tente novamente mais tarde.');
+
+                            console.log('Error get customr payment: ', err);
+                        }
                     }}
                     validationSchema={validatiionSchema}
                 >
@@ -587,6 +600,7 @@ export default function Payment() {
                                         tracker: order.tracker,
                                         client_id: customer.id,
                                         client: customer.name,
+                                        delivery_in: new Date,
                                         sub_total: order.sub_total,
                                         cupom: order.cupom,
                                         delivery_tax: order.delivery_tax,

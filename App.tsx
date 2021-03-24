@@ -10,9 +10,9 @@ import { CategoriesProvider } from './src/context/categoriesContext';
 import { AuthProvider } from './src/context/authContext';
 import { CustomerProvider } from './src/context/customerContext';
 import { OrdersProvider } from './src/context/ordersContext';
-
 import { OrderingProvider } from './src/context/orderingContext';
 import { SelectedProductProvider } from './src/context/selectedProductContext';
+import { CustomerPaymentsProvider } from './src/context/customerPaymentsContext';
 
 export default function App() {
   const [fonstLoaded] = useFonts({
@@ -37,7 +37,9 @@ export default function App() {
                 <OrdersProvider>
                   <OrderingProvider>
                     <SelectedProductProvider>
-                      <Routes />
+                      <CustomerPaymentsProvider>
+                        <Routes />
+                      </CustomerPaymentsProvider>
                     </SelectedProductProvider>
                   </OrderingProvider>
                 </OrdersProvider>

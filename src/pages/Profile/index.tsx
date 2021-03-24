@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View, TouchableHighlight } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';

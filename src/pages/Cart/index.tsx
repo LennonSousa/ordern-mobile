@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View, TouchableHighlight, Image, Dimensions } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, TouchableHighlight, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import { RestaurantContext } from '../../context/restaurantContext';
@@ -76,12 +76,7 @@ export default function Cart() {
                     }, 1500);
                 }
                 else {
-                    handleOrder(
-                        {
-                            ...order,
-                            tracker: `${Date.now()}${order.total.toFixed(2).replace('.', '').replace(',', '')}`
-                        }
-                    );
+                    handleOrder(order);
 
                     setTimeout(() => {
                         setModalWaiting("hidden");
@@ -109,7 +104,7 @@ export default function Cart() {
                         <Text style={globalStyles.titlePrimaryLight}>Itens</Text>
                         {
                             order.orderItems.map(item => {
-                                return <OrderItems key={item.id} orderItem={item} />
+                                return <OrderItems key={item.id} orderItem={item} canEdit />
                             })
                         }
                     </View>
@@ -171,7 +166,7 @@ export default function Cart() {
             {
                 order && <PageFooter>
                     <View style={{ flex: 0.5 }} >
-                        <Text style={[globalStyles.textsMenu, { textAlign: 'center' }]}>{`Total: R$ ${order?.total.toFixed(2).replace('.', ',')}`}</Text>
+                        <Text style={[globalStyles.textsMenu, { textAlign: 'center' }]}>{`Total: R$ ${order?.sub_total.toFixed(2).replace('.', ',')}`}</Text>
                     </View>
 
                     <View style={{ flex: 0.5 }} >

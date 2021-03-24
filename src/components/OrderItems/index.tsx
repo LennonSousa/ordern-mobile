@@ -20,9 +20,10 @@ export interface OrderItem {
 
 interface OrderItemProps {
     orderItem: OrderItem;
+    canEdit?: boolean;
 }
 
-export default function OrderItems({ orderItem }: OrderItemProps) {
+export default function OrderItems({ orderItem, canEdit = false }: OrderItemProps) {
     const { order, handleTotalOrder, handleClearOrder } = useContext(ContextOrdering);
 
     const [modalEdit, setModalEdit] = useState(false);
@@ -86,7 +87,7 @@ export default function OrderItems({ orderItem }: OrderItemProps) {
 
     return (
         <View style={globalStyles.container}>
-            <BorderlessButton onPress={() => { setModalEdit(true) }}>
+            <BorderlessButton onPress={() => { canEdit && setModalEdit(true) }}>
                 <View>
                     <View style={styles.itemRow}>
                         <View style={styles.itemColumnAmount}>

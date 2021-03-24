@@ -15,6 +15,7 @@ import LandingPage from './pages/LandingPage';
 import Search from './pages/Search';
 import Cart from './pages/Cart';
 import Shipment from './pages/Shipment';
+import PickupShipment from './pages/PickupShipment';
 import OrderReview from './pages/OrderPreview';
 import Payment from './pages/Payment';
 import Profile from './pages/Profile';
@@ -29,7 +30,7 @@ import CustomerReset from './pages/Profile/CustomerReset/reset'
 import CustomerUpdate from './pages/Profile/UpdateCustomer';
 import OrdersList from './pages/OrdersList';
 import AddressCustomer from './pages/Profile/AddressCustomer';
-import PaymentsCustomer from './pages/Profile/PaymentsCustomer';
+import PaymentsCustomer from './pages/Profile/CustomerPayments';
 import OrderDetails from './pages/OrderDetails';
 
 import PrivacyTerms from './pages/PricacyTerms';
@@ -209,6 +210,15 @@ export default function Routes() {
                         options={{
                             headerShown: true,
                             header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Envio" showCancel={true} />
+                        }}
+                    />
+
+                    <Stack.Screen
+                        name="PickupShipment"
+                        component={PickupShipment}
+                        options={{
+                            headerShown: true,
+                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Retirar" showCancel={true} />
                         }}
                     />
 
