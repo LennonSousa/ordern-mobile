@@ -1,8 +1,7 @@
 import React, { useEffect } from 'react';
-import { View, Animated, ScrollView, Text, StyleSheet, Dimensions } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { View, Animated, ScrollView, StyleSheet, Dimensions } from 'react-native';
 
-import globalStyles, { colorPrimaryLight, colorTextDescription } from '../../../assets/styles/global';
+import globalStyles, { colorTextDescription } from '../../../assets/styles/global';
 import PageFooter from '../../PageFooter';
 
 export default function ProductDetailsShimmer() {

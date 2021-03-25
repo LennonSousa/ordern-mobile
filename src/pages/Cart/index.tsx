@@ -38,59 +38,65 @@ export default function Cart() {
     const [errorMessage, setErrorMessage] = useState('');
 
     async function handleOrdertoShipment() {
-        if (isOpened && order) {
-            setModalWaiting("waiting");
+        if (restaurant && isOpened && order) {
+            if (order.sub_total >= restaurant.min_order) {
+                setModalWaiting("waiting");
 
-            try {
-                const res = await api.get('categories');
+                try {
+                    const res = await api.get('categories');
 
-                handleCategories(res.data);
-                const categories: Category[] = res.data;
+                    handleCategories(res.data);
+                    const categories: Category[] = res.data;
 
-                let notAvailableProducts: NotAvailableProduct[] = [];
+                    let notAvailableProducts: NotAvailableProduct[] = [];
 
-                categories.forEach(category => {
-                    category.products.forEach(product => {
-                        const productFound = order.orderItems.find(orderItem => { return orderItem.product_id === product.id });
+                    categories.forEach(category => {
+                        category.products.forEach(product => {
+                            const productFound = order.orderItems.find(orderItem => { return orderItem.product_id === product.id });
 
-                        if (productFound) {
-                            const verify = VerifyProductAvailable(product);
+                            if (productFound) {
+                                const verify = VerifyProductAvailable(product);
 
-                            console.log(productFound.name, verify);
+                                console.log(productFound.name, verify);
 
-                            if (verify === "paused")
-                                notAvailableProducts.push({ name: productFound.name });
-                            else if (verify === "not-available") {
-                                notAvailableProducts.push({ name: productFound.name });
+                                if (verify === "paused")
+                                    notAvailableProducts.push({ name: productFound.name });
+                                else if (verify === "not-available") {
+                                    notAvailableProducts.push({ name: productFound.name });
+                                }
                             }
-                        }
+                        });
                     });
-                });
 
-                if (notAvailableProducts.length > 0) {
-                    setTimeout(() => {
-                        setModalWaiting("error");
-                        setErrorMessage(`Infelizmente os seguintes itens acabaram de sair do estoque:${notAvailableProducts.map(item => { return ` ${item.name}\n` })}`);
+                    if (notAvailableProducts.length > 0) {
+                        setTimeout(() => {
+                            setModalWaiting("error");
+                            setErrorMessage(`Infelizmente os seguintes itens acabaram de sair do estoque:${notAvailableProducts.map(item => { return ` ${item.name}\n` })}`);
 
-                        return;
-                    }, 1500);
+                            return;
+                        }, 1500);
+                    }
+                    else {
+                        handleOrder(order);
+
+                        setTimeout(() => {
+                            setModalWaiting("hidden");
+
+                            if (customer)
+                                navigation.navigate('Shipment');
+                            else
+                                navigation.navigate('Profile');
+                        }, 1500);
+                    }
                 }
-                else {
-                    handleOrder(order);
-
-                    setTimeout(() => {
-                        setModalWaiting("hidden");
-
-                        if (customer)
-                            navigation.navigate('Shipment');
-                        else
-                            navigation.navigate('Profile');
-                    }, 1500);
+                catch {
+                    setModalWaiting("error");
+                    setErrorMessage("Por favor, verifique a sua conexão com a internet.");
                 }
             }
-            catch {
+            else {
                 setModalWaiting("error");
-                setErrorMessage("Por favor, verifique a sua conexão com a internet.");
+                setErrorMessage(`Desculpe, o pedido mínimo é de R$ ${Number(restaurant.min_order).toFixed(2).replace('.', ',')}.`);
             }
         }
     }
@@ -125,7 +131,7 @@ export default function Cart() {
                         <WaitingModal message={errorMessage} status={modalWaiting} />
                     </View>
                 </ScrollView> : <ScrollView style={globalStyles.container}>
-                    <View style={[globalStyles.row, { marginVertical: 0, height: 250 }]}>
+                    <View style={[globalStyles.row, { marginVertical: 0, height: 200 }]}>
                         <View style={[globalStyles.column, { alignItems: 'center' }]}>
                             <Image source={emptyCart} style={styles.imageEmptyCart} />
                         </View>
@@ -188,7 +194,7 @@ export default function Cart() {
 const styles = StyleSheet.create(
     {
         imageEmptyCart: {
-            height: '90%',
+            height: '75%',
             resizeMode: 'contain'
         },
     });

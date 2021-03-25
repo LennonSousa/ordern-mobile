@@ -1,7 +1,8 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { View, Text, TouchableHighlight, ScrollView, RefreshControl } from 'react-native';
+import { View, Text, TouchableHighlight, ScrollView, RefreshControl, Linking, Platform } from 'react-native';
 import { useRoute } from '@react-navigation/native';
-import { Feather } from '@expo/vector-icons';
+import { BorderlessButton } from 'react-native-gesture-handler';
+import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { format } from 'date-fns';
@@ -9,6 +10,7 @@ import br from 'date-fns/locale/pt-BR';
 
 import api from '../../services/api';
 
+import { RestaurantContext } from '../../context/restaurantContext';
 import { CustomerContext } from '../../context/customerContext';
 import { OrdersContext } from '../../context/ordersContext';
 import { Order } from '../../components/Orders';
@@ -27,6 +29,8 @@ interface OrderDetailsRouteParams {
 
 export default function OrderDetails() {
     const route = useRoute();
+
+    const { restaurant } = useContext(RestaurantContext);
     const { customer } = useContext(CustomerContext);
     const { orders, handleOrders } = useContext(OrdersContext);
 
@@ -43,8 +47,16 @@ export default function OrderDetails() {
         reasonCancellation: Yup.string().required('Obrigatório!')
     });
 
+    const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
+    const latLng = `${restaurant?.latitude},${restaurant?.longitude}`;
+    const label = restaurant?.title;
+    const urlLocation = Platform.select({
+        ios: `${scheme}${label}@${latLng}`,
+        android: `${scheme}${latLng}(${label})`
+    });
+
     useEffect(() => {
-        if (customer && orders && params.id) {
+        if (customer && orders) {
             orders.map(order => {
                 if (order.id === params.id) {
                     setSelectedOrder(order);
@@ -90,7 +102,7 @@ export default function OrderDetails() {
                 >
                     {
                         selectedOrder &&
-                        <View style={{ marginBottom: 20 }}>
+                        <View>
                             <View style={globalStyles.fieldsRow}>
                                 <View style={globalStyles.fieldsColumn}>
                                     <View style={globalStyles.menuRow}>
@@ -249,7 +261,7 @@ export default function OrderDetails() {
                                     <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
                                         <View style={globalStyles.column}>
                                             {
-                                                selectedOrder.orderStatus.order >= 1 ? selectedOrder.orderStatus.order !== 6 &&
+                                                selectedOrder.orderStatus.order >= 2 ? selectedOrder.orderStatus.order !== 6 &&
                                                     <Text
                                                         style={[globalStyles.textDescription, { textAlign: 'center', fontSize: 10 }]}>
                                                         {
@@ -444,6 +456,114 @@ export default function OrderDetails() {
                                     </View>
                                 </View>
                             </View>
+
+                            {
+                                selectedOrder.delivery_type === "pickup" && <View style={globalStyles.fieldsRow}>
+                                    <View style={globalStyles.fieldsColumn}>
+                                        <View style={globalStyles.menuRow}>
+                                            <View style={globalStyles.menuColumn}>
+                                                <Text style={globalStyles.textsMenu}>Nosso endereço</Text>
+                                            </View>
+                                            <View style={globalStyles.menuIconColumn}>
+                                                <Feather name="map-pin" size={24} color={colorPrimaryLight} />
+                                            </View>
+                                        </View>
+
+                                        <View style={globalStyles.menuRow}>
+                                            <View style={{ flex: 1 }}>
+                                                <View style={globalStyles.menuDescriptionColumn}>
+                                                    <Text style={globalStyles.textDescription}>{`${restaurant?.street}, ${restaurant?.number}`}</Text>
+                                                    <Text style={globalStyles.textDescription}>{`${restaurant?.group}`}</Text>
+                                                    <Text style={globalStyles.textDescription}>{`${restaurant?.city} - ${restaurant?.country}`}</Text>
+                                                    <Text style={globalStyles.textDescription}>{`CEP: ${restaurant?.zip_code}`}</Text>
+                                                    <Text style={globalStyles.textDescription}>{`Telefone: ${restaurant?.phone}`}</Text>
+                                                </View>
+                                            </View>
+
+                                            <View style={{ flex: 1 }}>
+                                                <BorderlessButton onPress={() => { urlLocation && Linking.openURL(urlLocation); }}>
+                                                    <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                                        <View style={globalStyles.column}>
+                                                            <FontAwesome5
+                                                                style={{ textAlign: 'center' }}
+                                                                name="map-marked-alt"
+                                                                size={20}
+                                                                color={colorPrimaryLight}
+                                                            />
+                                                        </View>
+                                                    </View>
+                                                    <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                                        <View style={globalStyles.column}>
+                                                            <Text
+                                                                style={[globalStyles.textDescription, { textAlign: 'center', fontSize: 12 }]}
+                                                            >
+                                                                Abrir no mapa <Feather name="chevron-right" size={12} color={colorPrimaryLight} />
+                                                            </Text>
+                                                        </View>
+                                                    </View>
+                                                </BorderlessButton>
+                                            </View>
+
+                                        </View>
+
+                                    </View>
+                                </View>
+                            }
+
+                            <View style={globalStyles.fieldsRow}>
+                                <View style={globalStyles.fieldsColumn}>
+                                    <View style={globalStyles.menuRow}>
+                                        <View style={globalStyles.menuColumn}>
+                                            <Text style={globalStyles.textsMenu}>Entrar em contato</Text>
+                                        </View>
+                                        <View style={globalStyles.menuIconColumn}>
+                                            <Feather name="smartphone" size={24} color={colorPrimaryLight} />
+                                        </View>
+                                    </View>
+
+                                    <View style={globalStyles.row}>
+                                        <View style={{ flex: 1 }}>
+                                            <BorderlessButton onPress={() => { Linking.openURL(`tel:${restaurant?.phone}`); }}>
+                                                <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                                    <View style={globalStyles.column}>
+                                                        <FontAwesome5
+                                                            style={{ textAlign: 'center' }}
+                                                            name="phone"
+                                                            size={20}
+                                                            color={colorPrimaryLight}
+                                                        />
+                                                    </View>
+                                                </View>
+                                                <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                                    <View style={globalStyles.column}>
+                                                        <Text style={[globalStyles.textDescription, { textAlign: 'center', fontSize: 12 }]}>Por telefone</Text>
+                                                    </View>
+                                                </View>
+                                            </BorderlessButton>
+                                        </View>
+
+                                        <View style={{ flex: 1 }}>
+                                            <BorderlessButton onPress={() => { Linking.openURL(`whatsapp://send?phone=+55${restaurant?.phone}`); }}>
+                                                <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                                    <View style={globalStyles.column}>
+                                                        <FontAwesome5
+                                                            style={{ textAlign: 'center' }}
+                                                            name="whatsapp"
+                                                            size={20}
+                                                            color={colorPrimaryLight}
+                                                        />
+                                                    </View>
+                                                </View>
+                                                <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                                    <View style={globalStyles.column}>
+                                                        <Text style={[globalStyles.textDescription, { textAlign: 'center', fontSize: 12 }]}>Por whatsapp</Text>
+                                                    </View>
+                                                </View>
+                                            </BorderlessButton>
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
                         </View>
                     }
 
@@ -485,7 +605,7 @@ export default function OrderDetails() {
                         >
                             {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
                                 <View>
-                                    <View style={globalStyles.fieldsRow}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                         <View style={globalStyles.fieldsColumn}>
                                             <Input
                                                 style={globalStyles.fieldsLogIn}
@@ -502,7 +622,7 @@ export default function OrderDetails() {
                                     </View>
                                     {
                                         selectedOrder.orderStatus.order !== 5 && <View>
-                                            <TouchableHighlight underlayColor='#cc0000' style={globalStyles.buttonLogIn} onPress={handleSubmit as any}>
+                                            <TouchableHighlight underlayColor='#cc0000' style={[globalStyles.buttonLogIn, { marginTop: 5 }]} onPress={handleSubmit as any}>
                                                 <Text style={globalStyles.footerButtonText}>Cancelar o pedido</Text>
                                             </TouchableHighlight>
                                         </View>

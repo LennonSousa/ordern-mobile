@@ -14,6 +14,8 @@ import Input from '../../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
 import WaitingModal, { statusModal } from '../../../components/Interfaces/WaitingModal';
 
+import globalStyles from '../../../assets/styles/global';
+
 export default function AddressCustomer() {
     const { customer, handleCustomer } = useContext(CustomerContext);
 
@@ -74,17 +76,17 @@ export default function AddressCustomer() {
     }
 
     return (
-        <View style={styles.container}>
-            <ScrollView style={styles.containerMenu}>
-                <View style={styles.fieldsRow}>
-                    <View style={styles.fieldsColumn}>
-                        <View style={styles.menuRow}>
-                            <View style={styles.menuColumn}>
+        <View style={globalStyles.container}>
+            <ScrollView>
+                <View style={globalStyles.fieldsRow}>
+                    <View style={globalStyles.fieldsColumn}>
+                        <View style={globalStyles.menuRow}>
+                            <View style={globalStyles.menuColumn}>
                                 <Text>Endereços</Text>
                             </View>
-                            <View style={styles.menuIconColumn}>
+                            <View style={globalStyles.menuIconColumn}>
                                 <TouchableHighlight
-                                    style={styles.buttonNewItem}
+                                    style={globalStyles.buttonNewItem}
                                     underlayColor="#e8e8e8"
                                     onPress={() => {
                                         setSelectedCustomerAddress(null);
@@ -98,9 +100,9 @@ export default function AddressCustomer() {
                                 </TouchableHighlight>
                             </View>
                         </View>
-                        <View style={styles.menuDescriptionRow}>
-                            <View style={styles.menuDescriptionColumn}>
-                                <Text style={styles.textsDescriptionMenu}>Seus endereços para entrega.</Text>
+                        <View style={globalStyles.menuDescriptionRow}>
+                            <View style={globalStyles.menuDescriptionColumn}>
+                                <Text style={globalStyles.textsDescriptionMenu}>Seus endereços para entrega.</Text>
                             </View>
                         </View>
                     </View>
@@ -168,21 +170,21 @@ export default function AddressCustomer() {
                         validationSchema={validatiionSchema}
                     >
                         {({ handleChange, handleBlur, handleSubmit, values, errors, setFieldValue }) => (
-                            <View style={styles.containerItem}>
-                                <View style={styles.fieldsRow}>
-                                    <View style={styles.fieldsColumn}>
-                                        <View style={styles.menuRow}>
-                                            <View style={styles.menuColumn}>
+                            <View>
+                                <View style={globalStyles.fieldsRow}>
+                                    <View style={globalStyles.fieldsColumn}>
+                                        <View style={globalStyles.menuRow}>
+                                            <View style={globalStyles.menuColumn}>
                                                 <Text>Criar um endereço</Text>
                                             </View>
                                         </View>
                                     </View>
                                 </View>
 
-                                <View style={styles.fieldsRow}>
-                                    <View style={styles.fieldsColumn}>
+                                <View style={globalStyles.fieldsRow}>
+                                    <View style={globalStyles.fieldsColumn}>
                                         <Input
-                                            style={styles.fieldsLogIn}
+                                            style={globalStyles.fieldsLogIn}
                                             title='CEP'
                                             placeholder='Somente números'
                                             textContentType='postalCode'
@@ -213,10 +215,10 @@ export default function AddressCustomer() {
                                     </View>
                                 </View>
 
-                                <View style={styles.fieldsRow}>
-                                    <View style={styles.fieldsColumn}>
+                                <View style={globalStyles.fieldsRow}>
+                                    <View style={globalStyles.fieldsColumn}>
                                         <Input
-                                            style={styles.fieldsLogIn}
+                                            style={globalStyles.fieldsLogIn}
                                             title='Rua'
                                             textContentType='streetAddressLine1'
                                             keyboardType='default'
@@ -228,10 +230,10 @@ export default function AddressCustomer() {
                                     </View>
                                 </View>
 
-                                <View style={styles.fieldsRow}>
-                                    <View style={styles.fieldsColumn}>
+                                <View style={globalStyles.fieldsRow}>
+                                    <View style={globalStyles.fieldsColumn}>
                                         <Input
-                                            style={styles.fieldsLogIn}
+                                            style={globalStyles.fieldsLogIn}
                                             title='Número'
                                             onChangeText={handleChange('number')}
                                             onBlur={handleBlur('number')}
@@ -241,10 +243,10 @@ export default function AddressCustomer() {
                                     </View>
                                 </View>
 
-                                <View style={styles.fieldsRow}>
-                                    <View style={styles.fieldsColumn}>
+                                <View style={globalStyles.fieldsRow}>
+                                    <View style={globalStyles.fieldsColumn}>
                                         <Input
-                                            style={styles.fieldsLogIn}
+                                            style={globalStyles.fieldsLogIn}
                                             title='Bairro'
                                             textContentType='sublocality'
                                             onChangeText={handleChange('group')}
@@ -255,10 +257,10 @@ export default function AddressCustomer() {
                                     </View>
                                 </View>
 
-                                <View style={styles.fieldsRow}>
-                                    <View style={styles.fieldsColumn}>
+                                <View style={globalStyles.fieldsRow}>
+                                    <View style={globalStyles.fieldsColumn}>
                                         <Input
-                                            style={styles.fieldsLogIn}
+                                            style={globalStyles.fieldsLogIn}
                                             title='Complemento'
                                             placeholder='Opcional'
                                             textContentType='streetAddressLine2'
@@ -270,10 +272,10 @@ export default function AddressCustomer() {
                                     </View>
                                 </View>
 
-                                <View style={styles.fieldsRow}>
-                                    <View style={styles.fieldsColumn}>
+                                <View style={globalStyles.fieldsRow}>
+                                    <View style={globalStyles.fieldsColumn}>
                                         <Input
-                                            style={styles.fieldsLogIn}
+                                            style={globalStyles.fieldsLogIn}
                                             title='Cidade'
                                             textContentType='addressCity'
                                             onChangeText={handleChange('city')}
@@ -284,10 +286,10 @@ export default function AddressCustomer() {
                                     </View>
                                 </View>
 
-                                <View style={styles.fieldsRow}>
-                                    <View style={styles.fieldsColumn}>
+                                <View style={globalStyles.fieldsRow}>
+                                    <View style={globalStyles.fieldsColumn}>
                                         <Input
-                                            style={styles.fieldsLogIn}
+                                            style={globalStyles.fieldsLogIn}
                                             title='Estado'
                                             textContentType='addressState'
                                             onChangeText={handleChange('country')}
@@ -298,14 +300,14 @@ export default function AddressCustomer() {
                                     </View>
                                 </View>
 
-                                <View style={styles.fieldsRow}>
-                                    <View style={styles.menuColumn}>
+                                <View style={globalStyles.fieldsRow}>
+                                    <View style={globalStyles.menuColumn}>
                                         <Text>Tipo</Text>
                                     </View>
                                 </View>
 
-                                <View style={styles.fieldsRow}>
-                                    <View style={styles.fieldsColumn}>
+                                <View style={globalStyles.fieldsRow}>
+                                    <View style={globalStyles.fieldsColumn}>
                                         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                             <View style={{ width: '30%' }}>
                                                 <TouchableOpacity style={styles.buttonTypeAddressCustomer} onPress={() => { setFieldValue('type', 'home') }}>
@@ -338,8 +340,8 @@ export default function AddressCustomer() {
                                     </View>
                                 </View>
 
-                                <View style={styles.fieldsRow}>
-                                    <View style={styles.fieldsColumn}>
+                                <View style={globalStyles.fieldsRow}>
+                                    <View style={globalStyles.fieldsColumn}>
                                         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                             <View style={{ width: '30%' }}>
                                                 <TouchableOpacity style={styles.buttonAction} onPress={handleSubmit as any}>
@@ -388,17 +390,17 @@ export default function AddressCustomer() {
 
                 {
                     customer && customer.address && customer.address.map((address, index) => {
-                        return <View key={index} style={styles.containerItem}>
-                            <View style={styles.fieldsRow}>
-                                <View style={styles.fieldsColumn}>
-                                    <View style={styles.menuRow}>
-                                        <View style={styles.colTitleButtonItem}>
+                        return <View key={index} style={globalStyles.containerItem}>
+                            <View style={globalStyles.fieldsRow}>
+                                <View style={globalStyles.fieldsColumn}>
+                                    <View style={globalStyles.menuRow}>
+                                        <View style={globalStyles.colTitleButtonItem}>
                                             <BorderlessButton onPress={() => { handleAddressCustomer(address.id) }}>
                                                 <View style={{ flexDirection: 'row' }}>
-                                                    <View style={styles.colTitleButtonItem}>
+                                                    <View style={globalStyles.colTitleButtonItem}>
                                                         <Text style={{ color: '#8c8c8c' }}>{`${address.street} - ${address.number}`}</Text>
                                                     </View>
-                                                    <View style={styles.colIconButtonItem}>
+                                                    <View style={globalStyles.colIconButtonItem}>
                                                         <Feather name="chevron-right" size={24} color="#cc0000" />
                                                     </View>
                                                 </View>
@@ -425,75 +427,6 @@ export default function AddressCustomer() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-
-    containerMenu: {
-        paddingHorizontal: 15,
-    },
-
-    menuRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-
-    menuColumn: {
-        flex: 0.8,
-    },
-
-    menuDescriptionRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-
-    menuDescriptionColumn: {
-        flex: 1,
-    },
-
-    textsDescriptionMenu: {
-        fontFamily: 'Nunito_300Light',
-        fontSize: 14,
-        color: '#8c8c8c'
-    },
-
-    menuIconColumn: {
-        flex: 0.2,
-        alignItems: 'flex-end',
-    },
-
-    fieldsRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginVertical: 10,
-    },
-
-    fieldsColumn: {
-        flex: 1,
-    },
-
-    buttonNewItem: {
-        padding: 10,
-        borderRadius: 5,
-    },
-
-    colTitleButtonItem: {
-        flex: 0.9,
-    },
-
-    colIconButtonItem: {
-        flex: 0.1,
-    },
-
-    containerItem: {
-        marginVertical: 5,
-        padding: 10,
-        borderColor: '#e8e8e8',
-        borderWidth: 1,
-        borderRadius: 8
-    },
-
     buttonTypeAddressCustomer: {
         padding: 10,
         borderRadius: 5,
@@ -513,24 +446,5 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         backgroundColor: '#ffcc00',
         alignItems: 'center',
-    },
-
-    fieldsLogIn: {
-        marginVertical: 8,
-    },
-
-    footerButton: {
-        backgroundColor: '#cc0000',
-        borderRadius: 5,
-        marginVertical: 15,
-        height: 50,
-        justifyContent: 'center'
-    },
-
-    footerButtonText: {
-        color: '#ffffff',
-        alignSelf: 'center',
-        fontFamily: 'Nunito_600SemiBold',
-        fontSize: 16,
     },
 });

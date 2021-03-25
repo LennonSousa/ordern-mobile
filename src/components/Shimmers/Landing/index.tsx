@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import { View, Animated, ScrollView, StyleSheet, Dimensions } from 'react-native';
+import { View, Animated, StyleSheet, Dimensions } from 'react-native';
 
-import globalStyles, { colorTextDescription } from '../../../assets/styles/global';
+import { colorTextDescription } from '../../../assets/styles/global';
 
 export default function LandingPageShimmer() {
     const AnimatedValue = new Animated.Value(0);
@@ -26,21 +26,6 @@ export default function LandingPageShimmer() {
     const translateXFildCover = AnimatedValue.interpolate({
         inputRange: [0, 1],
         outputRange: [-10, 90]
-    });
-
-    const translateXCategoryTitle = AnimatedValue.interpolate({
-        inputRange: [0, 1],
-        outputRange: [-10, 310]
-    });
-
-    const translateXProductTexts = AnimatedValue.interpolate({
-        inputRange: [0, 1],
-        outputRange: [-10, 160]
-    });
-
-    const translateXProductImage = AnimatedValue.interpolate({
-        inputRange: [0, 1],
-        outputRange: [-10, 75]
     });
 
     useEffect(() => {

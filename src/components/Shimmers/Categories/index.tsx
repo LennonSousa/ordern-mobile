@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Animated, ScrollView, StyleSheet, Dimensions } from 'react-native';
+import { View, Animated, ScrollView, StyleSheet } from 'react-native';
 
 import ProductsShimmer from '../Products';
 

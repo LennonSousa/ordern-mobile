@@ -32,8 +32,8 @@ import OrdersList from './pages/OrdersList';
 import AddressCustomer from './pages/Profile/AddressCustomer';
 import PaymentsCustomer from './pages/Profile/CustomerPayments';
 import OrderDetails from './pages/OrderDetails';
-
 import PrivacyTerms from './pages/PricacyTerms';
+import About from './pages/About';
 import { StatusBar } from 'react-native';
 
 function HomeTabs() {
@@ -252,6 +252,15 @@ export default function Routes() {
                     <Stack.Screen
                         name="PrivacyTerms"
                         component={PrivacyTerms}
+                    />
+
+                    <Stack.Screen
+                        name="About"
+                        component={About}
+                        options={{
+                            headerShown: true,
+                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Sobre" showCancel={true} />
+                        }}
                     />
                 </Stack.Navigator>
             </NavigationContainer>

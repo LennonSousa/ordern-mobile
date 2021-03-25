@@ -88,33 +88,30 @@ export default function OrdersList() {
                         !refreshing ? (
                             orders && orders.length > 0 ? orders.map((order, index) => {
                                 return <View key={index} style={globalStyles.containerItem}>
-                                    <View style={globalStyles.fieldsRow}>
-                                        <View style={globalStyles.fieldsColumn}>
+                                    <BorderlessButton onPress={() => { navigation.navigate('OrderDetails', { id: order.id }); }}>
+                                        <View style={globalStyles.fieldsRow}>
                                             <View style={globalStyles.menuRow}>
                                                 <View style={{ flex: 1 }}>
-                                                    <BorderlessButton onPress={() => { navigation.navigate('OrderDetails', { id: order.id }); }}>
-                                                        <View style={{ flexDirection: 'row', marginBottom: 5 }}>
-                                                            <View style={{ flex: 0.7 }}>
-                                                                <Text style={{ color: '#8c8c8c' }}>{`Nº ${order.tracker}`}</Text>
-                                                            </View>
-                                                            <View style={{ flex: 0.3 }}>
-                                                                <Text style={{ color: '#8c8c8c', textAlign: 'right' }}>{`R$ ${Number(order.total).toFixed(2).replace('.', ',')}`}</Text>
-                                                            </View>
+                                                    <View style={{ flexDirection: 'row', marginBottom: 5 }}>
+                                                        <View style={{ flex: 0.7 }}>
+                                                            <Text style={{ color: '#8c8c8c' }}>{`Nº ${order.tracker}`}</Text>
                                                         </View>
-                                                        <View style={{ flexDirection: 'row', marginTop: 5 }} >
-                                                            <View style={globalStyles.colTitleButtonItem}>
-                                                                <Text style={{ color: order.orderStatus.order === 4 ? colorHighLight : colorPrimaryLight }}>{`${order.orderStatus.title}`}</Text>
-                                                            </View>
-                                                            <View style={globalStyles.colTitleButtonItem}>
-                                                                <Text style={{ color: '#8c8c8c', textAlign: 'right' }}>{format(new Date(order.ordered_at), "dd/MM/yyyy' às 'HH:mm")}</Text>
-                                                            </View>
+                                                        <View style={{ flex: 0.3 }}>
+                                                            <Text style={{ color: '#8c8c8c', textAlign: 'right' }}>{`R$ ${Number(order.total).toFixed(2).replace('.', ',')}`}</Text>
                                                         </View>
-                                                    </BorderlessButton>
+                                                    </View>
+                                                    <View style={{ flexDirection: 'row', marginTop: 5 }} >
+                                                        <View style={globalStyles.colTitleButtonItem}>
+                                                            <Text style={{ color: order.orderStatus.order === 4 ? colorHighLight : colorPrimaryLight }}>{`${order.orderStatus.title}`}</Text>
+                                                        </View>
+                                                        <View style={globalStyles.colTitleButtonItem}>
+                                                            <Text style={{ color: '#8c8c8c', textAlign: 'right' }}>{format(new Date(order.ordered_at), "dd/MM/yyyy' às 'HH:mm")}</Text>
+                                                        </View>
+                                                    </View>
                                                 </View>
-
                                             </View>
                                         </View>
-                                    </View>
+                                    </BorderlessButton>
                                 </View>
                             }
                             ) : <View style={globalStyles.container}>
@@ -148,7 +145,7 @@ export default function OrdersList() {
                         <View style={globalStyles.fieldsRow}>
                             <View style={globalStyles.fieldsColumn}>
                                 <BorderlessButton onPress={() => { navigation.navigate('Profile') }}>
-                                    <Text style={globalStyles.buttonTextSignIn}>Entrar</Text>
+                                    <Text style={globalStyles.buttonTextSignIn}>Entrar <Feather name="chevron-right" size={18} color={colorPrimaryLight} /></Text>
                                 </BorderlessButton>
                             </View>
                         </View>
@@ -162,7 +159,7 @@ export default function OrdersList() {
 const styles = StyleSheet.create(
     {
         imageContent: {
-            height: '90%',
+            height: '75%',
             resizeMode: 'contain'
         },
     });

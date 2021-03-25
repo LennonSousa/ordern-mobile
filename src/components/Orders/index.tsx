@@ -17,6 +17,7 @@ export interface Order {
     cupom: string;
     delivery_tax: number;
     delivery_type: string;
+    delivery_estimated: string;
     discount: number;
     fee: number;
     total: number;
@@ -28,8 +29,4 @@ export interface Order {
     cancelled_at: Date;
     orderStatus: OrderStatus;
     orderItems: OrderItem[];
-}
-
-export default function Orders() {
-    return <View></View>
 }

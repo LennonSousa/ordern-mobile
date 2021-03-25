@@ -139,16 +139,17 @@ const globalStyles = StyleSheet.create({
 
     containerItem: {
         marginVertical: 5,
+        marginHorizontal: 5,
         padding: 10,
         borderRadius: 8,
         shadowColor: "#000",
         shadowOffset: {
             width: 0,
-            height: 3,
+            height: 1,
         },
-        shadowOpacity: 0.5,
-        shadowRadius: 8,
-        elevation: 1.5,
+        shadowOpacity: 0.18,
+        shadowRadius: 1.00,
+        elevation: 2,
     },
 
     colTitleButtonItem: {

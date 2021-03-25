@@ -119,9 +119,7 @@ export default function OrderPreview() {
                             </View>
                             <View style={globalStyles.menuDescriptionColumn}>
                                 <Text
-                                    style={globalStyles.textsDescriptionMenu}>
-                                    30 minutos
-                                    </Text>
+                                    style={globalStyles.textsDescriptionMenu}>{`${order.delivery_estimated} minutos`}</Text>
                             </View>
                         </View>
                     </View>

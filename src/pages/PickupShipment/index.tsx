@@ -1,8 +1,8 @@
 import React, { useContext, useEffect } from 'react';
-import { ScrollView, StyleSheet, Text, View, TouchableHighlight } from 'react-native';
-import MapView, { Marker, Callout } from 'react-native-maps';
-import { Feather } from '@expo/vector-icons';
+import { ScrollView, StyleSheet, Text, View, TouchableHighlight, Platform, Linking } from 'react-native';
+import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { BorderlessButton } from 'react-native-gesture-handler';
 import { format } from 'date-fns';
 
 import { RestaurantContext } from '../../context/restaurantContext';
@@ -10,14 +10,21 @@ import { ContextOrdering } from '../../context/orderingContext';
 
 import PageFooter from '../../components/PageFooter';
 
-import globalStyles, { colorPrimaryDark, colorBackground } from '../../assets/styles/global';
-import pickupShipment from '../../assets/images/successful_purchase.png';
+import globalStyles, { colorPrimaryDark, colorPrimaryLight } from '../../assets/styles/global';
 
 export default function PickupShipment() {
     const navigation = useNavigation();
 
     const { restaurant } = useContext(RestaurantContext);
     const { order, handleOrder, handleTotalOrder } = useContext(ContextOrdering);
+
+    const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
+    const latLng = `${restaurant?.latitude},${restaurant?.longitude}`;
+    const label = restaurant?.title;
+    const urlLocation = Platform.select({
+        ios: `${scheme}${label}@${latLng}`,
+        android: `${scheme}${latLng}(${label})`
+    });
 
     useEffect(() => {
         if (order) {
@@ -39,7 +46,8 @@ export default function PickupShipment() {
                     tracker: `${format(new Date(), 'ssmmddHHMM')}${order.total.toFixed(2).replace('.', '').replace(',', '')}`,
                     address: 'Retirar no local.',
                     delivery_tax: 0,
-                    delivery_type: 'pickup'
+                    delivery_type: 'pickup',
+                    delivery_estimated: '30',
                 }
             );
 
@@ -49,74 +57,55 @@ export default function PickupShipment() {
 
     return (
         <>
-            <View style={{ backgroundColor: colorBackground, paddingHorizontal: 10 }}>
-                <View style={globalStyles.row}>
-                    <View style={globalStyles.column}>
-                        <View style={globalStyles.menuRow}>
-                            <Text style={globalStyles.textsMenu}>Retirar no local</Text>
-                        </View>
-                    </View>
-                </View>
-            </View>
             <ScrollView style={globalStyles.container}>
-                <View style={globalStyles.row}>
-                    <View style={globalStyles.column}>
+                <View style={globalStyles.fieldsRow}>
+                    <View style={globalStyles.fieldsColumn}>
                         <View style={globalStyles.menuRow}>
                             <View style={globalStyles.menuColumn}>
-                                <Text style={globalStyles.textsMenu}>Retire aqui! </Text>
+                                <Text style={globalStyles.textsMenu}>Nosso endereço</Text>
                             </View>
                             <View style={globalStyles.menuIconColumn}>
-                                <Feather name="box" size={24} color="#fe3807" />
+                                <Feather name="map-pin" size={24} color={colorPrimaryLight} />
                             </View>
                         </View>
-                        <View style={globalStyles.menuDescriptionRow}>
-                            <View style={globalStyles.menuDescriptionColumn}>
-                                <Text style={globalStyles.textsDescriptionMenu}>
-                                    Retire o seu pedido no nosso endereço.
-                            </Text>
-                            </View>
-                        </View>
-                    </View>
-                </View>
 
-                <View style={[globalStyles.row, { marginVertical: 0, width: '100%', height: 250 }]}>
-                    <View style={[globalStyles.column, { alignItems: 'center' }]}>
-                        <MapView
-                            style={styles.mapContainer}
-                            region={{
-                                latitude: Number(restaurant?.latitude),
-                                longitude: Number(restaurant?.longitude),
-                                latitudeDelta: 0.008,
-                                longitudeDelta: 0.008
-                            }}
-                        >
-                            <Marker
-                                icon={restaurant ? restaurant.avatar : pickupShipment}
-                                style={{ width: 15, height: 15 }}
-                                coordinate={{
-                                    latitude: Number(restaurant?.latitude),
-                                    longitude: Number(restaurant?.longitude),
-                                }}
-                                title={restaurant?.title}
-                                description={restaurant?.description}
-                            >
-                                <Callout tooltip>
-                                    <View>
-                                        <Text>Oi</Text>
+                        <View style={globalStyles.menuRow}>
+                            <View style={{ flex: 1 }}>
+                                <View style={globalStyles.menuDescriptionColumn}>
+                                    <Text style={globalStyles.textDescription}>{`${restaurant?.street}, ${restaurant?.number}`}</Text>
+                                    <Text style={globalStyles.textDescription}>{`${restaurant?.group}`}</Text>
+                                    <Text style={globalStyles.textDescription}>{`${restaurant?.city} - ${restaurant?.country}`}</Text>
+                                    <Text style={globalStyles.textDescription}>{`CEP: ${restaurant?.zip_code}`}</Text>
+                                    <Text style={globalStyles.textDescription}>{`Telefone: ${restaurant?.phone}`}</Text>
+                                </View>
+                            </View>
+
+                            <View style={{ flex: 1 }}>
+                                <BorderlessButton onPress={() => { urlLocation && Linking.openURL(urlLocation); }}>
+                                    <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                        <View style={globalStyles.column}>
+                                            <FontAwesome5
+                                                style={{ textAlign: 'center' }}
+                                                name="map-marked-alt"
+                                                size={20}
+                                                color={colorPrimaryLight}
+                                            />
+                                        </View>
                                     </View>
-                                </Callout>
-                            </Marker>
-                        </MapView>
-                    </View>
-                </View>
+                                    <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
+                                        <View style={globalStyles.column}>
+                                            <Text
+                                                style={[globalStyles.textDescription, { textAlign: 'center', fontSize: 12 }]}
+                                            >
+                                                Abrir no mapa <Feather name="chevron-right" size={12} color={colorPrimaryLight} />
+                                            </Text>
+                                        </View>
+                                    </View>
+                                </BorderlessButton>
+                            </View>
 
-                <View style={[globalStyles.row, { marginTop: 0, marginBottom: 10 }]}>
-                    <View style={[globalStyles.column, { alignItems: 'center' }]}>
-                        <Text style={globalStyles.titlePrimaryLight}>Nosso endereço</Text>
-                        <Text style={globalStyles.textDescription}>{`${restaurant?.street}, ${restaurant?.number}`}</Text>
-                        <Text style={globalStyles.textDescription}>{`${restaurant?.group} - CEP: ${restaurant?.zip_code}`}</Text>
-                        <Text style={globalStyles.textDescription}>{`${restaurant?.city} - ${restaurant?.country}`}</Text>
-                        <Text style={globalStyles.textDescription}>{`Telefone: ${restaurant?.phone}`}</Text>
+                        </View>
+
                     </View>
                 </View>
             </ScrollView>

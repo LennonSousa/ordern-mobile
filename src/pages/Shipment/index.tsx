@@ -85,7 +85,8 @@ export default function Shipment() {
                     tracker: `${format(new Date(), 'ssmmddHHMM')}${order.total.toFixed(2).replace('.', '').replace(',', '')}`,
                     address: `${selectedAddress.street} -  ${selectedAddress.number}\n${selectedAddress.group}\n${selectedAddress.complement}\n${selectedAddress.city} - ${selectedAddress.country}, ${selectedAddress.zip_code}`,
                     delivery_tax: selectedDeliveryGroup.price,
-                    delivery_type: selectedDeliveryGroup.description
+                    delivery_type: selectedDeliveryGroup.description,
+                    delivery_estimated: selectedDeliveryGroup.estimated,
                 }
             );
 
@@ -98,9 +99,37 @@ export default function Shipment() {
             <ScrollView style={globalStyles.container}>
                 <View style={globalStyles.row}>
                     <View style={globalStyles.column}>
+                        <BorderlessButton
+                            onPress={() => {
+                                navigation.navigate('PickupShipment');
+                            }}
+                        >
+                            <View style={globalStyles.menuRow}>
+                                <View style={globalStyles.menuColumn}>
+                                    <Text style={globalStyles.textsMenu}>Retire no local</Text>
+                                </View>
+                                <View style={globalStyles.menuIconColumn}>
+                                    <View>
+                                        <Feather name="chevron-right" size={24} color="#cc0000" />
+                                    </View>
+                                </View>
+                            </View>
+                            <View style={globalStyles.menuDescriptionRow}>
+                                <View style={globalStyles.menuDescriptionColumn}>
+                                    <Text style={globalStyles.textsDescriptionMenu}>
+                                        Retire o seu pedido no nosso endereço.
+                            </Text>
+                                </View>
+                            </View>
+                        </BorderlessButton>
+                    </View>
+                </View>
+
+                <View style={globalStyles.row}>
+                    <View style={globalStyles.column}>
                         <View style={globalStyles.menuRow}>
                             <View style={globalStyles.menuColumn}>
-                                <Text style={globalStyles.textsMenu}>Entrega</Text>
+                                <Text style={globalStyles.textsMenu}>Ou entregamos na sua casa</Text>
                             </View>
                             <View style={globalStyles.menuIconColumn}>
                                 <TouchableHighlight
@@ -126,36 +155,30 @@ export default function Shipment() {
                     </View>
                 </View>
 
-                <View style={globalStyles.containerMenu}>
-                    {
-                        customer && customer.address && customer.address.map((address, index) => {
-                            return <View key={index} style={globalStyles.containerItem}>
+                {
+                    customer && customer.address && customer.address.map((address, index) => {
+                        return <View key={index} style={globalStyles.containerItem}>
+                            <BorderlessButton
+                                onPress={() => { setSelectedAddress(address) }}
+                            >
                                 <View style={globalStyles.row}>
-                                    <View style={globalStyles.column}>
-                                        <View style={globalStyles.menuRow}>
+                                    <View style={globalStyles.colTitleButtonItem}>
+                                        <View style={{ flexDirection: 'row' }}>
                                             <View style={globalStyles.colTitleButtonItem}>
-                                                <BorderlessButton
-                                                    onPress={() => { setSelectedAddress(address) }}
-                                                >
-                                                    <View style={{ flexDirection: 'row' }}>
-                                                        <View style={globalStyles.colTitleButtonItem}>
-                                                            <Text style={{ color: '#8c8c8c' }}>{`${address.street} - ${address.number}`}</Text>
-                                                        </View>
-                                                        <View style={globalStyles.colIconButtonItem}>
-                                                            {
-                                                                selectedAddress && selectedAddress.id === address.id && <FontAwesome5 name="check" size={18} color={colorPrimaryLight} />
-                                                            }
-                                                        </View>
-                                                    </View>
-                                                </BorderlessButton>
+                                                <Text style={{ color: '#8c8c8c' }}>{`${address.street} - ${address.number}`}</Text>
+                                            </View>
+                                            <View style={globalStyles.colIconButtonItem}>
+                                                {
+                                                    selectedAddress && selectedAddress.id === address.id && <FontAwesome5 name="check" size={18} color={colorPrimaryLight} />
+                                                }
                                             </View>
                                         </View>
                                     </View>
                                 </View>
-                            </View>
-                        })
-                    }
-                </View>
+                            </BorderlessButton>
+                        </View>
+                    })
+                }
 
                 {/* Divider*/}
                 <View style={globalStyles.divider}></View>
@@ -180,67 +203,36 @@ export default function Shipment() {
                     </View>
                 </View>
 
-                <View style={globalStyles.containerMenu}>
-                    {
-                        restaurantDeliveryGroups && restaurantDeliveryGroups.map((deliveryGroup, index) => {
-                            return <View key={index} style={globalStyles.containerItem}>
-                                <View style={globalStyles.row}>
-                                    <View style={globalStyles.column}>
-                                        <View style={globalStyles.menuRow}>
-                                            <View style={globalStyles.colTitleButtonItem}>
-                                                <BorderlessButton onPress={() => { handleDeliveryGroup(deliveryGroup) }}>
-                                                    <View style={{ flexDirection: 'row' }}>
-                                                        <View style={{ flex: 0.6 }}>
-                                                            <Text style={{ color: '#8c8c8c' }}>{deliveryGroup.description}</Text>
-                                                        </View>
-                                                        <View style={{ flex: 0.3, alignItems: 'center' }}>
-                                                            <Text style={{ color: colorPrimaryLight }}>{`R$ ${deliveryGroup.price.toString().replace('.', ',')}`}</Text>
-                                                        </View>
-                                                        <View style={{ flex: 0.1 }}>
-                                                            {
-                                                                selectedDeliveryGroup && selectedDeliveryGroup.id === deliveryGroup.id && <FontAwesome5 name="check" size={18} color={colorPrimaryLight} style={{ textAlign: 'center' }} />
-                                                            }
-                                                        </View>
-                                                    </View>
-                                                </BorderlessButton>
+                {
+                    restaurantDeliveryGroups && restaurantDeliveryGroups.map((deliveryGroup, index) => {
+                        return <View key={index} style={globalStyles.containerItem}>
+                            <BorderlessButton onPress={() => { handleDeliveryGroup(deliveryGroup) }}>
+                                <View style={globalStyles.menuRow}>
+                                    <View style={globalStyles.colTitleButtonItem}>
+                                        <View style={globalStyles.row}>
+                                            <View style={{ flex: 1 }}>
+                                                <Text style={{ color: '#8c8c8c' }}>{deliveryGroup.description}</Text>
+                                            </View>
+                                            <View style={{ flex: 0.4, alignItems: 'center' }}>
+                                                <Text style={{ color: colorPrimaryLight }}>{`R$ ${deliveryGroup.price.toString().replace('.', ',')}`}</Text>
+                                            </View>
+                                            <View style={{ flex: 0.1, alignItems: 'center' }}>
+                                                {
+                                                    selectedDeliveryGroup && selectedDeliveryGroup.id === deliveryGroup.id && <FontAwesome5 name="check" size={18} color={colorPrimaryLight} style={{ textAlign: 'center' }} />
+                                                }
+                                            </View>
+                                        </View>
+                                        <View>
+                                            <View style={globalStyles.column}>
+                                                <Text style={globalStyles.textsDescriptionMenu}>{`${deliveryGroup.estimated} minutos`}</Text>
                                             </View>
                                         </View>
                                     </View>
                                 </View>
-                            </View>
-                        })
-                    }
-                </View>
-
-                <View style={globalStyles.row}>
-                    <View style={globalStyles.column}>
-                        <View style={globalStyles.menuRow}>
-                            <View style={globalStyles.menuColumn}>
-                                <Text style={globalStyles.textsMenu}>Retirar no local</Text>
-                            </View>
-                            <View style={globalStyles.menuIconColumn}>
-                                <TouchableHighlight
-                                    style={styles.buttonNewItem}
-                                    underlayColor="#e8e8e8"
-                                    onPress={() => {
-                                        navigation.navigate('PickupShipment');
-                                    }}
-                                >
-                                    <View>
-                                        <Feather name="chevron-right" size={24} color="#cc0000" />
-                                    </View>
-                                </TouchableHighlight>
-                            </View>
+                            </BorderlessButton>
                         </View>
-                        <View style={globalStyles.menuDescriptionRow}>
-                            <View style={globalStyles.menuDescriptionColumn}>
-                                <Text style={globalStyles.textsDescriptionMenu}>
-                                    Retire o seu pedido no nosso endereço.
-                            </Text>
-                            </View>
-                        </View>
-                    </View>
-                </View>
+                    })
+                }
 
                 <View style={{
                     flex: 1,

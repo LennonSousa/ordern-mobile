@@ -176,7 +176,51 @@ export default function Payment() {
                                 setModalWaiting("hidden");
                                 handleClearOrder();
 
-                                navigation.navigate('OrderDetails', { id: res.data.id });
+                                navigation.reset({
+                                    index: 0,
+                                    routeNames: [
+                                        "HomeTabs",
+                                        "ProductDetails",
+                                        "Search",
+                                        "CategoryAdditionals",
+                                        "CustomerNew",
+                                        "CreateCustomer",
+                                        "CustomerNewReset",
+                                        "CustomerReset",
+                                        "CustomerUpdate",
+                                        "AddressCustomer",
+                                        "PaymentsCustomer",
+                                        "Shipment",
+                                        "PickupShipment",
+                                        "OrderReview",
+                                        "Payment",
+                                        "OrderDetails",
+                                        "PrivacyTerms",
+                                        "About",
+                                    ],
+                                    routes: [
+                                        {
+                                            name: 'HomeTabs',
+                                            state: {
+                                                routeNames: [
+                                                    "LandingPage",
+                                                    "Cart",
+                                                    "OrdersList",
+                                                    "Profile",
+                                                ],
+                                                routes: [
+                                                    { name: "LandingPage" },
+                                                    { name: "Cart" },
+                                                    { name: "OrdersList" },
+                                                    { name: "Profile" },
+                                                ],
+                                                type: 'tab'
+                                            },
+                                        },
+                                        { name: 'OrderDetails', params: { id: res.data.id } },
+                                    ],
+                                    type: 'stack'
+                                });
                             }, 2000);
                         }
                         else {
@@ -627,7 +671,51 @@ export default function Payment() {
                                         setModalWaiting("hidden");
                                         handleClearOrder();
 
-                                        navigation.navigate('OrderDetails', { id: res.data.id });
+                                        navigation.reset({
+                                            index: 0,
+                                            routeNames: [
+                                                "HomeTabs",
+                                                "ProductDetails",
+                                                "Search",
+                                                "CategoryAdditionals",
+                                                "CustomerNew",
+                                                "CreateCustomer",
+                                                "CustomerNewReset",
+                                                "CustomerReset",
+                                                "CustomerUpdate",
+                                                "AddressCustomer",
+                                                "PaymentsCustomer",
+                                                "Shipment",
+                                                "PickupShipment",
+                                                "OrderReview",
+                                                "Payment",
+                                                "OrderDetails",
+                                                "PrivacyTerms",
+                                                "About",
+                                            ],
+                                            routes: [
+                                                {
+                                                    name: 'HomeTabs',
+                                                    state: {
+                                                        routeNames: [
+                                                            "LandingPage",
+                                                            "Cart",
+                                                            "OrdersList",
+                                                            "Profile",
+                                                        ],
+                                                        routes: [
+                                                            { name: "LandingPage" },
+                                                            { name: "Cart" },
+                                                            { name: "OrdersList" },
+                                                            { name: "Profile" },
+                                                        ],
+                                                        type: 'tab'
+                                                    },
+                                                },
+                                                { name: 'OrderDetails', params: { id: res.data.id } },
+                                            ],
+                                            type: 'stack'
+                                        });
                                     }, 2000);
                                 }
                             }

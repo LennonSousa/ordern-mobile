@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, Modal, TouchableHighlight } from 'react-native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
@@ -15,7 +15,7 @@ import InvalidFeedback from '../../components/Interfaces/InvalidFeedback';
 import Buttons from '../../components/Interfaces/Buttons';
 import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingModal';
 
-import globalStyles from '../../assets/styles/global';
+import globalStyles, { colorPrimaryDark } from '../../assets/styles/global';
 
 const { expo } = require('../../../app.json');
 
@@ -26,6 +26,9 @@ export default function Profile() {
 
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
     const [errorMessage, setErrorMessage] = useState('');
+    const [modalConfirmLogout, setModalConfirmLogoug] = useState(false);
+
+    const toggleModalConfirmLogout = () => setModalConfirmLogoug(!modalConfirmLogout);
 
     const validatiionSchema = Yup.object().shape({
         email: Yup.string().email('E-mail inválido!').required('Você precisa preencher o seu e-mail!'),
@@ -156,7 +159,29 @@ export default function Profile() {
 
                         <View style={styles.fieldsRow}>
                             <View style={styles.fieldsColumn}>
-                                <BorderlessButton onPress={handleLogout}>
+                                <BorderlessButton onPress={() => {
+                                    navigation.navigate('About');
+                                }}>
+                                    <View style={styles.menuRow}>
+                                        <View style={styles.menuColumn}>
+                                            <Text>Sobre o aplicativo</Text>
+                                        </View>
+                                        <View style={styles.menuIconColumn}>
+                                            <Feather name="info" size={24} color="#fe3807" />
+                                        </View>
+                                    </View>
+                                    <View style={styles.menuDescriptionRow}>
+                                        <View style={styles.menuDescriptionColumn}>
+                                            <Text style={styles.textsDescriptionMenu}>Versão, políticas e termos de uso.</Text>
+                                        </View>
+                                    </View>
+                                </BorderlessButton>
+                            </View>
+                        </View>
+
+                        <View style={styles.fieldsRow}>
+                            <View style={styles.fieldsColumn}>
+                                <BorderlessButton onPress={toggleModalConfirmLogout}>
                                     <View style={styles.menuRow}>
                                         <View style={styles.menuColumn}>
                                             <Text>Sair</Text>
@@ -288,6 +313,58 @@ export default function Profile() {
             }}>
                 <WaitingModal message={errorMessage} status={modalWaiting} />
             </View>
+
+            <View style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+            }}>
+                { /*Modal confirm logout*/}
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalConfirmLogout}
+                >
+                    <View style={{
+                        flex: 1,
+                        justifyContent: "center",
+                        alignItems: "center",
+                    }}>
+                        <View style={styles.modalView}>
+                            <View style={{ marginVertical: 5 }}>
+                                <Feather name="log-out" size={40} color="#fe3807" />
+                            </View>
+
+                            <View>
+                                <View style={{ marginVertical: 5 }}>
+                                    <Text style={[globalStyles.subTitlePrimary, { textAlign: 'center' }]}>Você realmente deseja sair?</Text>
+                                </View>
+
+                                <View style={{ flexDirection: 'row', marginTop: 5, width: '100%' }}>
+                                    <View style={{ flex: 0.5, marginHorizontal: 2 }}>
+                                        <TouchableHighlight
+                                            underlayColor={colorPrimaryDark}
+                                            style={globalStyles.footerButton}
+                                            onPress={toggleModalConfirmLogout}
+                                        >
+                                            <Text style={globalStyles.footerButtonText}>Não</Text>
+                                        </TouchableHighlight>
+                                    </View>
+                                    <View style={{ flex: 0.5, marginHorizontal: 2 }}>
+                                        <TouchableHighlight
+                                            underlayColor={colorPrimaryDark}
+                                            style={globalStyles.footerButton}
+                                            onPress={() => { handleLogout(); toggleModalConfirmLogout(); }}
+                                        >
+                                            <Text style={globalStyles.footerButtonText}>Sim</Text>
+                                        </TouchableHighlight>
+                                    </View>
+                                </View>
+                            </View>
+                        </View>
+                    </View>
+                </Modal>
+            </View>
         </View>
     )
 }
@@ -386,5 +463,21 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         fontFamily: 'Nunito_600SemiBold',
         fontSize: 16,
-    }
+    },
+
+    modalView: {
+        margin: 20,
+        backgroundColor: "white",
+        borderRadius: 20,
+        padding: 35,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5
+    },
 });

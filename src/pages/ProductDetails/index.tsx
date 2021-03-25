@@ -332,6 +332,7 @@ export default function ProductDetails() {
                         cupom: '',
                         delivery_tax: 0,
                         delivery_type: '',
+                        delivery_estimated: '',
                         discount: 0,
                         fee: 0,
                         total: 0,
@@ -370,7 +371,7 @@ export default function ProductDetails() {
         setModalOnRequest(false);
 
         if (params.product)
-            Linking.openURL(`whatsapp://send?phone=${restaurant?.phone}&text=${message}`);
+            Linking.openURL(`whatsapp://send?phone=+55${restaurant?.phone}&text=${message}`);
     }
 
     return (
@@ -578,8 +579,8 @@ export default function ProductDetails() {
 
                                                 <View>
                                                     <View style={{ marginVertical: 5 }}>
-                                                        <Text style={[globalStyles.subTitlePrimary, { textAlign: 'center' }]}>Para comprar este produto você precisa
-                                        primeiro consultar a quantidade e o total com um atendente.</Text>
+                                                        <Text style={[globalStyles.subTitlePrimary, { textAlign: 'center' }]}>Para comprar este produto você precisa 
+                                                        primeiro consultar a quantidade e o total com um atendente.</Text>
                                                     </View>
 
                                                     <View style={{ flexDirection: 'row', marginTop: 5, width: '100%' }}>
