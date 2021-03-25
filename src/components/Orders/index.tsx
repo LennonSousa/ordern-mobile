@@ -1,6 +1,3 @@
-import React from 'react';
-import { View } from 'react-native';
-
 import { OrderStatus } from '../OrderStatus';
 import { OrderItem } from '../OrderItems';
 
@@ -17,7 +14,7 @@ export interface Order {
     cupom: string;
     delivery_tax: number;
     delivery_type: string;
-    delivery_estimated: string;
+    delivery_estimated: number;
     discount: number;
     fee: number;
     total: number;

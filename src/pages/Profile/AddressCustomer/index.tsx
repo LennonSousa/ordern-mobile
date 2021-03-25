@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { StyleSheet, View, Text, TouchableHighlight, ScrollView } from 'react-native';
-import { BorderlessButton, TouchableOpacity } from 'react-native-gesture-handler';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Feather } from '@expo/vector-icons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -13,6 +13,7 @@ import { CustomerAddress } from '../../../components/CustomerAddress';
 import Input from '../../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
 import WaitingModal, { statusModal } from '../../../components/Interfaces/WaitingModal';
+import ButtonListItem from '../../../components/Interfaces/ButtonListItem';
 
 import globalStyles from '../../../assets/styles/global';
 
@@ -170,7 +171,7 @@ export default function AddressCustomer() {
                         validationSchema={validatiionSchema}
                     >
                         {({ handleChange, handleBlur, handleSubmit, values, errors, setFieldValue }) => (
-                            <View>
+                            <View style={globalStyles.containerItem}>
                                 <View style={globalStyles.fieldsRow}>
                                     <View style={globalStyles.fieldsColumn}>
                                         <View style={globalStyles.menuRow}>
@@ -390,27 +391,20 @@ export default function AddressCustomer() {
 
                 {
                     customer && customer.address && customer.address.map((address, index) => {
-                        return <View key={index} style={globalStyles.containerItem}>
-                            <View style={globalStyles.fieldsRow}>
-                                <View style={globalStyles.fieldsColumn}>
-                                    <View style={globalStyles.menuRow}>
+                        return <ButtonListItem key={index} onPress={() => { handleAddressCustomer(address.id) }}>
+                            <View style={globalStyles.row}>
+                                <View style={globalStyles.colTitleButtonItem}>
+                                    <View style={{ flexDirection: 'row' }}>
                                         <View style={globalStyles.colTitleButtonItem}>
-                                            <BorderlessButton onPress={() => { handleAddressCustomer(address.id) }}>
-                                                <View style={{ flexDirection: 'row' }}>
-                                                    <View style={globalStyles.colTitleButtonItem}>
-                                                        <Text style={{ color: '#8c8c8c' }}>{`${address.street} - ${address.number}`}</Text>
-                                                    </View>
-                                                    <View style={globalStyles.colIconButtonItem}>
-                                                        <Feather name="chevron-right" size={24} color="#cc0000" />
-                                                    </View>
-                                                </View>
-                                            </BorderlessButton>
+                                            <Text style={{ color: '#8c8c8c' }}>{`${address.street} - ${address.number}`}</Text>
                                         </View>
-
+                                        <View style={globalStyles.colIconButtonItem}>
+                                            <Feather name="chevron-right" size={24} color="#cc0000" />
+                                        </View>
                                     </View>
                                 </View>
                             </View>
-                        </View>
+                        </ButtonListItem>
                     })
                 }
             </ScrollView>

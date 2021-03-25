@@ -138,18 +138,22 @@ const globalStyles = StyleSheet.create({
     },
 
     containerItem: {
+        flex: 1,
         marginVertical: 5,
         marginHorizontal: 5,
         padding: 10,
+        backgroundColor: '#fff',
+        borderColor: '#f2f2f2',
+        borderWidth: 1,
         borderRadius: 8,
         shadowColor: "#000",
         shadowOffset: {
             width: 0,
-            height: 1,
+            height: 2
         },
-        shadowOpacity: 0.18,
-        shadowRadius: 1.00,
-        elevation: 2,
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 3
     },
 
     colTitleButtonItem: {

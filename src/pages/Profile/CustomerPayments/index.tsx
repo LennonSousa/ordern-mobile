@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { StyleSheet, View, Text, TouchableHighlight, ScrollView } from 'react-native';
-import { BorderlessButton, TouchableOpacity } from 'react-native-gesture-handler';
+import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Feather } from '@expo/vector-icons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -17,14 +17,17 @@ import { CustomerPayment } from '../../../components/CustomerPayments';
 import Input from '../../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
 import WaitingModal, { statusModal } from '../../../components/Interfaces/WaitingModal';
+import ButtonListItem from '../../../components/Interfaces/ButtonListItem';
+
+import globalStyles from '../../../assets/styles/global';
 
 const validatiionSchema = Yup.object().shape({
-        card_number: Yup.string().required('Obrigatório!').max(16, 'Deve conter no máximo 16 caracteres!'),
-        exp_month: Yup.string().required('Obigatório!').min(2, 'Mês inválido!'),
-        exp_year: Yup.string().required('Obrigatório!').min(4, 'Ano inválido!'),
-        name: Yup.string().required('Obigatório!'),
-        cpf: Yup.string().required('Obigatório!')
-    });
+    card_number: Yup.string().required('Obrigatório!').max(16, 'Deve conter no máximo 16 caracteres!'),
+    exp_month: Yup.string().required('Obigatório!').min(2, 'Mês inválido!'),
+    exp_year: Yup.string().required('Obrigatório!').min(4, 'Ano inválido!'),
+    name: Yup.string().required('Obigatório!'),
+    cpf: Yup.string().required('Obigatório!')
+});
 
 export default function PaymentsCustomer() {
     const { customer, handleCustomer } = useContext(CustomerContext);
@@ -165,7 +168,7 @@ export default function PaymentsCustomer() {
                         validationSchema={validatiionSchema}
                     >
                         {({ handleChange, handleBlur, handleSubmit, values, errors, setFieldValue }) => (
-                            <View style={styles.containerItem}>
+                            <View style={globalStyles.containerItem}>
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
                                         <View style={styles.menuRow}>
@@ -310,27 +313,21 @@ export default function PaymentsCustomer() {
 
                 {
                     customer && customer.payment && customer.payment.map((payment, index) => {
-                        return <View key={index} style={styles.containerItem}>
-                            <View style={styles.fieldsRow}>
-                                <View style={styles.fieldsColumn}>
-                                    <View style={styles.menuRow}>
-                                        <View style={styles.colTitleButtonItem}>
-                                            <BorderlessButton onPress={() => { handleCustomerPayment(payment.id) }}>
-                                                <View style={{ flexDirection: 'row' }}>
-                                                    <View style={styles.colTitleButtonItem}>
-                                                        <Text style={{ color: '#8c8c8c' }}>{`****${payment.card_number.slice(payment.card_number.length - 4)} - ${payment.brand}`}</Text>
-                                                    </View>
-                                                    <View style={styles.colIconButtonItem}>
-                                                        <Feather name="chevron-right" size={24} color="#cc0000" />
-                                                    </View>
-                                                </View>
-                                            </BorderlessButton>
+                        return <ButtonListItem key={index} onPress={() => { handleCustomerPayment(payment.id) }}>
+                            <View style={globalStyles.row}>
+                                <View style={globalStyles.colTitleButtonItem}>
+                                    <View style={{ flexDirection: 'row' }}>
+                                        <View style={globalStyles.colTitleButtonItem}>
+                                            <Text style={{ color: '#8c8c8c' }}>{`****${payment.card_number.slice(payment.card_number.length - 4)} - ${payment.brand}`}</Text>
                                         </View>
-
+                                        <View style={globalStyles.colIconButtonItem}>
+                                            <Feather name="chevron-right" size={24} color="#cc0000" />
+                                        </View>
                                     </View>
                                 </View>
+
                             </View>
-                        </View>
+                        </ButtonListItem>
                     })
                 }
             </ScrollView>

@@ -5,7 +5,7 @@ import { BorderlessButton } from 'react-native-gesture-handler';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { format } from 'date-fns';
+import { format, add } from 'date-fns';
 import br from 'date-fns/locale/pt-BR';
 
 import api from '../../services/api';
@@ -431,9 +431,8 @@ export default function OrderDetails() {
                                         </View>
                                     </View>
                                     <View style={globalStyles.menuDescriptionColumn}>
-                                        <Text
-                                            style={globalStyles.textsDescriptionMenu}>
-                                            30 minutos
+                                        <Text style={globalStyles.textsDescriptionMenu}>
+                                            {`Entrega prevista: ${format(add(new Date(selectedOrder.ordered_at), { minutes: selectedOrder.delivery_estimated }), 'HH:mm')} (${selectedOrder.delivery_estimated} minutos).`}
                                         </Text>
                                     </View>
                                 </View>

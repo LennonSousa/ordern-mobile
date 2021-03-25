@@ -16,6 +16,7 @@ import Header from '../../components/PageHeader';
 import globalStyles, { colorPrimaryLight, colorHighLight } from '../../assets/styles/global';
 import emptyOrderList from '../../assets/images/orders-list.png';
 import orderListSignIn from '../../assets/images/orders-list-sign-in.png'
+import ButtonListItem from '../../components/Interfaces/ButtonListItem';
 
 export default function OrdersList() {
     const navigation = useNavigation();
@@ -87,32 +88,28 @@ export default function OrdersList() {
                     signed ? (
                         !refreshing ? (
                             orders && orders.length > 0 ? orders.map((order, index) => {
-                                return <View key={index} style={globalStyles.containerItem}>
-                                    <BorderlessButton onPress={() => { navigation.navigate('OrderDetails', { id: order.id }); }}>
-                                        <View style={globalStyles.fieldsRow}>
-                                            <View style={globalStyles.menuRow}>
-                                                <View style={{ flex: 1 }}>
-                                                    <View style={{ flexDirection: 'row', marginBottom: 5 }}>
-                                                        <View style={{ flex: 0.7 }}>
-                                                            <Text style={{ color: '#8c8c8c' }}>{`Nº ${order.tracker}`}</Text>
-                                                        </View>
-                                                        <View style={{ flex: 0.3 }}>
-                                                            <Text style={{ color: '#8c8c8c', textAlign: 'right' }}>{`R$ ${Number(order.total).toFixed(2).replace('.', ',')}`}</Text>
-                                                        </View>
-                                                    </View>
-                                                    <View style={{ flexDirection: 'row', marginTop: 5 }} >
-                                                        <View style={globalStyles.colTitleButtonItem}>
-                                                            <Text style={{ color: order.orderStatus.order === 4 ? colorHighLight : colorPrimaryLight }}>{`${order.orderStatus.title}`}</Text>
-                                                        </View>
-                                                        <View style={globalStyles.colTitleButtonItem}>
-                                                            <Text style={{ color: '#8c8c8c', textAlign: 'right' }}>{format(new Date(order.ordered_at), "dd/MM/yyyy' às 'HH:mm")}</Text>
-                                                        </View>
-                                                    </View>
+                                return <ButtonListItem key={index} onPress={() => { navigation.navigate('OrderDetails', { id: order.id }); }}>
+                                    <View style={globalStyles.row}>
+                                        <View style={{ flex: 1 }}>
+                                            <View style={{ flexDirection: 'row', marginBottom: 5 }}>
+                                                <View style={{ flex: 0.7 }}>
+                                                    <Text style={{ color: '#8c8c8c' }}>{`Nº ${order.tracker}`}</Text>
+                                                </View>
+                                                <View style={{ flex: 0.3 }}>
+                                                    <Text style={{ color: '#8c8c8c', textAlign: 'right' }}>{`R$ ${Number(order.total).toFixed(2).replace('.', ',')}`}</Text>
+                                                </View>
+                                            </View>
+                                            <View style={{ flexDirection: 'row', marginTop: 5 }} >
+                                                <View style={globalStyles.colTitleButtonItem}>
+                                                    <Text style={{ color: order.orderStatus.order === 4 ? colorHighLight : colorPrimaryLight }}>{`${order.orderStatus.title}`}</Text>
+                                                </View>
+                                                <View style={globalStyles.colTitleButtonItem}>
+                                                    <Text style={{ color: '#8c8c8c', textAlign: 'right' }}>{format(new Date(order.ordered_at), "dd/MM/yyyy' às 'HH:mm")}</Text>
                                                 </View>
                                             </View>
                                         </View>
-                                    </BorderlessButton>
-                                </View>
+                                    </View>
+                                </ButtonListItem>
                             }
                             ) : <View style={globalStyles.container}>
                                 <View style={[globalStyles.row, { marginVertical: 0, height: 250 }]}>

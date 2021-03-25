@@ -12,6 +12,7 @@ import { RestaurantDeliveryGroups } from '../../components/DeliveryGroups';
 
 import PageFooter from '../../components/PageFooter';
 import Buttons from '../../components/Interfaces/Buttons';
+import ButtonListItem from '../../components/Interfaces/ButtonListItem';
 import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingModal';
 
 import api from '../../services/api';
@@ -157,26 +158,22 @@ export default function Shipment() {
 
                 {
                     customer && customer.address && customer.address.map((address, index) => {
-                        return <View key={index} style={globalStyles.containerItem}>
-                            <BorderlessButton
-                                onPress={() => { setSelectedAddress(address) }}
-                            >
-                                <View style={globalStyles.row}>
-                                    <View style={globalStyles.colTitleButtonItem}>
-                                        <View style={{ flexDirection: 'row' }}>
-                                            <View style={globalStyles.colTitleButtonItem}>
-                                                <Text style={{ color: '#8c8c8c' }}>{`${address.street} - ${address.number}`}</Text>
-                                            </View>
-                                            <View style={globalStyles.colIconButtonItem}>
-                                                {
-                                                    selectedAddress && selectedAddress.id === address.id && <FontAwesome5 name="check" size={18} color={colorPrimaryLight} />
-                                                }
-                                            </View>
+                        return <ButtonListItem key={index} onPress={() => { setSelectedAddress(address) }}>
+                            <View style={globalStyles.row}>
+                                <View style={globalStyles.colTitleButtonItem}>
+                                    <View style={{ flexDirection: 'row' }}>
+                                        <View style={globalStyles.colTitleButtonItem}>
+                                            <Text style={{ color: '#8c8c8c' }}>{`${address.street} - ${address.number}`}</Text>
+                                        </View>
+                                        <View style={globalStyles.colIconButtonItem}>
+                                            {
+                                                selectedAddress && selectedAddress.id === address.id && <FontAwesome5 name="check" size={18} color={colorPrimaryLight} />
+                                            }
                                         </View>
                                     </View>
                                 </View>
-                            </BorderlessButton>
-                        </View>
+                            </View>
+                        </ButtonListItem>
                     })
                 }
 
@@ -205,32 +202,30 @@ export default function Shipment() {
 
                 {
                     restaurantDeliveryGroups && restaurantDeliveryGroups.map((deliveryGroup, index) => {
-                        return <View key={index} style={globalStyles.containerItem}>
-                            <BorderlessButton onPress={() => { handleDeliveryGroup(deliveryGroup) }}>
-                                <View style={globalStyles.menuRow}>
-                                    <View style={globalStyles.colTitleButtonItem}>
-                                        <View style={globalStyles.row}>
-                                            <View style={{ flex: 1 }}>
-                                                <Text style={{ color: '#8c8c8c' }}>{deliveryGroup.description}</Text>
-                                            </View>
-                                            <View style={{ flex: 0.4, alignItems: 'center' }}>
-                                                <Text style={{ color: colorPrimaryLight }}>{`R$ ${deliveryGroup.price.toString().replace('.', ',')}`}</Text>
-                                            </View>
-                                            <View style={{ flex: 0.1, alignItems: 'center' }}>
-                                                {
-                                                    selectedDeliveryGroup && selectedDeliveryGroup.id === deliveryGroup.id && <FontAwesome5 name="check" size={18} color={colorPrimaryLight} style={{ textAlign: 'center' }} />
-                                                }
-                                            </View>
+                        return <ButtonListItem key={index} onPress={() => { handleDeliveryGroup(deliveryGroup) }}>
+                            <View style={globalStyles.menuRow}>
+                                <View style={globalStyles.colTitleButtonItem}>
+                                    <View style={globalStyles.row}>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={{ color: '#8c8c8c' }}>{deliveryGroup.description}</Text>
                                         </View>
-                                        <View>
-                                            <View style={globalStyles.column}>
-                                                <Text style={globalStyles.textsDescriptionMenu}>{`${deliveryGroup.estimated} minutos`}</Text>
-                                            </View>
+                                        <View style={{ flex: 0.4, alignItems: 'center' }}>
+                                            <Text style={{ color: colorPrimaryLight }}>{`R$ ${deliveryGroup.price.toString().replace('.', ',')}`}</Text>
+                                        </View>
+                                        <View style={{ flex: 0.1, alignItems: 'center' }}>
+                                            {
+                                                selectedDeliveryGroup && selectedDeliveryGroup.id === deliveryGroup.id && <FontAwesome5 name="check" size={18} color={colorPrimaryLight} style={{ textAlign: 'center' }} />
+                                            }
+                                        </View>
+                                    </View>
+                                    <View>
+                                        <View style={globalStyles.column}>
+                                            <Text style={globalStyles.textsDescriptionMenu}>{`${deliveryGroup.estimated} minutos`}</Text>
                                         </View>
                                     </View>
                                 </View>
-                            </BorderlessButton>
-                        </View>
+                            </View>
+                        </ButtonListItem>
                     })
                 }
 
