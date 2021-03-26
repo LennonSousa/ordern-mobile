@@ -40,6 +40,9 @@ export default function Shipment() {
 
             setModalWaiting("hidden");
         })
+        .finally(() => {
+            setModalWaiting("hidden");
+        })
             .catch(err => {
                 console.log(err);
 
