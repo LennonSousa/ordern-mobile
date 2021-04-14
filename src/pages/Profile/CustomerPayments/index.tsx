@@ -1,6 +1,5 @@
 import React, { useContext, useState } from 'react';
 import { StyleSheet, View, Text, TouchableHighlight, ScrollView } from 'react-native';
-import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Feather } from '@expo/vector-icons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -18,6 +17,7 @@ import Input from '../../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
 import WaitingModal, { statusModal } from '../../../components/Interfaces/WaitingModal';
 import ButtonListItem from '../../../components/Interfaces/ButtonListItem';
+import Button from '../../../components/Interfaces/Button';
 
 import globalStyles from '../../../assets/styles/global';
 
@@ -37,6 +37,8 @@ export default function PaymentsCustomer() {
 
     const [containerNewPayment, setContainerNewPayment] = useState(false);
     const [buttonDeletePayment, setButtonDeletePayment] = useState(true);
+
+    const [fieldsFormTouched, setFieldsFormTouched] = useState(false);
 
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
     const [errorMessage, setErrorMessage] = useState('');
@@ -156,6 +158,7 @@ export default function PaymentsCustomer() {
 
                                     setContainerNewPayment(false);
                                     setSelectedCustomerPayment(null);
+                                    setFieldsFormTouched(false);
 
                                     setModalWaiting("hidden");
                                 }
@@ -167,7 +170,7 @@ export default function PaymentsCustomer() {
                         }}
                         validationSchema={validatiionSchema}
                     >
-                        {({ handleChange, handleBlur, handleSubmit, values, errors, setFieldValue }) => (
+                        {({ handleBlur, handleSubmit, values, errors, setFieldValue, isValid, touched }) => (
                             <View style={globalStyles.containerItem}>
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
@@ -187,16 +190,20 @@ export default function PaymentsCustomer() {
                                             placeholder='Somente números'
                                             textContentType='creditCardNumber'
                                             keyboardType='numeric'
-                                            onBlur={handleBlur('card_number')}
+                                            onBlur={() => {
+                                                handleBlur('card_number');
+                                                setFieldValue('brand', values.card_number.length >= 15 ? creditCardType(values.card_number).length !== 0 ? (creditCardType(values.card_number)[0].niceType) : '' : '');
+                                            }}
                                             onChangeText={e => {
-                                                setFieldValue('card_number', e);
-                                                setFieldValue('brand', values.card_number.length >= 15 ? creditCardType(values.card_number).length !== 0 ? (creditCardType(values.card_number)[0].niceType) : '' : '')
+                                                setFieldValue('card_number', e, false);
+                                                setFieldValue('brand', values.card_number.length >= 15 ? creditCardType(values.card_number).length !== 0 ? (creditCardType(values.card_number)[0].niceType) : '' : '');
+                                                setFieldsFormTouched(true);
                                             }}
                                             value={values.card_number}
                                         />
                                         <View style={styles.fieldsRow}>
                                             <View style={{ flex: 0.5 }}>
-                                                <InvalidFeedback message={errors.card_number}></InvalidFeedback>
+                                                <InvalidFeedback message={touched.card_number ? errors.card_number : ''}></InvalidFeedback>
                                             </View>
                                             <View style={{ flex: 0.5, alignItems: 'flex-end' }}>
                                                 <InvalidFeedback message={values.brand}></InvalidFeedback>
@@ -213,11 +220,11 @@ export default function PaymentsCustomer() {
                                             placeholder='xx'
                                             keyboardType='numeric'
                                             maxLength={2}
-                                            onChangeText={handleChange('exp_month')}
+                                            onChangeText={(e) => { setFieldValue('exp_month', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('exp_month')}
                                             value={values.exp_month}
                                         />
-                                        <InvalidFeedback message={errors.exp_month}></InvalidFeedback>
+                                        <InvalidFeedback message={touched.exp_month ? errors.exp_month : ''}></InvalidFeedback>
                                     </View>
                                     <View style={{ flex: 0.3, marginHorizontal: 10 }}>
                                         <Input
@@ -226,11 +233,11 @@ export default function PaymentsCustomer() {
                                             placeholder='xxxx'
                                             keyboardType='numeric'
                                             maxLength={4}
-                                            onChangeText={handleChange('exp_year')}
+                                            onChangeText={(e) => { setFieldValue('exp_year', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('exp_year')}
                                             value={values.exp_year}
                                         />
-                                        <InvalidFeedback message={errors.exp_year}></InvalidFeedback>
+                                        <InvalidFeedback message={touched.exp_year ? errors.exp_year : ''}></InvalidFeedback>
                                     </View>
                                 </View>
 
@@ -241,11 +248,11 @@ export default function PaymentsCustomer() {
                                             title='Nome'
                                             textContentType='name'
                                             keyboardType='default'
-                                            onChangeText={handleChange('name')}
+                                            onChangeText={(e) => { setFieldValue('name', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('name')}
                                             value={values.name}
                                         />
-                                        <InvalidFeedback message={errors.name}></InvalidFeedback>
+                                        {touched.name && <InvalidFeedback message={errors.name}></InvalidFeedback>}
                                     </View>
                                 </View>
 
@@ -255,11 +262,11 @@ export default function PaymentsCustomer() {
                                             style={styles.fieldsLogIn}
                                             title='CPF'
                                             keyboardType='numeric'
-                                            onChangeText={handleChange('cpf')}
+                                            onChangeText={(e) => { setFieldValue('cpf', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('cpf')}
                                             value={values.cpf}
                                         />
-                                        <InvalidFeedback message={errors.cpf}></InvalidFeedback>
+                                        {touched.cpf && <InvalidFeedback message={errors.cpf}></InvalidFeedback>}
                                     </View>
                                 </View>
 
@@ -267,41 +274,39 @@ export default function PaymentsCustomer() {
                                     <View style={styles.fieldsColumn}>
                                         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                             <View style={{ width: '30%' }}>
-                                                <TouchableOpacity style={styles.buttonAction} onPress={handleSubmit as any}>
+                                                <Button disabled={fieldsFormTouched && isValid ? false : true} onPress={handleSubmit as any} >
                                                     <View style={{ alignItems: 'center' }}>
                                                         <Feather name="check" size={24} color="#ffffff" />
                                                     </View>
-                                                </TouchableOpacity>
+                                                </Button>
                                             </View>
 
                                             <View style={{ width: '30%' }}>
                                                 {
-                                                    selectedCustomerPayment && buttonDeletePayment ? <TouchableOpacity style={styles.buttonAction} onPress={() => { setButtonDeletePayment(false) }}>
+                                                    selectedCustomerPayment && buttonDeletePayment ? <Button onPress={() => { setButtonDeletePayment(false) }} >
                                                         <View style={{ alignItems: 'center' }}>
                                                             <Feather name="trash-2" size={24} color="#ffffff" />
                                                         </View>
-                                                    </TouchableOpacity> :
-                                                        selectedCustomerPayment && <TouchableOpacity
-                                                            style={styles.buttonConfirm}
-                                                            onPress={() => { selectedCustomerPayment && handleDeletePayment(selectedCustomerPayment.id) }}
-                                                        >
-                                                            <View style={{ alignItems: 'center' }}>
-                                                                <Feather name="info" size={24} color="#ffffff" />
-                                                            </View>
-                                                        </TouchableOpacity>
+                                                    </Button> : selectedCustomerPayment && <Button
+                                                        style={globalStyles.buttonConfirm}
+                                                        onPress={() => { selectedCustomerPayment && handleDeletePayment(selectedCustomerPayment.id) }}
+                                                    >
+                                                        <View style={{ alignItems: 'center' }}>
+                                                            <Feather name="info" size={24} color="#ffffff" />
+                                                        </View>
+                                                    </Button>
                                                 }
                                             </View>
 
                                             <View style={{ width: '30%' }}>
-                                                <TouchableOpacity style={styles.buttonAction} onPress={() => {
+                                                <Button onPress={() => {
                                                     setContainerNewPayment(false);
                                                     setSelectedCustomerPayment(null);
-                                                }}
-                                                >
+                                                }} >
                                                     <View style={{ alignItems: 'center' }}>
                                                         <Feather name="x" size={24} color="#ffffff" />
                                                     </View>
-                                                </TouchableOpacity>
+                                                </Button>
                                             </View>
                                         </View>
                                     </View>

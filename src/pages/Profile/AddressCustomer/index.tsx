@@ -14,6 +14,7 @@ import Input from '../../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
 import WaitingModal, { statusModal } from '../../../components/Interfaces/WaitingModal';
 import ButtonListItem from '../../../components/Interfaces/ButtonListItem';
+import Button from '../../../components/Interfaces/Button';
 
 import globalStyles from '../../../assets/styles/global';
 
@@ -28,6 +29,8 @@ export default function AddressCustomer() {
 
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
     const [errorMessage, setErrorMessage] = useState('');
+
+    const [fieldsFormTouched, setFieldsFormTouched] = useState(false);
 
     const validatiionSchema = Yup.object().shape({
         zip_code: Yup.string().required('Obrigatório!').max(8, 'Deve conter no máximo 8 caracteres!'),
@@ -160,6 +163,8 @@ export default function AddressCustomer() {
                                     setContainerNewAddress(false);
                                     setSelectedCustomerAddress(null);
 
+                                    setFieldsFormTouched(false);
+
                                     setModalWaiting("hidden");
                                 }
                                 catch {
@@ -170,7 +175,7 @@ export default function AddressCustomer() {
                         }}
                         validationSchema={validatiionSchema}
                     >
-                        {({ handleChange, handleBlur, handleSubmit, values, errors, setFieldValue }) => (
+                        {({ handleChange, handleBlur, handleSubmit, values, errors, setFieldValue, isValid, touched }) => (
                             <View style={globalStyles.containerItem}>
                                 <View style={globalStyles.fieldsRow}>
                                     <View style={globalStyles.fieldsColumn}>
@@ -196,6 +201,8 @@ export default function AddressCustomer() {
 
                                                 if (e.length === 8) {
                                                     if (e !== '') {
+                                                        setModalWaiting("waiting");
+
                                                         cep(e)
                                                             .then(cep => {
                                                                 const { street, neighborhood, city, state } = cep;
@@ -204,15 +211,21 @@ export default function AddressCustomer() {
                                                                 setFieldValue('group', neighborhood, false);
                                                                 setFieldValue('city', city, false);
                                                                 setFieldValue('country', state, false);
+
+                                                                setModalWaiting("hidden");
                                                             })
                                                             .catch(() => {
+                                                                setErrorMessage("CEP incorreto!");
+                                                                setModalWaiting("error");
                                                             });
                                                     }
                                                 }
+
+                                                setFieldsFormTouched(true);
                                             }}
                                             value={values.zip_code}
                                         />
-                                        <InvalidFeedback message={errors.zip_code}></InvalidFeedback>
+                                        {touched.zip_code && <InvalidFeedback message={errors.zip_code}></InvalidFeedback>}
                                     </View>
                                 </View>
 
@@ -223,11 +236,11 @@ export default function AddressCustomer() {
                                             title='Rua'
                                             textContentType='streetAddressLine1'
                                             keyboardType='default'
-                                            onChangeText={handleChange('street')}
+                                            onChangeText={(e) => { setFieldValue('street', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('street')}
                                             value={values.street}
                                         />
-                                        <InvalidFeedback message={errors.street}></InvalidFeedback>
+                                        {touched.street && <InvalidFeedback message={errors.street}></InvalidFeedback>}
                                     </View>
                                 </View>
 
@@ -236,11 +249,11 @@ export default function AddressCustomer() {
                                         <Input
                                             style={globalStyles.fieldsLogIn}
                                             title='Número'
-                                            onChangeText={handleChange('number')}
+                                            onChangeText={(e) => { setFieldValue('number', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('number')}
                                             value={values.number}
                                         />
-                                        <InvalidFeedback message={errors.number}></InvalidFeedback>
+                                        {touched.number && <InvalidFeedback message={errors.number}></InvalidFeedback>}
                                     </View>
                                 </View>
 
@@ -250,11 +263,11 @@ export default function AddressCustomer() {
                                             style={globalStyles.fieldsLogIn}
                                             title='Bairro'
                                             textContentType='sublocality'
-                                            onChangeText={handleChange('group')}
+                                            onChangeText={(e) => { setFieldValue('group', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('group')}
                                             value={values.group}
                                         />
-                                        <InvalidFeedback message={errors.group}></InvalidFeedback>
+                                        {touched.group && <InvalidFeedback message={errors.group}></InvalidFeedback>}
                                     </View>
                                 </View>
 
@@ -265,11 +278,11 @@ export default function AddressCustomer() {
                                             title='Complemento'
                                             placeholder='Opcional'
                                             textContentType='streetAddressLine2'
-                                            onChangeText={handleChange('complement')}
+                                            onChangeText={(e) => { setFieldValue('complement', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('complement')}
                                             value={values.complement}
                                         />
-                                        <InvalidFeedback message={errors.complement}></InvalidFeedback>
+                                        {touched.complement && <InvalidFeedback message={errors.complement}></InvalidFeedback>}
                                     </View>
                                 </View>
 
@@ -279,11 +292,11 @@ export default function AddressCustomer() {
                                             style={globalStyles.fieldsLogIn}
                                             title='Cidade'
                                             textContentType='addressCity'
-                                            onChangeText={handleChange('city')}
+                                            onChangeText={(e) => { setFieldValue('city', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('city')}
                                             value={values.city}
                                         />
-                                        <InvalidFeedback message={errors.city}></InvalidFeedback>
+                                        {touched.city && <InvalidFeedback message={errors.city}></InvalidFeedback>}
                                     </View>
                                 </View>
 
@@ -293,11 +306,11 @@ export default function AddressCustomer() {
                                             style={globalStyles.fieldsLogIn}
                                             title='Estado'
                                             textContentType='addressState'
-                                            onChangeText={handleChange('country')}
+                                            onChangeText={(e) => { setFieldValue('country', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('country')}
                                             value={values.country}
                                         />
-                                        <InvalidFeedback message={errors.country}></InvalidFeedback>
+                                        {touched.country && <InvalidFeedback message={errors.country}></InvalidFeedback>}
                                     </View>
                                 </View>
 
@@ -345,33 +358,33 @@ export default function AddressCustomer() {
                                     <View style={globalStyles.fieldsColumn}>
                                         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                             <View style={{ width: '30%' }}>
-                                                <TouchableOpacity style={styles.buttonAction} onPress={handleSubmit as any}>
+                                                <Button disabled={fieldsFormTouched && isValid ? false : true} onPress={handleSubmit as any} >
                                                     <View style={{ alignItems: 'center' }}>
                                                         <Feather name="check" size={24} color="#ffffff" />
                                                     </View>
-                                                </TouchableOpacity>
+                                                </Button>
                                             </View>
 
                                             <View style={{ width: '30%' }}>
                                                 {
-                                                    selectedCustomerAddress && buttonDeleteAddress ? <TouchableOpacity style={styles.buttonAction} onPress={() => { setButtonDeleteAddress(false) }}>
+                                                    selectedCustomerAddress && buttonDeleteAddress ? <Button onPress={() => { setButtonDeleteAddress(false) }} >
                                                         <View style={{ alignItems: 'center' }}>
                                                             <Feather name="trash-2" size={24} color="#ffffff" />
                                                         </View>
-                                                    </TouchableOpacity> :
-                                                        selectedCustomerAddress && <TouchableOpacity
-                                                            style={styles.buttonConfirm}
+                                                    </Button> :
+                                                        selectedCustomerAddress && <Button
+                                                            style={globalStyles.buttonConfirm}
                                                             onPress={() => { selectedCustomerAddress && handleDeleteAddress(selectedCustomerAddress.id) }}
                                                         >
                                                             <View style={{ alignItems: 'center' }}>
                                                                 <Feather name="info" size={24} color="#ffffff" />
                                                             </View>
-                                                        </TouchableOpacity>
+                                                        </Button>
                                                 }
                                             </View>
 
                                             <View style={{ width: '30%' }}>
-                                                <TouchableOpacity style={styles.buttonAction} onPress={() => {
+                                                <Button onPress={() => {
                                                     setContainerNewAddress(false);
                                                     setSelectedCustomerAddress(null);
                                                 }}
@@ -379,7 +392,7 @@ export default function AddressCustomer() {
                                                     <View style={{ alignItems: 'center' }}>
                                                         <Feather name="x" size={24} color="#ffffff" />
                                                     </View>
-                                                </TouchableOpacity>
+                                                </Button>
                                             </View>
                                         </View>
                                     </View>

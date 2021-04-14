@@ -11,7 +11,7 @@ import { CustomerAddress } from '../../components/CustomerAddress';
 import { RestaurantDeliveryGroups } from '../../components/DeliveryGroups';
 
 import PageFooter from '../../components/PageFooter';
-import Buttons from '../../components/Interfaces/Buttons';
+import Buttons from '../../components/Interfaces/Button';
 import ButtonListItem from '../../components/Interfaces/ButtonListItem';
 import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingModal';
 

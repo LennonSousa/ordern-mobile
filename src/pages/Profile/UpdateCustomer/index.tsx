@@ -12,7 +12,7 @@ import api from '../../../services/api';
 
 import { CustomerContext } from '../../../context/customerContext';
 import Input from '../../../components/Interfaces/Inputs';
-import Buttons from '../../../components/Interfaces/Buttons';
+import Button from '../../../components/Interfaces/Button';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
 import WaitingModal, { statusModal } from '../../../components/Interfaces/WaitingModal';
 
@@ -220,7 +220,7 @@ export default function CustomerUpdate() {
                             </View>
 
                             <View>
-                                <Buttons disabled={fieldsFormTouched && isValid ? false : true} title="Atualizar" onPress={handleSubmit as any} />
+                                <Button disabled={fieldsFormTouched && isValid ? false : true} title="Atualizar" onPress={handleSubmit as any} />
                             </View>
                         </>
                     )}

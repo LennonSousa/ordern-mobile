@@ -35,7 +35,7 @@ import ProductDetailsShimmer from '../../components/Shimmers/ProductDetails';
 import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingModal';
 import { OrderItem } from '../../components/OrderItems';
 import PageFooter from '../../components/PageFooter';
-import Buttons from '../../components/Interfaces/Buttons';
+import Buttons from '../../components/Interfaces/Button';
 
 import globalStyles, {
     colorHighLight,

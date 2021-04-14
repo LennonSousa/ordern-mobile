@@ -12,7 +12,7 @@ import Header from '../../components/PageHeader';
 import Input from '../../components/Interfaces/Inputs';
 import PasswordInput from '../../components/Interfaces/PasswordInput';
 import InvalidFeedback from '../../components/Interfaces/InvalidFeedback';
-import Buttons from '../../components/Interfaces/Buttons';
+import Button from '../../components/Interfaces/Button';
 import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingModal';
 
 import globalStyles, { colorPrimaryDark } from '../../assets/styles/global';
@@ -27,6 +27,8 @@ export default function Profile() {
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
     const [errorMessage, setErrorMessage] = useState('');
     const [modalConfirmLogout, setModalConfirmLogoug] = useState(false);
+
+    const [fieldsFormTouched, setFieldsFormTouched] = useState(false);
 
     const toggleModalConfirmLogout = () => setModalConfirmLogoug(!modalConfirmLogout);
 
@@ -211,9 +213,12 @@ export default function Profile() {
                                     if (!res) {
                                         setModalWaiting("error");
                                         setErrorMessage("E-mail ou senha incorretos!");
+
+                                        return;
                                     }
-                                    else
-                                        setModalWaiting("hidden");
+
+                                    setFieldsFormTouched(false);
+                                    setModalWaiting("hidden");
 
                                 }
                                 catch {
@@ -225,7 +230,7 @@ export default function Profile() {
                         }}
                         validationSchema={validatiionSchema}
                     >
-                        {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
+                        {({ handleBlur, handleSubmit, values, setFieldValue, errors, isValid, touched }) => (
                             <ScrollView style={styles.containerLogIn}>
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
@@ -241,12 +246,13 @@ export default function Profile() {
                                             textContentType='emailAddress'
                                             autoCapitalize='none'
                                             keyboardType='email-address'
-                                            returnKeyType='go'
-                                            onChangeText={handleChange('email')}
+                                            returnKeyType='next'
+                                            onChangeText={(e) => { setFieldValue('email', e, true); setFieldsFormTouched(true); }
+                                            }
                                             onBlur={handleBlur('email')}
                                             value={values.email}
                                         />
-                                        <InvalidFeedback message={errors.email}></InvalidFeedback>
+                                        {touched.email && <InvalidFeedback message={errors.email}></InvalidFeedback>}
                                     </View>
                                 </View>
 
@@ -255,17 +261,17 @@ export default function Profile() {
                                         <PasswordInput
                                             style={styles.fieldsLogIn}
                                             title='Senha'
-                                            onChangeText={handleChange('password')}
+                                            onChangeText={(e) => { setFieldValue('password', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('password')}
                                             value={values.password}
                                         />
-                                        <InvalidFeedback message={errors.password}></InvalidFeedback>
+                                        {touched.password && <InvalidFeedback message={errors.password}></InvalidFeedback>}
                                     </View>
                                 </View>
 
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
-                                        <Buttons title="Entrar" onPress={handleSubmit as any} />
+                                        <Button disabled={fieldsFormTouched && isValid ? false : true} title="Entrar" onPress={handleSubmit as any} />
                                     </View>
                                 </View>
 

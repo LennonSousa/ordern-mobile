@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { StyleSheet, View, Text, TouchableHighlight, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, ScrollView } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { Formik } from 'formik';
@@ -12,6 +12,7 @@ import { Customer } from '../../../components/Customer';
 import Input from '../../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
 import WaitingModal, { statusModal } from '../../../components/Interfaces/WaitingModal';
+import Button from '../../../components/Interfaces/Button';
 
 interface NewCustomerRouteParams {
     email: string;
@@ -92,8 +93,9 @@ export default function NewClient() {
 
                 }}
                 validationSchema={validatiionSchema}
+                validateOnChange={false}
             >
-                {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
+                {({ handleChange, handleBlur, handleSubmit, values, errors, isValid, touched }) => (
                     <ScrollView style={styles.containerMenu}>
                         <View style={styles.fieldsRow}>
                             <View style={styles.fieldsColumn}>
@@ -121,14 +123,12 @@ export default function NewClient() {
                                     onBlur={handleBlur('password')}
                                     value={values.password}
                                 />
-                                <InvalidFeedback message={errors.password}></InvalidFeedback>
+                                {touched.password && <InvalidFeedback message={errors.password}></InvalidFeedback>}
                             </View>
                         </View>
 
                         <View>
-                            <TouchableHighlight underlayColor='#cc0000' style={styles.buttonLogIn} onPress={handleSubmit as any}>
-                                <Text style={styles.footerButtonText}>Salvar</Text>
-                            </TouchableHighlight>
+                            <Button title="Salvar" disabled={touched.password && isValid ? false : true} onPress={handleSubmit as any} />
                         </View>
                     </ScrollView>
                 )}

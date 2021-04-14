@@ -10,6 +10,7 @@ import api from '../../../services/api';
 import Input from '../../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
 import WaitingModal, { statusModal } from '../../../components/Interfaces/WaitingModal';
+import Button from '../../../components/Interfaces/Button';
 
 export default function CustomerReset() {
     const navigation = useNavigation();
@@ -140,8 +141,9 @@ export default function CustomerReset() {
                             }
                         }}
                         validationSchema={validatiionSchema01}
+                        validateOnChange={false}
                     >
-                        {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
+                        {({ handleChange, handleBlur, handleSubmit, values, errors, isValid, touched }) => (
                             <ScrollView style={styles.containerLogIn}>
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
@@ -152,18 +154,16 @@ export default function CustomerReset() {
                                             autoCapitalize='none'
                                             keyboardType='email-address'
                                             onChangeText={handleChange('email')}
-                                            onBlur={() => { handleBlur('email') }}
+                                            onBlur={handleBlur('email')}
                                             value={values.email}
                                         />
-                                        <InvalidFeedback message={errors.email}></InvalidFeedback>
+                                        {touched.email && <InvalidFeedback message={errors.email}></InvalidFeedback>}
                                     </View>
                                 </View>
 
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
-                                        <TouchableHighlight underlayColor='#cc0000' style={styles.buttonLogIn} onPress={handleSubmit as any} >
-                                            <Text style={styles.buttonTextLogIn}>Avançar</Text>
-                                        </TouchableHighlight>
+                                        <Button title="Avançar" disabled={touched.email && isValid ? false : true} onPress={handleSubmit as any} />
                                     </View>
                                 </View>
                             </ScrollView>

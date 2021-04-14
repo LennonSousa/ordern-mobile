@@ -11,6 +11,7 @@ import api from '../../../services/api';
 import Input from '../../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
 import WaitingModal, { statusModal } from '../../../components/Interfaces/WaitingModal';
+import Button from '../../../components/Interfaces/Button';
 
 import globalStyles from '../../../assets/styles/global';
 
@@ -23,6 +24,8 @@ export default function NewClient() {
 
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
     const [errorMessage, setErrorMessage] = useState('');
+
+    const [fieldsFormTouched, setFieldsFormTouched] = useState(false);
 
     const validatiionSchema01 = Yup.object().shape({
         email: Yup.string().email('E-mail inválido!').required('Você precisa preencher o seu e-mail!'),
@@ -137,6 +140,7 @@ export default function NewClient() {
                                         setEmailState(values.email);
                                         setEmailSended(true);
 
+                                        setFieldsFormTouched(false);
                                         setModalWaiting("hidden");
                                     }
                                 }
@@ -148,7 +152,7 @@ export default function NewClient() {
                         }}
                         validationSchema={validatiionSchema01}
                     >
-                        {({ handleChange, handleBlur, handleSubmit, values, setFieldValue, errors }) => (
+                        {({ handleBlur, handleSubmit, values, setFieldValue, errors, isValid, touched }) => (
                             <ScrollView style={styles.containerLogIn}>
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
@@ -158,11 +162,11 @@ export default function NewClient() {
                                             textContentType='emailAddress'
                                             autoCapitalize='none'
                                             keyboardType='email-address'
-                                            onChangeText={handleChange('email')}
-                                            onBlur={() => { handleBlur('email') }}
+                                            onChangeText={(e) => { setFieldValue('email', e, false); setFieldsFormTouched(true); }}
+                                            onBlur={handleBlur('email')}
                                             value={values.email}
                                         />
-                                        <InvalidFeedback message={errors.email}></InvalidFeedback>
+                                        {touched.email && <InvalidFeedback message={errors.email}></InvalidFeedback>}
                                     </View>
                                 </View>
 
@@ -175,7 +179,7 @@ export default function NewClient() {
                                                 trackColor={{ false: "#767577", true: "#cc0000" }}
                                                 thumbColor="#f4f3f4"
                                                 ios_backgroundColor="#3e3e3e"
-                                                onValueChange={() => { setFieldValue('termsAccepted', !values.termsAccepted) }}
+                                                onValueChange={() => { setFieldValue('termsAccepted', !values.termsAccepted); setFieldsFormTouched(true); }}
                                                 value={values.termsAccepted}
                                             />
                                         </View>
@@ -187,9 +191,7 @@ export default function NewClient() {
 
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
-                                        <TouchableHighlight underlayColor='#cc0000' style={styles.buttonLogIn} onPress={handleSubmit as any} >
-                                            <Text style={styles.buttonTextLogIn}>Avançar</Text>
-                                        </TouchableHighlight>
+                                        <Button title="Avançar" disabled={fieldsFormTouched && isValid ? false : true} onPress={handleSubmit as any} />
                                     </View>
                                 </View>
 
