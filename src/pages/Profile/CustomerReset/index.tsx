@@ -40,7 +40,7 @@ export default function CustomerReset() {
                                 setModalWaiting("waiting");
 
                                 try {
-                                    const res = await api.put('customer/reset', { email: emailState, token: values.token },
+                                    const res = await api.put('customers/reset', { email: emailState, token: values.token },
                                         {
                                             validateStatus: function (status) {
                                                 return status < 500; // Resolve only if the status code is less than 500
@@ -120,7 +120,7 @@ export default function CustomerReset() {
                                 try {
                                     setModalWaiting("waiting");
 
-                                    const res = await api.post('customer/reset', { email: values.email });
+                                    const res = await api.post('customers/reset', { email: values.email });
 
                                     if (res.status === 204) {
                                         setModalWaiting("error");

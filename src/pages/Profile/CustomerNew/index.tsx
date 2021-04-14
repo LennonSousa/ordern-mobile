@@ -44,7 +44,7 @@ export default function NewClient() {
                                 setModalWaiting("waiting");
 
                                 try {
-                                    const res = await api.put('customer/new', { email: emailState, token: values.token },
+                                    const res = await api.put('customers/new', { email: emailState, token: values.token },
                                         {
                                             validateStatus: function (status) {
                                                 return status < 500; // Resolve only if the status code is less than 500
@@ -127,7 +127,7 @@ export default function NewClient() {
                             if (values.email !== '' && values.termsAccepted) {
                                 try {
                                     setModalWaiting("waiting");
-                                    const res = await api.post('customer/new', { email: values.email });
+                                    const res = await api.post('customers/new', { email: values.email });
 
                                     if (res.status === 200) {
                                         setModalWaiting("error");

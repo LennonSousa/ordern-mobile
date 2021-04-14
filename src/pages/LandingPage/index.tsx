@@ -82,7 +82,7 @@ export default function LandingPage() {
     // };
 
     useEffect(() => {
-        api.get('restaurants')
+        api.get('stores')
             .then(res => {
                 handleRestaurant(res.data[0]);
 
@@ -119,7 +119,7 @@ export default function LandingPage() {
 
     useEffect(() => {
         if (refreshing) {
-            api.get('restaurants')
+            api.get('stores')
                 .then(res => {
                     handleRestaurant(res.data[0]);
 

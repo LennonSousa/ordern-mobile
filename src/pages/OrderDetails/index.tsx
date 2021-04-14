@@ -582,12 +582,16 @@ export default function OrderDetails() {
                                     const statusToSave = orderStatus.find(item => { return item.order === 5 });
 
                                     if (statusToSave) {
-                                        await api.put(`orders/${selectedOrder.id}`,
+                                        await api.put(`customer/orders/${selectedOrder.id}`,
                                             {
                                                 client: selectedOrder.client,
                                                 reason_cancellation: `${values.reasonCancellation} (Cancelado pelo cliente).`,
                                                 orderStatus: statusToSave.id,
                                             });
+
+                                        const orders = await api.get(`customer/orders/${customer.id}`);
+
+                                        handleOrders(orders.data);
                                     }
 
                                     setModalWaiting("hidden");

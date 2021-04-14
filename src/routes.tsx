@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -8,6 +9,7 @@ import { Feather } from '@expo/vector-icons';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
+import { OrdersContext } from './context/ordersContext';
 import { ContextOrdering } from './context/orderingContext';
 
 import Header from './components/PageHeader';
@@ -34,10 +36,13 @@ import PaymentsCustomer from './pages/Profile/CustomerPayments';
 import OrderDetails from './pages/OrderDetails';
 import PrivacyTerms from './pages/PricacyTerms';
 import About from './pages/About';
-import { StatusBar } from 'react-native';
+
 
 function HomeTabs() {
+    const { orders } = useContext(OrdersContext);
     const { order } = useContext(ContextOrdering);
+
+    const [amountNotDoneOrders, setAmountNotDoneOrders] = useState(0);
     const [amountOrderItems, setAmountOrderItems] = useState(0);
 
     useEffect(() => {
@@ -49,7 +54,17 @@ function HomeTabs() {
 
             setAmountOrderItems(totalAmount);
         }
-    }, [order]);
+
+        if (orders) {
+            let totalAmount = 0;
+            orders.forEach(order => {
+                if (order.orderStatus.order !== 4 && order.orderStatus.order !== 5)
+                    totalAmount = totalAmount + 1;
+            });
+
+            setAmountNotDoneOrders(totalAmount);
+        }
+    }, [orders, order]);
 
     return (
         <Tab.Navigator tabBarOptions={{ activeTintColor: '#fe3807', keyboardHidesTabBar: true }}>
@@ -83,7 +98,8 @@ function HomeTabs() {
                     tabBarLabel: 'Pedidos',
                     tabBarIcon: ({ color, size }) => (
                         <Feather name="file-text" size={size} color={color} />
-                    )
+                    ),
+                    tabBarBadge: orders && amountNotDoneOrders !== 0 ? amountNotDoneOrders : undefined,
                 }}
             />
 

@@ -332,7 +332,7 @@ export default function ProductDetails() {
                         cupom: '',
                         delivery_tax: 0,
                         delivery_type: '',
-                        delivery_estimated: '',
+                        delivery_estimated: 0,
                         discount: 0,
                         fee: 0,
                         total: 0,

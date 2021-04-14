@@ -12,7 +12,7 @@ import api from '../../../services/api';
 import { AuthContext } from '../../../context/authContext';
 import Input from '../../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
-
+import WaitingModal, { statusModal } from '../../../components/Interfaces/WaitingModal';
 
 interface NewCustomerRouteParams {
     email: string;
@@ -30,6 +30,8 @@ export default function NewClient() {
     const [email, setEmail] = useState('');
     const [token, setToken] = useState('');
     const [birth, setBirth] = useState(new Date());
+
+    const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
 
     useEffect(() => {
         if (params.email && params.token) {
@@ -55,6 +57,8 @@ export default function NewClient() {
                     password: ''
                 }}
                 onSubmit={async values => {
+                    setModalWaiting("waiting");
+
                     try {
                         const res = await api.post('customer', {
                             "name": values.name,
@@ -67,19 +71,24 @@ export default function NewClient() {
                             "paused": false,
                         }, { headers: { 'Authorization': `Bearer ${token}` } });
 
-                        if (res.status === 201) {
-                            handleLogin(email, values.password)
-                                .then(res => {
-                                    res && navigation.navigate('Profile');
-                                })
-                                .catch(err => {
-                                    console.log('error profile');
-                                    console.log(err);
-                                });
+                        if (res.status !== 201) {
+                            setModalWaiting("error");
+                            return;
                         }
+
+                        handleLogin(email, values.password)
+                            .then(res => {
+                                setModalWaiting("hidden");
+                                res && navigation.navigate('Profile');
+                            })
+                            .catch(err => {
+                                setModalWaiting("error");
+                                console.log('error profile');
+                                console.log(err);
+                            });
                     }
                     catch {
-
+                        setModalWaiting("error");
                     }
 
                 }}
@@ -200,6 +209,14 @@ export default function NewClient() {
                     </ScrollView>
                 )}
             </Formik>
+
+            <View style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+            }}>
+                <WaitingModal message="Algo deu errado com a sua solicitação." status={modalWaiting} />
+            </View>
         </View>
     )
 }

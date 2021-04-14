@@ -47,7 +47,7 @@ export default function PickupShipment() {
                     address: 'Retirar no local.',
                     delivery_tax: 0,
                     delivery_type: 'pickup',
-                    delivery_estimated: '30',
+                    delivery_estimated: 30,
                 }
             );
 

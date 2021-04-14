@@ -77,7 +77,7 @@ export default function Payment() {
                 console.log("Error get payments delivery.");
             });
 
-            api.get('payments/stripe').then(res => {
+            api.get('customer/payments/stripe').then(res => {
                 if (res.status === 200)
                     setPaymentStripe(res.data);
             }).catch(() => {
@@ -116,7 +116,7 @@ export default function Payment() {
                     const orderTotal = order.total.toFixed(2).replace('.', '').replace(',', '');
 
                     if (creditCardToken.status === 200) {
-                        const paymentResponse = await api.post('payments/dopayments', {
+                        const paymentResponse = await api.post('customer/payments/dopayments', {
                             "amount": orderTotal,
                             "tokenId": creditCardToken.data.id,
                             "description": `Pedido: ${order.tracker}`,
@@ -145,7 +145,7 @@ export default function Payment() {
                                 };
                             });
 
-                            const res = await api.post('orders', {
+                            const res = await api.post('customer/orders', {
                                 tracker: order.tracker,
                                 client_id: customer.id,
                                 client: customer.name,
@@ -641,7 +641,7 @@ export default function Payment() {
                                         };
                                     });
 
-                                    const res = await api.post('orders', {
+                                    const res = await api.post('customer/orders', {
                                         tracker: order.tracker,
                                         client_id: customer.id,
                                         client: customer.name,

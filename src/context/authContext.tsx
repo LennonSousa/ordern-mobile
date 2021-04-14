@@ -70,7 +70,7 @@ const AuthProvider: React.FC = ({ children }) => {
         //console.log('Login...');
 
         try {
-            const res = await api.post('customer/authenticate', {
+            const res = await api.post('customers/authenticate', {
                 email: emailLogin,
                 password
             });
@@ -125,8 +125,10 @@ const AuthProvider: React.FC = ({ children }) => {
         }
 
         await AsyncStorage.clear();
-        
+
         setSigned(false);
+        handleCustomer(null);
+        
         api.defaults.headers.Authorization = undefined;
     }
 

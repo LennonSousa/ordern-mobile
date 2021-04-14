@@ -28,7 +28,7 @@ export default function OrdersList() {
     const [refreshing, setRefreshing] = React.useState(true);
 
     useEffect(() => {
-        if (customer && orders?.length === 0) {
+        if (signed && customer) {
             api.get(`customer/orders/${customer.id}`).then(res => {
                 setRefreshing(false);
 
@@ -43,23 +43,21 @@ export default function OrdersList() {
         else
             setRefreshing(false);
 
-    }, [customer, orders]);
+    }, [signed, customer]);
 
     const onRefresh = React.useCallback(() => {
         setRefreshing(true);
 
-        if (customer) {
+        if (signed && customer) {
             api.get(`customer/orders/${customer.id}`).then(res => {
-                setRefreshing(false);
 
                 handleOrders(res.data);
-            })
-                .catch(() => {
-                    setRefreshing(false);
-
-                    console.log('Orders list failed');
-                });
+            }).catch(() => {
+                console.log('Orders list failed');
+            });
         }
+
+        setRefreshing(false);
     }, []);
 
     return (

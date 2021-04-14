@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'https://api.casadecarnesisrael.com.br',
+    baseURL: 'http://192.168.0.143:3333/',
 });
 
 // Add a response interceptor
@@ -14,14 +14,7 @@ api.interceptors.response.use(function (response) {
     // Do something with response error
     console.log('api interceptou error response');
 
-    console.log(error.response.status);
-    console.log(error.response);
-
-    console.log('verificando status');
-
-    if (error.response.status === 401) {
-        console.log('verificando status 401 encontrado!');
-    }
+    console.log(error);
 
     return Promise.reject(error);
 });

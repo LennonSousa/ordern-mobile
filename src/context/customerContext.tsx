@@ -4,7 +4,7 @@ import { Customer } from '../components/Customer';
 
 interface CustomerContextData {
     customer: Customer | null;
-    handleCustomer(customer: Customer): void;
+    handleCustomer(customer: Customer | null): void;
 }
 
 const CustomerContext = createContext<CustomerContextData>({} as CustomerContextData);
