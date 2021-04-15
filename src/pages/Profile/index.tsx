@@ -1,5 +1,5 @@
-import React, { useContext, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View, Modal, TouchableHighlight } from 'react-native';
+import React, { useContext, LegacyRef, useState, useRef } from 'react';
+import { ScrollView, StyleSheet, Text, View, Modal, TouchableHighlight, TextInput } from 'react-native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
@@ -24,11 +24,11 @@ export default function Profile() {
     const { signed, handleLogin, handleLogout } = useContext(AuthContext);
     const { customer } = useContext(CustomerContext);
 
+    const password: LegacyRef<TextInput> = useRef<TextInput>(null);
+
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
     const [errorMessage, setErrorMessage] = useState('');
     const [modalConfirmLogout, setModalConfirmLogoug] = useState(false);
-
-    const [fieldsFormTouched, setFieldsFormTouched] = useState(false);
 
     const toggleModalConfirmLogout = () => setModalConfirmLogoug(!modalConfirmLogout);
 
@@ -208,7 +208,7 @@ export default function Profile() {
                                 setModalWaiting("waiting");
 
                                 try {
-                                    const res = await handleLogin(values.email, values.password)
+                                    const res = await handleLogin(values.email, values.password);
 
                                     if (!res) {
                                         setModalWaiting("error");
@@ -216,8 +216,6 @@ export default function Profile() {
 
                                         return;
                                     }
-
-                                    setFieldsFormTouched(false);
                                     setModalWaiting("hidden");
 
                                 }
@@ -230,7 +228,7 @@ export default function Profile() {
                         }}
                         validationSchema={validatiionSchema}
                     >
-                        {({ handleBlur, handleSubmit, values, setFieldValue, errors, isValid, touched }) => (
+                        {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
                             <ScrollView style={styles.containerLogIn}>
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
@@ -247,12 +245,13 @@ export default function Profile() {
                                             autoCapitalize='none'
                                             keyboardType='email-address'
                                             returnKeyType='next'
-                                            onChangeText={(e) => { setFieldValue('email', e, true); setFieldsFormTouched(true); }
-                                            }
+                                            onChangeText={handleChange('email')}
                                             onBlur={handleBlur('email')}
+                                            onSubmitEditing={() => password?.current?.focus()}
                                             value={values.email}
+                                            blurOnSubmit={false}
                                         />
-                                        {touched.email && <InvalidFeedback message={errors.email}></InvalidFeedback>}
+                                        <InvalidFeedback message={touched.email ? errors.email : ''}></InvalidFeedback>
                                     </View>
                                 </View>
 
@@ -261,17 +260,19 @@ export default function Profile() {
                                         <PasswordInput
                                             style={styles.fieldsLogIn}
                                             title='Senha'
-                                            onChangeText={(e) => { setFieldValue('password', e, false); setFieldsFormTouched(true); }}
+                                            onChangeText={handleChange('password')}
                                             onBlur={handleBlur('password')}
+                                            onSubmitEditing={handleSubmit as any}
                                             value={values.password}
+                                            ref={password}
                                         />
-                                        {touched.password && <InvalidFeedback message={errors.password}></InvalidFeedback>}
+                                        <InvalidFeedback message={touched.password ? errors.password : ''}></InvalidFeedback>
                                     </View>
                                 </View>
 
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
-                                        <Button disabled={fieldsFormTouched && isValid ? false : true} title="Entrar" onPress={handleSubmit as any} />
+                                        <Button title="Entrar" onPress={handleSubmit as any} />
                                     </View>
                                 </View>
 

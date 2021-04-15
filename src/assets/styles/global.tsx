@@ -3,7 +3,7 @@ import { StyleSheet } from 'react-native';
 export const colorBackground = '#FFFFFF';
 export const colorPrimaryLight = '#fe3807';
 export const colorPrimaryDark = '#cc0000';
-export const colorSecundary = '#262626';
+export const colorSecundary = '#f2f2f2';
 export const colorSecundaryDark = '#8c8c8c';
 export const colorTitlePrimary = '#fe3807';
 export const colorTitleSecondary = '#262626';

@@ -45,53 +45,57 @@ export default function Products({ product }: ProductProps) {
     }
 
     return (
-        verify === "available" ? <TouchableHighlight style={styles.button} underlayColor='#e6e6e6' onPress={() => { handleNavigateToProductDetails(product) }}>
-            <View style={styles.productRow} >
-                <View style={styles.productCol}>
-                    <View style={styles.rowTop}>
-                        <View style={styles.productColTexts}>
-                            <Text style={styles.productTitle}>{product.title}</Text>
-                            <Text style={styles.productDescription}>{product.description}</Text>
+        verify === "available" ? <View style={styles.productContainer} >
+            <TouchableHighlight style={styles.button} underlayColor='#e6e6e6' onPress={() => { handleNavigateToProductDetails(product) }}>
+                <View style={styles.productRow} >
+                    <View style={styles.productCol}>
+                        <View style={styles.rowTop}>
+                            <View style={styles.productColTexts}>
+                                <Text style={styles.productTitle}>{product.title}</Text>
+                                <Text style={styles.productDescription}>{product.description}</Text>
+                            </View>
+                            <View style={styles.productColImage}>
+                                <Image source={{ uri: product.image }} style={styles.productImage} />
+                            </View>
                         </View>
-                        <View style={styles.productColImage}>
-                            <Image source={{ uri: product.image }} style={styles.productImage} />
+
+                        <View style={styles.rowBase}>
+
+                            {
+                                product.discount ? <Text style={styles.productPriceDiscount}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text> :
+                                    <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text>
+                            }
+                            {
+                                product.discount && <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.discount_price.toString().replace('.', ',')}`}</Text>
+                            }
                         </View>
-                    </View>
-
-                    <View style={styles.rowBase}>
-
-                        {
-                            product.discount ? <Text style={styles.productPriceDiscount}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text> :
-                                <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text>
-                        }
-                        {
-                            product.discount && <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.discount_price.toString().replace('.', ',')}`}</Text>
-                        }
                     </View>
                 </View>
-            </View>
-        </TouchableHighlight> : null
+            </TouchableHighlight>
+        </View> : null
     )
 }
 
 const styles = StyleSheet.create({
+    productContainer: {
+        flex: 1,
+        borderColor: '#e6e6e6',
+        borderTopWidth: 1,
+    },
+
     button: {
         alignItems: "center",
     },
 
     productRow: {
-        marginTop: 10,
         flexDirection: 'row',
-        marginLeft: 10,
-        marginRight: 10,
         paddingTop: 10,
-        paddingBottom: 10,
-        borderColor: '#e6e6e6',
-        borderTopWidth: 1
+        paddingBottom: 20,
+        overflow: 'hidden',
     },
 
     productCol: {
-        flex: 1
+        flex: 1,
     },
 
     rowTop: {
@@ -100,6 +104,7 @@ const styles = StyleSheet.create({
 
     rowBase: {
         flexDirection: 'row',
+        paddingHorizontal: 5
     },
 
     productColTexts: {

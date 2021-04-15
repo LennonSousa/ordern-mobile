@@ -2,6 +2,8 @@ import React from 'react';
 
 import { StyleSheet, Text } from 'react-native'
 
+import { colorPrimaryLight } from '../../../assets/styles/global';
+
 interface InvalidFeedbackProps {
     message?: string;
 }
@@ -12,7 +14,7 @@ export default function InvalidFeedback({ message }: InvalidFeedbackProps) {
 
 const styles = StyleSheet.create({
     text: {
-        color: '#cc0000',
+        color: colorPrimaryLight,
         fontSize: 12,
     }
 });

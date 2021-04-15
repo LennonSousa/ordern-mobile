@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { forwardRef, LegacyRef } from 'react';
 import { View, Text, StyleSheet, TextInputProps, TextInput } from 'react-native';
 
 interface InputsProps extends TextInputProps {
     title?: string
 }
 
-export default function Inputs({ title, style, ...props }: InputsProps) {
+const Input = forwardRef(({ title, style, ...props }: InputsProps, ref: LegacyRef<TextInput>) => {
     return (
         <View>
             <View style={title ? styles.rowTitle : {}}>
@@ -14,12 +14,15 @@ export default function Inputs({ title, style, ...props }: InputsProps) {
 
             <TextInput
                 {...props}
+                {...{ref}}
                 style={[styles.input, style]}
                 placeholderTextColor={'#c8c8c8'}
             />
         </View>
     );
-}
+});
+
+export default Input;
 
 const styles = StyleSheet.create({
     rowTitle: {

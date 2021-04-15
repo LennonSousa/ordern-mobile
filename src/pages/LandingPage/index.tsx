@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
+import React, { useState, useEffect, useContext, useCallback, useRef } from 'react';
 import {
     StyleSheet,
     ScrollView,
+    SectionList,
     View,
     Dimensions,
     ImageBackground,
-    RefreshControl,
     Text,
     TouchableOpacity,
     ActivityIndicator,
@@ -26,6 +26,7 @@ import { CategoriesContext } from '../../context/categoriesContext';
 
 import Highlights from '../../components/Highlights';
 import CategoryItem from '../../components/Categories';
+import ProductItem, { Product } from '../../components/Products';
 import LandingPageShimmer from '../../components/Shimmers/Landing';
 import CategoriesShimmer from '../../components/Shimmers/Categories';
 import { dayOfWeekAsInteger } from '../../utils/dayOfWeekAsInteger';
@@ -36,7 +37,9 @@ import globalStyles, {
     colorPrimaryLight,
     colorPrimaryDark,
     colorTextDescription,
-    colorHeaderBackground
+    colorHeaderBackground,
+    colorSecundary,
+    colorBackground,
 } from '../../assets/styles/global';
 
 export default function LandingPage() {
@@ -49,6 +52,9 @@ export default function LandingPage() {
     const { restaurant, handleRestaurant } = useContext(RestaurantContext);
     const { highlights, handleHighlights } = useContext(HighlightsContext);
     const { categories, handleCategories } = useContext(CategoriesContext);
+
+    const sectionListCategories = useRef<SectionList>(null);
+    const horizontalSectionListCategories = useRef<SectionList>(null);
 
     const { isOpened, openedDays, handleOpenedDays } = useContext(OpenedDaysContext);
 
@@ -275,37 +281,79 @@ export default function LandingPage() {
             }
 
             {
-                categories ? <ScrollView
-                    showsVerticalScrollIndicator={false}
-                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-                    scrollEventThrottle={16}
-                    onScroll={animatedEvent}
-                >
-                    {
-                        restaurant && restaurant.highlights && highlights && highlights.length > 0 && <View style={{ flex: 1, backgroundColor: 'white', paddingTop: 10 }}>
-                            <Text style={globalStyles.titlePrimaryLight}>{restaurant.highlights_title}</Text>
-
-                            <View style={{ height: 200, marginTop: 20 }}>
-                                <ScrollView
-                                    horizontal={true}
-                                    showsHorizontalScrollIndicator={false}
-                                >
-                                    {
-                                        highlights && highlights.map((highlight, index) => {
-                                            return <Highlights key={index} highlight={highlight} />
-                                        })
-                                    }
-                                </ScrollView>
+                categories && <SectionList
+                    horizontal
+                    sections={categories.map((category, index) => {
+                        return {
+                            index,
+                            title: category.title,
+                            data: category.products.map(product => { return product }),
+                            paused: category.paused,
+                        }
+                    })}
+                    keyExtractor={item => String(item.id)}
+                    renderItem={() => <View></View>}
+                    renderSectionHeader={({ section: { index, title, paused } }) =>
+                        !paused ? <TouchableHighlight
+                            style={{
+                                paddingHorizontal: 20,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                            }}
+                            underlayColor={colorSecundary}
+                            onPress={() => {
+                                horizontalSectionListCategories.current?.scrollToLocation({ sectionIndex: index, itemIndex: 0 });
+                                sectionListCategories.current?.scrollToLocation({ sectionIndex: index, itemIndex: 0 });
+                            }}
+                        >
+                            <View style={{ height: 50, justifyContent: 'center' }}>
+                                <Text style={[globalStyles.subTitlePrimary, { alignSelf: 'center', color: colorPrimaryLight }]}>{title}</Text>
                             </View>
-                        </View>
+                        </TouchableHighlight> : null
                     }
+                    showsHorizontalScrollIndicator={false}
+                    ref={horizontalSectionListCategories}
+                />
+            }
 
-                    {
-                        categories && categories.map((category, index) => {
-                            return <CategoryItem key={index} category={category} />
-                        })
-                    }
-                </ScrollView> :
+            {
+                categories ?
+                    <SectionList
+                        ListHeaderComponent={
+                            restaurant && restaurant.highlights && highlights && highlights.length > 0 ? <View style={{ flex: 1, backgroundColor: colorBackground, }}>
+                                <Text style={globalStyles.titlePrimaryLight}>{restaurant.highlights_title}</Text>
+
+                                <View style={{ height: 200, marginTop: 20 }}>
+                                    <ScrollView
+                                        horizontal={true}
+                                        showsHorizontalScrollIndicator={false}
+                                    >
+                                        {
+                                            highlights && highlights.map((highlight, index) => {
+                                                return <Highlights key={index} highlight={highlight} />
+                                            })
+                                        }
+                                    </ScrollView>
+                                </View>
+                            </View> : <View></View>
+                        }
+                        sections={categories.map(category => {
+                            return {
+                                title: category.title,
+                                data: category.products.map(product => { return product }),
+                                paused: category.paused,
+                            }
+                        })}
+                        keyExtractor={item => String(item.id)}
+                        renderItem={({ item }) => <ProductItem product={item} />}
+                        renderSectionHeader={({ section: { title, paused } }) => <CategoryItem title={title} paused={paused} />}
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        stickySectionHeadersEnabled
+                        showsVerticalScrollIndicator={false}
+                        onScroll={animatedEvent}
+                        ref={sectionListCategories}
+                    /> :
                     <CategoriesShimmer />
             }
 

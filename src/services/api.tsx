@@ -14,7 +14,7 @@ api.interceptors.response.use(function (response) {
     // Do something with response error
     console.log('api interceptou error response');
 
-    console.log(error);
+    //console.log(error);
 
     return Promise.reject(error);
 });

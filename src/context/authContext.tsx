@@ -72,7 +72,7 @@ const AuthProvider: React.FC = ({ children }) => {
         try {
             const res = await api.post('customers/authenticate', {
                 email: emailLogin,
-                password
+                password,
             });
 
             const { id, name, cpf, birth, phone, email, active, paused, created_at, address, payment, token } = res.data;
@@ -128,7 +128,7 @@ const AuthProvider: React.FC = ({ children }) => {
 
         setSigned(false);
         handleCustomer(null);
-        
+
         api.defaults.headers.Authorization = undefined;
     }
 

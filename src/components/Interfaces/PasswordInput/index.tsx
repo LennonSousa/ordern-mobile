@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { forwardRef, LegacyRef, useState } from 'react';
 import { View, Text, StyleSheet, TextInputProps, TextInput } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { BorderlessButton } from 'react-native-gesture-handler';
 
 interface InputsProps extends TextInputProps {
-    title?: string
+    title?: string;
 }
 
-export default function Inputs({ title, style, ...props }: InputsProps) {
+const Input = forwardRef(({ title, style, ...props }: InputsProps, ref: LegacyRef<TextInput>) => {
     const [passwordHide, setPasswordHide] = useState(true);
 
     return (
@@ -20,13 +20,14 @@ export default function Inputs({ title, style, ...props }: InputsProps) {
                 <BorderlessButton onPress={() => { setPasswordHide(!passwordHide) }}>
                     {
                         passwordHide ? <Feather name="eye" style={styles.eye} size={18} /> :
-                        <Feather name="eye-off" style={styles.eye} size={18} />
+                            <Feather name="eye-off" style={styles.eye} size={18} />
                     }
                 </BorderlessButton>
             </View>
 
             <TextInput
                 {...props}
+                {...{ ref }}
                 style={[styles.input, style]}
                 placeholderTextColor={'#c8c8c8'}
                 textContentType='password'
@@ -35,7 +36,9 @@ export default function Inputs({ title, style, ...props }: InputsProps) {
             />
         </View>
     );
-}
+});
+
+export default Input;
 
 const styles = StyleSheet.create({
     rowTitle: {
