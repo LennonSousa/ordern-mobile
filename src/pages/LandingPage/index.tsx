@@ -26,7 +26,7 @@ import { CategoriesContext } from '../../context/categoriesContext';
 
 import Highlights from '../../components/Highlights';
 import CategoryItem from '../../components/Categories';
-import ProductItem, { Product } from '../../components/Products';
+import ProductItem from '../../components/Products';
 import LandingPageShimmer from '../../components/Shimmers/Landing';
 import CategoriesShimmer from '../../components/Shimmers/Categories';
 import { dayOfWeekAsInteger } from '../../utils/dayOfWeekAsInteger';
@@ -182,19 +182,11 @@ export default function LandingPage() {
                             <Animated.Image
                                 source={{ uri: restaurant.avatar }}
                                 style={[styles.avatar, {
-                                    width: scrollY.interpolate({
-                                        inputRange: [0, 110],
-                                        outputRange: [90, 40],
-                                        extrapolate: 'clamp'
-                                    }),
-                                    height: scrollY.interpolate({
-                                        inputRange: [0, 110],
-                                        outputRange: [90, 40],
-                                        extrapolate: 'clamp'
-                                    }),
+                                    width: 90,
+                                    height: 90,
                                     opacity: scrollY.interpolate({
                                         inputRange: [0, 110],
-                                        outputRange: [1, 0.25],
+                                        outputRange: [1, 0],
                                         extrapolate: 'clamp'
                                     }),
                                 }]}
@@ -281,8 +273,15 @@ export default function LandingPage() {
             }
 
             {
-                categories && <SectionList
+                categories && <Animated.SectionList
                     horizontal
+                    style={{
+                        opacity: scrollY.interpolate({
+                            inputRange: [109, 110],
+                            outputRange: [0, 1],
+                            extrapolate: 'clamp'
+                        }),
+                    }}
                     sections={categories.map((category, index) => {
                         return {
                             index,
@@ -306,9 +305,18 @@ export default function LandingPage() {
                                 sectionListCategories.current?.scrollToLocation({ sectionIndex: index, itemIndex: 0 });
                             }}
                         >
-                            <View style={{ height: 50, justifyContent: 'center' }}>
+                            <Animated.View
+                                style={{
+                                    height: scrollY.interpolate({
+                                        inputRange: [90, 110],
+                                        outputRange: [0, 50],
+                                        extrapolate: 'clamp'
+                                    }),
+                                    justifyContent: 'center',
+                                }}
+                            >
                                 <Text style={[globalStyles.subTitlePrimary, { alignSelf: 'center', color: colorPrimaryLight }]}>{title}</Text>
-                            </View>
+                            </Animated.View>
                         </TouchableHighlight> : null
                     }
                     showsHorizontalScrollIndicator={false}

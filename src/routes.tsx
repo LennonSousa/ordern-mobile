@@ -3,7 +3,6 @@ import { StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { Feather } from '@expo/vector-icons';
 
 const Stack = createStackNavigator();
@@ -144,7 +143,7 @@ export default function Routes() {
                         component={Search}
                         options={{
                             headerShown: true,
-                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Buscar" showGoBack={false} />
+                            header: () => <Header title="Buscar" showGoBack={false} />
                         }}
                     />
 
@@ -153,7 +152,7 @@ export default function Routes() {
                         component={CategoryAdditionals}
                         options={{
                             headerShown: true,
-                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="" showCancel={false} />
+                            header: () => <Header title="" showCancel={false} />
                         }}
                     />
 
@@ -162,7 +161,7 @@ export default function Routes() {
                         component={CustomerNew}
                         options={{
                             headerShown: true,
-                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Vamos começar!" showCancel={false} />
+                            header: () => <Header title="Vamos começar!" showCancel={false} />
                         }}
                     />
 
@@ -171,7 +170,7 @@ export default function Routes() {
                         component={CreateCustomer}
                         options={{
                             headerShown: true,
-                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Criar o seu cadastro" showCancel={false} />
+                            header: () => <Header title="Criar o seu cadastro" showCancel={false} />
                         }}
                     />
 
@@ -180,7 +179,7 @@ export default function Routes() {
                         component={CustomerNewReset}
                         options={{
                             headerShown: true,
-                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Vamos começar!" showCancel={false} />
+                            header: () => <Header title="Vamos começar!" showCancel={false} />
                         }}
                     />
 
@@ -189,7 +188,7 @@ export default function Routes() {
                         component={CustomerReset}
                         options={{
                             headerShown: true,
-                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Redefinir senha" showCancel={false} />
+                            header: () => <Header title="Redefinir senha" showCancel={false} />
                         }}
                     />
 
@@ -198,7 +197,7 @@ export default function Routes() {
                         component={CustomerUpdate}
                         options={{
                             headerShown: true,
-                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Suas informações" showCancel={false} />
+                            header: () => <Header title="Suas informações" showCancel={false} />
                         }}
                     />
 
@@ -207,7 +206,7 @@ export default function Routes() {
                         component={AddressCustomer}
                         options={{
                             headerShown: true,
-                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Seus endereços" showCancel={true} />
+                            header: () => <Header title="Seus endereços" showCancel={true} />
                         }}
                     />
 
@@ -216,7 +215,7 @@ export default function Routes() {
                         component={PaymentsCustomer}
                         options={{
                             headerShown: true,
-                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Formas de pagamento" showCancel={true} />
+                            header: () => <Header title="Formas de pagamento" showCancel={true} />
                         }}
                     />
 
@@ -225,7 +224,7 @@ export default function Routes() {
                         component={Shipment}
                         options={{
                             headerShown: true,
-                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Envio" showCancel={true} />
+                            header: () => <Header title="Envio" showCancel={true} />
                         }}
                     />
 
@@ -234,7 +233,7 @@ export default function Routes() {
                         component={PickupShipment}
                         options={{
                             headerShown: true,
-                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Retirar" showCancel={true} />
+                            header: () => <Header title="Retirar" showCancel={true} />
                         }}
                     />
 
@@ -243,7 +242,7 @@ export default function Routes() {
                         component={OrderReview}
                         options={{
                             headerShown: true,
-                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Pedido" showCancel={true} />
+                            header: () => <Header title="Pedido" showCancel={true} />
                         }}
                     />
 
@@ -252,7 +251,7 @@ export default function Routes() {
                         component={Payment}
                         options={{
                             headerShown: true,
-                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Pagamento" showCancel={true} />
+                            header: () => <Header title="Pagamento" showCancel={true} />
                         }}
                     />
 
@@ -261,7 +260,7 @@ export default function Routes() {
                         component={OrderDetails}
                         options={{
                             headerShown: true,
-                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Pedido" customGoBack={'OrdersList'} />
+                            header: () => <Header title="Pedido" customGoBack={'OrdersList'} />
                         }}
                     />
 
@@ -275,7 +274,7 @@ export default function Routes() {
                         component={About}
                         options={{
                             headerShown: true,
-                            header: () => <Header notchPaddingTop={getStatusBarHeight()} title="Sobre" showCancel={true} />
+                            header: () => <Header title="Sobre" showCancel={true} />
                         }}
                     />
                 </Stack.Navigator>

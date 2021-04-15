@@ -3,12 +3,14 @@ import { useNavigation } from '@react-navigation/native';
 import { View, StyleSheet, Text, StatusBar } from 'react-native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { Feather } from '@expo/vector-icons';
+import { getStatusBarHeight } from 'react-native-status-bar-height';
 
 import { ContextOrdering } from '../../context/orderingContext';
 
+import { colorBackground, colorPrimaryLight } from '../../assets/styles/global';
+
 interface HeaderProps {
     title: string;
-    notchPaddingTop?: number;
     showGoBack?: boolean;
     showCancel?: boolean;
     showClearBag?: boolean;
@@ -18,7 +20,6 @@ interface HeaderProps {
 export default function Header(
     {
         title,
-        notchPaddingTop = 24,
         showGoBack = true,
         showCancel = true,
         showClearBag = false,
@@ -37,11 +38,11 @@ export default function Header(
     }
 
     return (
-        <View style={[styles.container, { paddingTop: notchPaddingTop }]}>
+        <View style={[styles.container, { paddingTop: getStatusBarHeight() }]}>
             <StatusBar />
             {
                 showGoBack ? <BorderlessButton onPress={() => { customGoBack ? navigation.navigate(customGoBack) : navigation.goBack() }} style={{ flex: 0.2 }}>
-                    <Feather name="arrow-left" size={24} color="#cc0000" />
+                    <Feather name="arrow-left" size={24} color={colorPrimaryLight} />
                 </BorderlessButton> :
                     <View style={{ flex: 0.2 }}></View>
             }
@@ -50,7 +51,7 @@ export default function Header(
 
             { showCancel &&
                 <BorderlessButton onPress={handleGoBackLandingPage} style={{ flex: 0.2 }}>
-                    <Feather name="x" size={24} color="#ff669d" style={{ textAlign: 'center' }} />
+                    <Feather name="x" size={24} color={colorPrimaryLight} style={{ textAlign: 'center' }} />
                 </BorderlessButton>
             }
 
@@ -65,13 +66,13 @@ export default function Header(
 
 const styles = StyleSheet.create({
     container: {
-        height: 80,
+        height: 70,
         paddingHorizontal: 24,
         flexDirection: 'row',
-        backgroundColor: '#f9fafc',
-        borderBottomWidth: 1,
-        borderColor: '#dde3f0',
-        alignItems: 'center'
+        backgroundColor: colorBackground,
+        shadowOpacity: 0.25,
+        elevation: 3,
+        alignItems: 'center',
     },
 
     title: {

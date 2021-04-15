@@ -382,6 +382,7 @@ export default function ProductDetails() {
                 }}>
                     <Animated.View style={[styles.toolsHeader, styles.withShadow, {
                         paddingTop: STATUS_BAR_HEIGHT,
+                        height: TOOLS_HEIGHT,
                         backgroundColor: scrollY.interpolate({
                             inputRange: [0, 5],
                             outputRange: ['transparent', colorHeaderBackground],
@@ -404,11 +405,11 @@ export default function ProductDetails() {
                                     navigation.goBack()
                                 }}
                                 style={{
-                                    width: 40,
-                                    height: 40,
+                                    width: 30,
+                                    height: 30,
                                     justifyContent: 'center',
                                     alignItems: 'center',
-                                    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.4)',
                                     borderRadius: 50,
                                 }}
                             >
@@ -437,7 +438,7 @@ export default function ProductDetails() {
                                 <Animated.View style={{
                                     height: scrollY.interpolate({
                                         inputRange: [0, HEADER_HEIGHT],
-                                        outputRange: [HEADER_HEIGHT, STATUS_BAR_HEIGHT > 24 ? (TOOLS_HEIGHT + STATUS_BAR_HEIGHT) : TOOLS_HEIGHT],
+                                        outputRange: [HEADER_HEIGHT, HEADER_HEIGHT - TOOLS_HEIGHT],
                                         extrapolate: 'clamp'
                                     }),
                                     opacity: scrollY.interpolate({
