@@ -132,19 +132,26 @@ export default function NewClient() {
                             if (values.email !== '' && values.termsAccepted) {
                                 try {
                                     setModalWaiting("waiting");
-                                    const res = await api.post('customers/new', { email: values.email });
+                                    const res = await api.post('customers/new', {
+                                        email: values.email,
+                                    },
+                                        {
+                                            validateStatus: function (status) {
+                                                return status < 500; // Resolve only if the status code is less than 500
+                                            }
+                                        });
 
-                                    if (res.status === 200) {
+                                    if (res.status === 400) {
                                         setModalWaiting("error");
                                         setErrorMessage("E-mail já cadastrado!");
+                                        return;
                                     }
-                                    else if (res.status === 204) {
-                                        setEmailState(values.email);
-                                        setEmailSended(true);
 
-                                        setFieldsFormTouched(false);
-                                        setModalWaiting("hidden");
-                                    }
+                                    setEmailState(values.email);
+                                    setEmailSended(true);
+
+                                    setFieldsFormTouched(false);
+                                    setModalWaiting("hidden");
                                 }
                                 catch {
                                     setModalWaiting("error");

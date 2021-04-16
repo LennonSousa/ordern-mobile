@@ -64,9 +64,7 @@ export default function CustomerUpdate() {
                                 name: values.name,
                                 cpf: values.cpf,
                                 birth: birth,
-                                phone: values.phone,
-                                active: true,
-                                paused: false,
+                                phone: values.phone
                             });
 
                             const updatedCustomer = await api.get(`customer/${customer.id}`);

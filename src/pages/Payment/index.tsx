@@ -75,7 +75,7 @@ export default function Payment() {
                 console.log("Error get payments delivery.");
             });
 
-            api.get('stripe/customers').then(res => {
+            api.get(`stripe/customers/${customer.id}`).then(res => {
                 if (res.status === 200)
                     setPaymentStripe(res.data);
             }).catch(() => {
@@ -114,7 +114,7 @@ export default function Payment() {
                     const orderTotal = order.total.toFixed(2).replace('.', '').replace(',', '');
 
                     if (creditCardToken.status === 200) {
-                        const paymentResponse = await api.post('customer/payments/dopayments', {
+                        const paymentResponse = await api.post(`customer/${customer.id}/payments/dopayments`, {
                             "amount": orderTotal,
                             "tokenId": creditCardToken.data.id,
                             "description": `Pedido: ${order.tracker}`,
@@ -143,10 +143,8 @@ export default function Payment() {
                                 };
                             });
 
-                            const res = await api.post('customer/orders', {
+                            const res = await api.post(`customer/${customer.id}/orders`, {
                                 tracker: order.tracker,
-                                client_id: customer.id,
-                                client: customer.name,
                                 delivery_in: new Date,
                                 sub_total: order.sub_total,
                                 cupom: order.cupom,
@@ -161,7 +159,6 @@ export default function Payment() {
                                 paid: true,
                                 address: order.address,
                                 reason_cancellation: "",
-                                orderStatus: 1,
                                 orderItems: itemsToOrder
                             });
 
@@ -511,7 +508,7 @@ export default function Payment() {
 
             { /*Card cvc on-line*/}
             {
-                selectedCard ? <Formik
+                customer && selectedCard ? <Formik
                     initialValues={
                         {
                             cvc: ''
@@ -520,7 +517,7 @@ export default function Payment() {
                     onSubmit={async values => {
                         try {
                             if (selectedCard && selectedPaymentType === "on-line") {
-                                const customerPaymentRes = await api.get(`customer/payment/${selectedCard.id}`);
+                                const customerPaymentRes = await api.get(`customer/${customer.id}/payment/${selectedCard.id}`);
 
                                 requestPayment({
                                     'card[number]': customerPaymentRes.data.card_number,
@@ -639,7 +636,7 @@ export default function Payment() {
                                         };
                                     });
 
-                                    const res = await api.post('customer/orders', {
+                                    const res = await api.post(`customer/${customer.id}/orders`, {
                                         tracker: order.tracker,
                                         client_id: customer.id,
                                         client: customer.name,
@@ -657,7 +654,6 @@ export default function Payment() {
                                         paid: false,
                                         address: order.address,
                                         reason_cancellation: "",
-                                        orderStatus: 1,
                                         orderItems: itemsToOrder
                                     });
 

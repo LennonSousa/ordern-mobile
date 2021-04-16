@@ -20,7 +20,6 @@ import InvalidFeedback from '../../components/Interfaces/InvalidFeedback';
 import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingModal';
 
 import globalStyles, { colorPrimaryLight, colorSecondaryDark, colorHighLight, colorTextMenuDescription } from '../../assets/styles/global';
-import { OrderStatus } from '../../components/OrderStatus';
 
 interface OrderDetailsRouteParams {
     id: number;
@@ -573,27 +572,20 @@ export default function OrderDetails() {
                                 setModalWaiting("waiting");
 
                                 try {
-                                    const res = await api.get('order-status');
-
-                                    const orderStatus: OrderStatus[] = res.data;
-
-                                    const statusToSave = orderStatus.find(item => { return item.order === 5 });
-
-                                    if (statusToSave) {
-                                        await api.put(`customer/orders/${selectedOrder.id}`,
-                                            {
-                                                client: selectedOrder.client,
-                                                reason_cancellation: `${values.reasonCancellation} (Cancelado pelo cliente).`,
-                                                orderStatus: statusToSave.id,
-                                            });
-
-                                        const res = await api.get(`customer/${customer?.id}`);
-                                        handleCustomer(res.data);
-                                    }
+                                    await api.put(`customer/${customer.id}/orders/${selectedOrder.id}`,
+                                        {
+                                            reason_cancellation: `${values.reasonCancellation} (Cancelado pelo cliente).`,
+                                        });
 
                                     setModalWaiting("hidden");
 
                                     setRefreshing(true);
+
+                                    const res = await api.get(`customer/${customer.id}`);
+
+                                    handleCustomer(res.data);
+                                    
+                                    setRefreshing(false);
                                 }
                                 catch {
                                     setModalWaiting("error");

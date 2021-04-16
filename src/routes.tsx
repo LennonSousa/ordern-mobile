@@ -63,7 +63,7 @@ function HomeTabs() {
 
             setAmountNotDoneOrders(totalAmount);
         }
-    }, [signed, order]);
+    }, [signed, customer, order]);
 
     return (
         <Tab.Navigator tabBarOptions={{ activeTintColor: '#fe3807', keyboardHidesTabBar: true }}>

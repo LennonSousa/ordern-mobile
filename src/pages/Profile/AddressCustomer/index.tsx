@@ -67,7 +67,7 @@ export default function AddressCustomer() {
             if (customer) {
                 setModalWaiting("waiting");
 
-                await api.delete(`customer/address/${id}`);
+                await api.delete(`customer/${customer.id}/address/${id}`);
 
                 const res = await api.get(`customer/${customer.id}`);
 
@@ -137,7 +137,7 @@ export default function AddressCustomer() {
                                     setModalWaiting("waiting");
 
                                     if (selectedCustomerAddress) {
-                                        await api.put(`customer/address/${selectedCustomerAddress.id}`, {
+                                        await api.put(`customer/${customer.id}/address/${selectedCustomerAddress.id}`, {
                                             zip_code: values.zip_code,
                                             street: values.street,
                                             number: values.number,
@@ -150,7 +150,7 @@ export default function AddressCustomer() {
                                         });
                                     }
                                     else {
-                                        await api.post('customer/address', {
+                                        await api.post(`customer/${customer.id}/address`, {
                                             zip_code: values.zip_code,
                                             street: values.street,
                                             number: values.number,

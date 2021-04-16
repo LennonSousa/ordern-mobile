@@ -67,7 +67,7 @@ export default function PaymentsCustomer() {
             if (customer) {
                 setModalWaiting("waiting");
 
-                await api.delete(`customer/payments/${id}`);
+                await api.delete(`customer/${customer.id}/payments/${id}`);
 
                 const res = await api.get(`customer/${customer.id}`);
 
@@ -135,7 +135,7 @@ export default function PaymentsCustomer() {
                                     setModalWaiting("waiting");
 
                                     if (selectedCustomerPayment) {
-                                        await api.put(`customer/payments/${selectedCustomerPayment.id}`, {
+                                        await api.put(`customer/${customer.id}/payments/${selectedCustomerPayment.id}`, {
                                             card_number: values.card_number,
                                             brand: values.brand,
                                             exp_month: values.exp_month,
@@ -146,7 +146,7 @@ export default function PaymentsCustomer() {
                                         });
                                     }
                                     else {
-                                        await api.post('customer/payments', {
+                                        await api.post(`customer/${customer.id}/payments`, {
                                             card_number: values.card_number,
                                             brand: values.brand,
                                             exp_month: values.exp_month,
