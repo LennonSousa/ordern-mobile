@@ -6,7 +6,7 @@ import { RestaurantContext } from '../../context/restaurantContext';
 import { HighlightsContext } from '../../context/highlightsContext';
 import Highlights from '../../components/Highlights';
 import { OpenedDaysContext } from '../../context/openedDaysContext';
-import { CustomerContext } from '../../context/customerContext';
+import { AuthContext } from '../../context/authContext';
 import { CategoriesContext } from '../../context/categoriesContext';
 import { ContextOrdering } from '../../context/orderingContext';
 import { Category } from '../../components/Categories';
@@ -29,7 +29,7 @@ export default function Cart() {
     const { restaurant } = useContext(RestaurantContext);
     const { highlights } = useContext(HighlightsContext);
     const { isOpened } = useContext(OpenedDaysContext);
-    const { customer } = useContext(CustomerContext);
+    const { customer } = useContext(AuthContext);
     const { handleCategories } = useContext(CategoriesContext);
     const { order, handleOrder } = useContext(ContextOrdering);
     const navigation = useNavigation();

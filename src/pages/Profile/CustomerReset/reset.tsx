@@ -122,6 +122,8 @@ export default function NewClient() {
                                     onChangeText={handleChange('password')}
                                     onBlur={handleBlur('password')}
                                     value={values.password}
+                                    returnKeyType='go'
+                                    onSubmitEditing={handleSubmit as any}
                                 />
                                 {touched.password && <InvalidFeedback message={errors.password}></InvalidFeedback>}
                             </View>

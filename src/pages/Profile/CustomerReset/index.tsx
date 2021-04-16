@@ -156,6 +156,8 @@ export default function CustomerReset() {
                                             onChangeText={handleChange('email')}
                                             onBlur={handleBlur('email')}
                                             value={values.email}
+                                            returnKeyType='go'
+                                            onSubmitEditing={handleSubmit as any}
                                         />
                                         {touched.email && <InvalidFeedback message={errors.email}></InvalidFeedback>}
                                     </View>

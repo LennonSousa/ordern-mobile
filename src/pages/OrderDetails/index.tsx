@@ -11,8 +11,7 @@ import br from 'date-fns/locale/pt-BR';
 import api from '../../services/api';
 
 import { RestaurantContext } from '../../context/restaurantContext';
-import { CustomerContext } from '../../context/customerContext';
-import { OrdersContext } from '../../context/ordersContext';
+import { AuthContext } from '../../context/authContext';
 import { Order } from '../../components/Orders';
 import OrderDetailsShimmer from '../../components/Shimmers/OrderDetails';
 import OrderItems from '../../components/OrderItems';
@@ -20,7 +19,7 @@ import Input from '../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../components/Interfaces/InvalidFeedback';
 import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingModal';
 
-import globalStyles, { colorPrimaryLight, colorSecundaryDark, colorHighLight, colorTextMenuDescription } from '../../assets/styles/global';
+import globalStyles, { colorPrimaryLight, colorSecondaryDark, colorHighLight, colorTextMenuDescription } from '../../assets/styles/global';
 import { OrderStatus } from '../../components/OrderStatus';
 
 interface OrderDetailsRouteParams {
@@ -31,8 +30,7 @@ export default function OrderDetails() {
     const route = useRoute();
 
     const { restaurant } = useContext(RestaurantContext);
-    const { customer } = useContext(CustomerContext);
-    const { orders, handleOrders } = useContext(OrdersContext);
+    const { signed, customer, handleCustomer } = useContext(AuthContext);
 
     const params = route.params as OrderDetailsRouteParams;
 
@@ -56,42 +54,42 @@ export default function OrderDetails() {
     });
 
     useEffect(() => {
-        if (customer && orders) {
-            orders.map(order => {
+        if (signed) {
+            customer && customer.orders.map(order => {
+                if (order.id === params.id) {
+                    setSelectedOrder(order);
+                }
+            });
+        }
+
+        setRefreshing(false);
+    }, [signed, customer, params.id]);
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+
+        if (!signed) {
+            setRefreshing(false);
+            return;
+        }
+
+        api.get(`customer/${customer?.id}`).then(res => {
+            const ordersList: Order[] = res.data.orders;
+
+            ordersList.map(order => {
                 if (order.id === params.id) {
                     setSelectedOrder(order);
                 }
             });
 
+            handleCustomer(res.data);
+        }).catch(() => {
             setRefreshing(false);
-        }
-        else
+            console.log('Orders list failed');
+        }).finally(() => {
             setRefreshing(false);
-
-    }, [customer, orders, params.id]);
-
-    const onRefresh = useCallback(() => {
-        setRefreshing(true);
-
-        if (customer) {
-            api.get(`customer/orders/${customer.id}`).then(res => {
-
-                const ordersList: Order[] = res.data;
-
-                ordersList.map(order => {
-                    if (order.id === params.id) {
-                        setSelectedOrder(order);
-                    }
-                });
-
-                handleOrders(res.data);
-                setRefreshing(false);
-            })
-                .catch(() => {
-                    setRefreshing(false);
-                });
-        }
-    }, []);
+        });
+    }, [signed, customer]);
 
     return (
         <>
@@ -165,7 +163,7 @@ export default function OrderDetails() {
                                                 name="loader"
                                                 size={20}
                                                 color={
-                                                    selectedOrder.orderStatus.order > 0 && selectedOrder.orderStatus.order !== 6 ? colorPrimaryLight : colorSecundaryDark
+                                                    selectedOrder.orderStatus.order > 0 && selectedOrder.orderStatus.order !== 6 ? colorPrimaryLight : colorSecondaryDark
                                                 }
                                             />
                                         </View>
@@ -189,7 +187,7 @@ export default function OrderDetails() {
                                                 style={{ textAlign: 'center' }}
                                                 name="minus" size={20}
                                                 color={
-                                                    selectedOrder.orderStatus.order >= 1 && selectedOrder.orderStatus.order !== 6 ? colorPrimaryLight : colorSecundaryDark
+                                                    selectedOrder.orderStatus.order >= 1 && selectedOrder.orderStatus.order !== 6 ? colorPrimaryLight : colorSecondaryDark
                                                 }
                                             />
                                         </View>
@@ -204,7 +202,7 @@ export default function OrderDetails() {
                                                 name="clock"
                                                 size={20}
                                                 color={
-                                                    selectedOrder.orderStatus.order >= 1 && selectedOrder.orderStatus.order !== 6 ? colorPrimaryLight : colorSecundaryDark
+                                                    selectedOrder.orderStatus.order >= 1 && selectedOrder.orderStatus.order !== 6 ? colorPrimaryLight : colorSecondaryDark
                                                 }
                                             />
                                         </View>
@@ -229,7 +227,7 @@ export default function OrderDetails() {
                                                 name="minus"
                                                 size={20}
                                                 color={
-                                                    selectedOrder.orderStatus.order >= 2 && selectedOrder.orderStatus.order !== 6 ? colorPrimaryLight : colorSecundaryDark
+                                                    selectedOrder.orderStatus.order >= 2 && selectedOrder.orderStatus.order !== 6 ? colorPrimaryLight : colorSecondaryDark
                                                 }
                                             />
                                         </View>
@@ -244,7 +242,7 @@ export default function OrderDetails() {
                                                 name="truck"
                                                 size={20}
                                                 color={
-                                                    selectedOrder.orderStatus.order >= 2 && selectedOrder.orderStatus.order !== 6 ? colorPrimaryLight : colorSecundaryDark
+                                                    selectedOrder.orderStatus.order >= 2 && selectedOrder.orderStatus.order !== 6 ? colorPrimaryLight : colorSecondaryDark
                                                 }
                                             />
                                         </View>
@@ -281,7 +279,7 @@ export default function OrderDetails() {
                                                 style={{ textAlign: 'center' }}
                                                 name="minus" size={20}
                                                 color={
-                                                    selectedOrder.orderStatus.order === 4 ? colorPrimaryLight : colorSecundaryDark
+                                                    selectedOrder.orderStatus.order === 4 ? colorPrimaryLight : colorSecondaryDark
                                                 }
                                             />
                                         </View>
@@ -296,7 +294,7 @@ export default function OrderDetails() {
                                                 name="check-circle"
                                                 size={20}
                                                 color={
-                                                    selectedOrder.orderStatus.order === 4 ? colorHighLight : colorSecundaryDark
+                                                    selectedOrder.orderStatus.order === 4 ? colorHighLight : colorSecondaryDark
                                                 }
                                             />
                                         </View>
@@ -589,9 +587,8 @@ export default function OrderDetails() {
                                                 orderStatus: statusToSave.id,
                                             });
 
-                                        const orders = await api.get(`customer/orders/${customer.id}`);
-
-                                        handleOrders(orders.data);
+                                        const res = await api.get(`customer/${customer?.id}`);
+                                        handleCustomer(res.data);
                                     }
 
                                     setModalWaiting("hidden");

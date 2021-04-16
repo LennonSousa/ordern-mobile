@@ -3,13 +3,14 @@ import { StyleSheet } from 'react-native';
 export const colorBackground = '#FFFFFF';
 export const colorPrimaryLight = '#fe3807';
 export const colorPrimaryDark = '#cc0000';
-export const colorSecundary = '#f2f2f2';
-export const colorSecundaryDark = '#8c8c8c';
+export const colorSecondary = '#cccccc';
+export const colorSecondaryDark = '#8c8c8c';
 export const colorTitlePrimary = '#fe3807';
 export const colorTitleSecondary = '#262626';
 export const colorSubTitlePrimary = '#595959';
 export const colorTextDescription = '#8c8c8c';
-export const colorTextInPrimary = '#D4C2FF';
+export const colorTextInPrimary = '#262626';
+export const colorTextInSecondary = '#808080';
 export const colorTextMenu = '#262626';
 export const colorTextMenuDescription = '#8c8c8c';
 export const colorTextBase = '#6A6180';
@@ -74,6 +75,12 @@ const globalStyles = StyleSheet.create({
     menuIconColumn: {
         flex: 0.2,
         alignItems: 'flex-end',
+    },
+
+    categoryTitle: {
+        fontFamily: 'Nunito_600SemiBold',
+        fontSize: 22,
+        color: colorPrimaryLight,
     },
 
     titlePrimaryLight: {

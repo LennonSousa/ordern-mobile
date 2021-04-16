@@ -7,7 +7,6 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 
 import { AuthContext } from '../../context/authContext';
-import { CustomerContext } from '../../context/customerContext';
 import Header from '../../components/PageHeader';
 import Input from '../../components/Interfaces/Inputs';
 import PasswordInput from '../../components/Interfaces/PasswordInput';
@@ -21,8 +20,7 @@ const { expo } = require('../../../app.json');
 
 export default function Profile() {
     const navigation = useNavigation();
-    const { signed, handleLogin, handleLogout } = useContext(AuthContext);
-    const { customer } = useContext(CustomerContext);
+    const { signed, customer, handleLogin, handleLogout } = useContext(AuthContext);
 
     const password: LegacyRef<TextInput> = useRef<TextInput>(null);
 
@@ -247,8 +245,8 @@ export default function Profile() {
                                             returnKeyType='next'
                                             onChangeText={handleChange('email')}
                                             onBlur={handleBlur('email')}
-                                            onSubmitEditing={() => password?.current?.focus()}
                                             value={values.email}
+                                            onSubmitEditing={() => password?.current?.focus()}
                                             blurOnSubmit={false}
                                         />
                                         <InvalidFeedback message={touched.email ? errors.email : ''}></InvalidFeedback>
@@ -262,6 +260,7 @@ export default function Profile() {
                                             title='Senha'
                                             onChangeText={handleChange('password')}
                                             onBlur={handleBlur('password')}
+                                            returnKeyType="go"
                                             onSubmitEditing={handleSubmit as any}
                                             value={values.password}
                                             ref={password}

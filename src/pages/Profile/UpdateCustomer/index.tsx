@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, Platform, TouchableHighlight } from 'react-native';
+import { View, Text, ScrollView, Platform, TouchableHighlight } from 'react-native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
@@ -10,7 +10,7 @@ import * as Yup from 'yup';
 
 import api from '../../../services/api';
 
-import { CustomerContext } from '../../../context/customerContext';
+import { AuthContext } from '../../../context/authContext';
 import Input from '../../../components/Interfaces/Inputs';
 import Button from '../../../components/Interfaces/Button';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
@@ -20,7 +20,7 @@ import globalStyles from '../../../assets/styles/global';
 
 export default function CustomerUpdate() {
     const navigation = useNavigation();
-    const { customer, handleCustomer } = useContext(CustomerContext);
+    const { customer, handleCustomer } = useContext(AuthContext);
 
     const [show, setShow] = useState(false);
 

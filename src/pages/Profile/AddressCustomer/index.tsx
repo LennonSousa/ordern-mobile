@@ -1,5 +1,5 @@
-import React, { useContext, useState } from 'react';
-import { StyleSheet, View, Text, TouchableHighlight, ScrollView } from 'react-native';
+import React, { useContext, useState, useRef, LegacyRef } from 'react';
+import { StyleSheet, View, Text, TouchableHighlight, ScrollView, TextInput } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Feather } from '@expo/vector-icons';
 import { Formik } from 'formik';
@@ -8,7 +8,7 @@ import cep from 'cep-promise';
 
 import api from '../../../services/api';
 
-import { CustomerContext } from '../../../context/customerContext';
+import { AuthContext } from '../../../context/authContext';
 import { CustomerAddress } from '../../../components/CustomerAddress';
 import Input from '../../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
@@ -19,7 +19,7 @@ import Button from '../../../components/Interfaces/Button';
 import globalStyles from '../../../assets/styles/global';
 
 export default function AddressCustomer() {
-    const { customer, handleCustomer } = useContext(CustomerContext);
+    const { customer, handleCustomer } = useContext(AuthContext);
 
     // Customer address
     const [selectedCustomerAddress, setSelectedCustomerAddress] = useState<CustomerAddress | null>();
@@ -31,6 +31,13 @@ export default function AddressCustomer() {
     const [errorMessage, setErrorMessage] = useState('');
 
     const [fieldsFormTouched, setFieldsFormTouched] = useState(false);
+
+    const streetRef: LegacyRef<TextInput> = useRef<TextInput>(null);
+    const numberRef: LegacyRef<TextInput> = useRef<TextInput>(null);
+    const groupRef: LegacyRef<TextInput> = useRef<TextInput>(null);
+    const complementtRef: LegacyRef<TextInput> = useRef<TextInput>(null);
+    const cityRef: LegacyRef<TextInput> = useRef<TextInput>(null);
+    const countryRef: LegacyRef<TextInput> = useRef<TextInput>(null);
 
     const validatiionSchema = Yup.object().shape({
         zip_code: Yup.string().required('Obrigatório!').max(8, 'Deve conter no máximo 8 caracteres!'),
@@ -175,7 +182,7 @@ export default function AddressCustomer() {
                         }}
                         validationSchema={validatiionSchema}
                     >
-                        {({ handleChange, handleBlur, handleSubmit, values, errors, setFieldValue, isValid, touched }) => (
+                        {({ handleBlur, handleSubmit, values, errors, setFieldValue, isValid, touched }) => (
                             <View style={globalStyles.containerItem}>
                                 <View style={globalStyles.fieldsRow}>
                                     <View style={globalStyles.fieldsColumn}>
@@ -239,6 +246,10 @@ export default function AddressCustomer() {
                                             onChangeText={(e) => { setFieldValue('street', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('street')}
                                             value={values.street}
+                                            returnKeyType='next'
+                                            onSubmitEditing={() => numberRef?.current?.focus()}
+                                            blurOnSubmit={false}
+                                            ref={streetRef}
                                         />
                                         {touched.street && <InvalidFeedback message={errors.street}></InvalidFeedback>}
                                     </View>
@@ -252,6 +263,10 @@ export default function AddressCustomer() {
                                             onChangeText={(e) => { setFieldValue('number', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('number')}
                                             value={values.number}
+                                            returnKeyType='next'
+                                            onSubmitEditing={() => groupRef?.current?.focus()}
+                                            blurOnSubmit={false}
+                                            ref={numberRef}
                                         />
                                         {touched.number && <InvalidFeedback message={errors.number}></InvalidFeedback>}
                                     </View>
@@ -266,6 +281,10 @@ export default function AddressCustomer() {
                                             onChangeText={(e) => { setFieldValue('group', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('group')}
                                             value={values.group}
+                                            returnKeyType='next'
+                                            onSubmitEditing={() => complementtRef?.current?.focus()}
+                                            blurOnSubmit={false}
+                                            ref={groupRef}
                                         />
                                         {touched.group && <InvalidFeedback message={errors.group}></InvalidFeedback>}
                                     </View>
@@ -281,6 +300,10 @@ export default function AddressCustomer() {
                                             onChangeText={(e) => { setFieldValue('complement', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('complement')}
                                             value={values.complement}
+                                            returnKeyType='next'
+                                            onSubmitEditing={() => cityRef?.current?.focus()}
+                                            blurOnSubmit={false}
+                                            ref={complementtRef}
                                         />
                                         {touched.complement && <InvalidFeedback message={errors.complement}></InvalidFeedback>}
                                     </View>
@@ -295,6 +318,10 @@ export default function AddressCustomer() {
                                             onChangeText={(e) => { setFieldValue('city', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('city')}
                                             value={values.city}
+                                            returnKeyType='next'
+                                            onSubmitEditing={() => countryRef?.current?.focus()}
+                                            blurOnSubmit={false}
+                                            ref={cityRef}
                                         />
                                         {touched.city && <InvalidFeedback message={errors.city}></InvalidFeedback>}
                                     </View>
@@ -309,6 +336,9 @@ export default function AddressCustomer() {
                                             onChangeText={(e) => { setFieldValue('country', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('country')}
                                             value={values.country}
+                                            returnKeyType='go'
+                                            onSubmitEditing={handleSubmit as any}
+                                            ref={countryRef}
                                         />
                                         {touched.country && <InvalidFeedback message={errors.country}></InvalidFeedback>}
                                     </View>

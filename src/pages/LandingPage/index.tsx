@@ -38,7 +38,7 @@ import globalStyles, {
     colorPrimaryDark,
     colorTextDescription,
     colorHeaderBackground,
-    colorSecundary,
+    colorSecondary,
     colorBackground,
 } from '../../assets/styles/global';
 
@@ -299,7 +299,7 @@ export default function LandingPage() {
                                 justifyContent: 'center',
                                 alignItems: 'center',
                             }}
-                            underlayColor={colorSecundary}
+                            underlayColor={colorSecondary}
                             onPress={() => {
                                 horizontalSectionListCategories.current?.scrollToLocation({ sectionIndex: index, itemIndex: 0 });
                                 sectionListCategories.current?.scrollToLocation({ sectionIndex: index, itemIndex: 0 });
@@ -309,7 +309,7 @@ export default function LandingPage() {
                                 style={{
                                     height: scrollY.interpolate({
                                         inputRange: [90, 110],
-                                        outputRange: [0, 50],
+                                        outputRange: [0, 70],
                                         extrapolate: 'clamp'
                                     }),
                                     justifyContent: 'center',

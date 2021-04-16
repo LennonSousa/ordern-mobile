@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { StyleSheet, View, Text, TouchableHighlight, ScrollView, Platform } from 'react-native';
+import React, { useContext, useEffect, useState, useRef, LegacyRef } from 'react';
+import { StyleSheet, View, Text, TouchableHighlight, ScrollView, Platform, TextInput } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -30,6 +30,10 @@ export default function NewClient() {
     const [email, setEmail] = useState('');
     const [token, setToken] = useState('');
     const [birth, setBirth] = useState(new Date());
+
+    const cpftRef: LegacyRef<TextInput> = useRef<TextInput>(null);
+    const phoneRef: LegacyRef<TextInput> = useRef<TextInput>(null);
+    const passwordRef: LegacyRef<TextInput> = useRef<TextInput>(null);
 
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
 
@@ -97,50 +101,6 @@ export default function NewClient() {
                 {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
                     <ScrollView style={styles.containerMenu}>
                         <View style={styles.fieldsRow}>
-                            <View style={styles.fieldsColumn}>
-                                <View style={styles.menuRow}>
-                                    <View style={styles.menuColumn}>
-                                        <Text>Informações pessoais</Text>
-                                    </View>
-                                    <View style={styles.menuIconColumn}>
-                                        <Feather name="smile" size={24} color="#cc0000" />
-                                    </View>
-                                </View>
-                            </View>
-                        </View>
-
-                        <View style={styles.fieldsRow}>
-                            <View style={styles.fieldsColumn}>
-                                <Input
-                                    style={styles.fieldsLogIn}
-                                    title='Seu nome'
-                                    placeholder='Obrigatório'
-                                    textContentType='name'
-                                    autoCapitalize='words'
-                                    onChangeText={handleChange('name')}
-                                    onBlur={handleBlur('name')}
-                                    value={values.name}
-                                />
-                                <InvalidFeedback message={errors.name}></InvalidFeedback>
-                            </View>
-                        </View>
-
-                        <View style={styles.fieldsRow}>
-                            <View style={styles.fieldsColumn}>
-                                <Input
-                                    style={styles.fieldsLogIn}
-                                    title='CPF'
-                                    placeholder='Opcional'
-                                    keyboardType='number-pad'
-                                    onChangeText={handleChange('cpf')}
-                                    onBlur={handleBlur('cpf')}
-                                    value={values.cpf}
-                                />
-                                <InvalidFeedback message={errors.cpf}></InvalidFeedback>
-                            </View>
-                        </View>
-
-                        <View style={styles.fieldsRow}>
                             <View style={{ flex: 0.5 }}>
                                 <Input
                                     style={styles.fieldsLogIn}
@@ -170,6 +130,59 @@ export default function NewClient() {
 
                         <View style={styles.fieldsRow}>
                             <View style={styles.fieldsColumn}>
+                                <View style={styles.menuRow}>
+                                    <View style={styles.menuColumn}>
+                                        <Text>Informações pessoais</Text>
+                                    </View>
+                                    <View style={styles.menuIconColumn}>
+                                        <Feather name="smile" size={24} color="#cc0000" />
+                                    </View>
+                                </View>
+                            </View>
+                        </View>
+
+                        <View style={styles.fieldsRow}>
+                            <View style={styles.fieldsColumn}>
+                                <Input
+                                    style={styles.fieldsLogIn}
+                                    title='Seu nome'
+                                    placeholder='Obrigatório'
+                                    textContentType='name'
+                                    autoCapitalize='words'
+                                    onChangeText={handleChange('name')}
+                                    onBlur={handleBlur('name')}
+                                    value={values.name}
+                                    returnKeyType='next'
+                                    onSubmitEditing={() => cpftRef?.current?.focus()}
+                                    blurOnSubmit={false}
+                                />
+                                <InvalidFeedback message={errors.name}></InvalidFeedback>
+                            </View>
+                        </View>
+
+                        <View style={styles.fieldsRow}>
+                            <View style={styles.fieldsColumn}>
+                                <Input
+                                    style={styles.fieldsLogIn}
+                                    title='CPF'
+                                    placeholder='Opcional'
+                                    keyboardType='number-pad'
+                                    onChangeText={handleChange('cpf')}
+                                    onBlur={handleBlur('cpf')}
+                                    value={values.cpf}
+                                    returnKeyType='next'
+                                    onSubmitEditing={() => phoneRef?.current?.focus()}
+                                    blurOnSubmit={false}
+                                    ref={cpftRef}
+                                />
+                                <InvalidFeedback message={errors.cpf}></InvalidFeedback>
+                            </View>
+                        </View>
+
+
+
+                        <View style={styles.fieldsRow}>
+                            <View style={styles.fieldsColumn}>
                                 <Input
                                     style={styles.fieldsLogIn}
                                     title='Telefone'
@@ -179,6 +192,10 @@ export default function NewClient() {
                                     onChangeText={handleChange('phone')}
                                     onBlur={handleBlur('phone')}
                                     value={values.phone}
+                                    returnKeyType='next'
+                                    onSubmitEditing={() => passwordRef?.current?.focus()}
+                                    blurOnSubmit={false}
+                                    ref={phoneRef}
                                 />
                                 <InvalidFeedback message={errors.phone}></InvalidFeedback>
                             </View>
@@ -196,6 +213,9 @@ export default function NewClient() {
                                     onChangeText={handleChange('password')}
                                     onBlur={handleBlur('password')}
                                     value={values.password}
+                                    returnKeyType='go'
+                                    onSubmitEditing={handleSubmit as any}
+                                    ref={passwordRef}
                                 />
                                 <InvalidFeedback message={errors.password}></InvalidFeedback>
                             </View>

@@ -10,8 +10,7 @@ import api from '../../services/api';
 import stripeapi from '../../services/stripeapi';
 import stripeErrorCodes from '../../utils/stripeErrorCodes';
 
-import { CustomerContext } from '../../context/customerContext';
-import { OrdersContext } from '../../context/ordersContext';
+import { AuthContext } from '../../context/authContext';
 import { ContextOrdering } from '../../context/orderingContext';
 
 import { PaymentDelivery } from '../../components/PaymentsDelivery';
@@ -47,8 +46,7 @@ const changeValidatiionSchema = Yup.object().shape({
 
 export default function Payment() {
     const navigation = useNavigation();
-    const { customer } = useContext(CustomerContext);
-    const { handleOrders } = useContext(OrdersContext);
+    const { customer, handleCustomer } = useContext(AuthContext);
     const { order, handleClearOrder } = useContext(ContextOrdering);
 
     const [selectedCard, setSelectedCard] = useState<CustomerPayment>();
@@ -77,7 +75,7 @@ export default function Payment() {
                 console.log("Error get payments delivery.");
             });
 
-            api.get('customer/payments/stripe').then(res => {
+            api.get('stripe/customers').then(res => {
                 if (res.status === 200)
                     setPaymentStripe(res.data);
             }).catch(() => {
@@ -167,9 +165,9 @@ export default function Payment() {
                                 orderItems: itemsToOrder
                             });
 
-                            const orders = await api.get(`customer/orders/${customer.id}`);
+                            const customerRes = await api.get(`customer/${customer?.id}`);
 
-                            handleOrders(orders.data);
+                            handleCustomer(customerRes.data);
 
                             setModalWaiting("order-confirmed");
 
@@ -663,9 +661,9 @@ export default function Payment() {
                                         orderItems: itemsToOrder
                                     });
 
-                                    const orders = await api.get(`customer/orders/${customer.id}`);
+                                    const customerRes = await api.get(`customer/${customer?.id}`);
 
-                                    handleOrders(orders.data);
+                                    handleCustomer(customerRes.data);
 
                                     setModalWaiting("order-confirmed");
 

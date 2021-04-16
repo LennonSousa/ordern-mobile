@@ -8,8 +8,6 @@ import { OpenedDaysProvider } from './src/context/openedDaysContext';
 import { HighlightsProvider } from './src/context/highlightsContext';
 import { CategoriesProvider } from './src/context/categoriesContext';
 import { AuthProvider } from './src/context/authContext';
-import { CustomerProvider } from './src/context/customerContext';
-import { OrdersProvider } from './src/context/ordersContext';
 import { OrderingProvider } from './src/context/orderingContext';
 import { SelectedProductProvider } from './src/context/selectedProductContext';
 import { CustomerPaymentsProvider } from './src/context/customerPaymentsContext';
@@ -32,19 +30,15 @@ export default function App() {
       <OpenedDaysProvider>
         <HighlightsProvider>
           <CategoriesProvider>
-            <CustomerProvider>
-              <AuthProvider>
-                <OrdersProvider>
-                  <OrderingProvider>
-                    <SelectedProductProvider>
-                      <CustomerPaymentsProvider>
-                        <Routes />
-                      </CustomerPaymentsProvider>
-                    </SelectedProductProvider>
-                  </OrderingProvider>
-                </OrdersProvider>
-              </AuthProvider>
-            </CustomerProvider>
+            <AuthProvider>
+              <OrderingProvider>
+                <SelectedProductProvider>
+                  <CustomerPaymentsProvider>
+                    <Routes />
+                  </CustomerPaymentsProvider>
+                </SelectedProductProvider>
+              </OrderingProvider>
+            </AuthProvider>
           </CategoriesProvider>
         </HighlightsProvider>
       </OpenedDaysProvider>

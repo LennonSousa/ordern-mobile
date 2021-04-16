@@ -8,7 +8,7 @@ import { Feather } from '@expo/vector-icons';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-import { OrdersContext } from './context/ordersContext';
+import { AuthContext } from './context/authContext';
 import { ContextOrdering } from './context/orderingContext';
 
 import Header from './components/PageHeader';
@@ -38,7 +38,7 @@ import About from './pages/About';
 
 
 function HomeTabs() {
-    const { orders } = useContext(OrdersContext);
+    const { signed, customer } = useContext(AuthContext);
     const { order } = useContext(ContextOrdering);
 
     const [amountNotDoneOrders, setAmountNotDoneOrders] = useState(0);
@@ -54,16 +54,16 @@ function HomeTabs() {
             setAmountOrderItems(totalAmount);
         }
 
-        if (orders) {
+        if (signed) {
             let totalAmount = 0;
-            orders.forEach(order => {
+            customer && customer.orders.forEach(order => {
                 if (order.orderStatus.order !== 4 && order.orderStatus.order !== 5)
                     totalAmount = totalAmount + 1;
             });
 
             setAmountNotDoneOrders(totalAmount);
         }
-    }, [orders, order]);
+    }, [signed, order]);
 
     return (
         <Tab.Navigator tabBarOptions={{ activeTintColor: '#fe3807', keyboardHidesTabBar: true }}>
@@ -98,7 +98,7 @@ function HomeTabs() {
                     tabBarIcon: ({ color, size }) => (
                         <Feather name="file-text" size={size} color={color} />
                     ),
-                    tabBarBadge: orders && amountNotDoneOrders !== 0 ? amountNotDoneOrders : undefined,
+                    tabBarBadge: signed && amountNotDoneOrders !== 0 ? amountNotDoneOrders : undefined,
                 }}
             />
 

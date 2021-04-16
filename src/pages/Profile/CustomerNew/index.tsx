@@ -106,6 +106,8 @@ export default function NewClient() {
                                             onChangeText={handleChange('token')}
                                             onBlur={() => { handleBlur('token') }}
                                             value={values.token}
+                                            returnKeyType='go'
+                                            onSubmitEditing={handleSubmit as any}
                                         />
                                         <InvalidFeedback message={errors.token}></InvalidFeedback>
                                     </View>
@@ -165,6 +167,7 @@ export default function NewClient() {
                                             onChangeText={(e) => { setFieldValue('email', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('email')}
                                             value={values.email}
+                                            returnKeyType='next'
                                         />
                                         {touched.email && <InvalidFeedback message={errors.email}></InvalidFeedback>}
                                     </View>

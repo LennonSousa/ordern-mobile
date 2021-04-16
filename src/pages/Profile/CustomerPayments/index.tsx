@@ -1,5 +1,5 @@
-import React, { useContext, useState } from 'react';
-import { StyleSheet, View, Text, TouchableHighlight, ScrollView } from 'react-native';
+import React, { useContext, useState, useRef, LegacyRef } from 'react';
+import { StyleSheet, View, Text, TouchableHighlight, ScrollView, TextInput } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -11,7 +11,7 @@ import creditCardType, {
 
 import api from '../../../services/api';
 
-import { CustomerContext } from '../../../context/customerContext';
+import { AuthContext } from '../../../context/authContext';
 import { CustomerPayment } from '../../../components/CustomerPayments';
 import Input from '../../../components/Interfaces/Inputs';
 import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
@@ -30,13 +30,18 @@ const validatiionSchema = Yup.object().shape({
 });
 
 export default function PaymentsCustomer() {
-    const { customer, handleCustomer } = useContext(CustomerContext);
+    const { customer, handleCustomer } = useContext(AuthContext);
 
     // Customer payments
     const [selectedCustomerPayment, setSelectedCustomerPayment] = useState<CustomerPayment | null>();
 
     const [containerNewPayment, setContainerNewPayment] = useState(false);
     const [buttonDeletePayment, setButtonDeletePayment] = useState(true);
+
+    const expMonthtRef: LegacyRef<TextInput> = useRef<TextInput>(null);
+    const expYearRef: LegacyRef<TextInput> = useRef<TextInput>(null);
+    const nameRef: LegacyRef<TextInput> = useRef<TextInput>(null);
+    const cpfRef: LegacyRef<TextInput> = useRef<TextInput>(null);
 
     const [fieldsFormTouched, setFieldsFormTouched] = useState(false);
 
@@ -200,6 +205,9 @@ export default function PaymentsCustomer() {
                                                 setFieldsFormTouched(true);
                                             }}
                                             value={values.card_number}
+                                            returnKeyType='next'
+                                            onSubmitEditing={() => expMonthtRef?.current?.focus()}
+                                            blurOnSubmit={false}
                                         />
                                         <View style={styles.fieldsRow}>
                                             <View style={{ flex: 0.5 }}>
@@ -223,6 +231,10 @@ export default function PaymentsCustomer() {
                                             onChangeText={(e) => { setFieldValue('exp_month', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('exp_month')}
                                             value={values.exp_month}
+                                            returnKeyType='next'
+                                            onSubmitEditing={() => expYearRef?.current?.focus()}
+                                            blurOnSubmit={false}
+                                            ref={expMonthtRef}
                                         />
                                         <InvalidFeedback message={touched.exp_month ? errors.exp_month : ''}></InvalidFeedback>
                                     </View>
@@ -236,6 +248,10 @@ export default function PaymentsCustomer() {
                                             onChangeText={(e) => { setFieldValue('exp_year', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('exp_year')}
                                             value={values.exp_year}
+                                            returnKeyType='next'
+                                            onSubmitEditing={() => nameRef?.current?.focus()}
+                                            blurOnSubmit={false}
+                                            ref={expYearRef}
                                         />
                                         <InvalidFeedback message={touched.exp_year ? errors.exp_year : ''}></InvalidFeedback>
                                     </View>
@@ -251,6 +267,10 @@ export default function PaymentsCustomer() {
                                             onChangeText={(e) => { setFieldValue('name', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('name')}
                                             value={values.name}
+                                            returnKeyType='next'
+                                            onSubmitEditing={() => cpfRef?.current?.focus()}
+                                            blurOnSubmit={false}
+                                            ref={nameRef}
                                         />
                                         {touched.name && <InvalidFeedback message={errors.name}></InvalidFeedback>}
                                     </View>
@@ -265,6 +285,9 @@ export default function PaymentsCustomer() {
                                             onChangeText={(e) => { setFieldValue('cpf', e, false); setFieldsFormTouched(true); }}
                                             onBlur={handleBlur('cpf')}
                                             value={values.cpf}
+                                            returnKeyType='go'
+                                            onSubmitEditing={handleSubmit as any}
+                                            ref={cpfRef}
                                         />
                                         {touched.cpf && <InvalidFeedback message={errors.cpf}></InvalidFeedback>}
                                     </View>

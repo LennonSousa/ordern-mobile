@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { format } from 'date-fns';
 
-import { CustomerContext } from '../../context/customerContext';
+import { AuthContext } from '../../context/authContext';
 import { ContextOrdering } from '../../context/orderingContext';
 import { CustomerAddress } from '../../components/CustomerAddress';
 import { RestaurantDeliveryGroups } from '../../components/DeliveryGroups';
@@ -22,7 +22,7 @@ import globalStyles, { colorPrimaryLight } from '../../assets/styles/global';
 export default function Shipment() {
     const navigation = useNavigation();
 
-    const { customer } = useContext(CustomerContext);
+    const { customer } = useContext(AuthContext);
     const { order, handleOrder, handleTotalOrder } = useContext(ContextOrdering);
 
     const [selectedAddress, setSelectedAddress] = useState<CustomerAddress>();

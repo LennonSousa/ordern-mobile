@@ -7,7 +7,7 @@ import { Additional } from '../Additionals';
 import { ProductCategory } from '../ProductCategories';
 import { SelectedProductContext } from '../../context/selectedProductContext';
 
-import globalStyles, { colorPrimaryLight, colorSecundary } from '../../assets/styles/global';
+import globalStyles, { colorPrimaryLight, colorSecondary, colorTextInSecondary } from '../../assets/styles/global';
 
 export interface ProductAdditional {
     id: number;
@@ -257,14 +257,13 @@ export default function ProductAdditionals({ productAdditional }: ProductAdditio
                                 </View>
 
                                 <View style={globalStyles.column}>
-                                    {
-                                        buttonPlus && <TouchableOpacity
-                                            onPress={() => { handleAdditional(true, "plus") }}
-                                            hitSlop={{ top: 20, right: 20, bottom: 20, left: 20 }}
-                                        >
-                                            <Feather name="plus" style={styles.iconButtons} />
-                                        </TouchableOpacity>
-                                    }
+                                    <TouchableOpacity
+                                        onPress={() => { handleAdditional(true, "plus") }}
+                                        hitSlop={{ top: 20, right: 20, bottom: 20, left: 20 }}
+                                        disabled={!buttonPlus}
+                                    >
+                                        <Feather name="plus" style={buttonPlus ? styles.iconButtons : styles.disabledIconButtons} />
+                                    </TouchableOpacity>
                                 </View>
                             </View> :
                             <Switch
@@ -287,7 +286,7 @@ const styles = StyleSheet.create(
         additionalsContainer: {
             flexDirection: 'row',
             marginVertical: 8,
-            paddingHorizontal: 20,
+            paddingHorizontal: 5,
             justifyContent: 'flex-end',
             alignContent: 'flex-end',
         },
@@ -316,10 +315,17 @@ const styles = StyleSheet.create(
             textAlign: 'center'
         },
 
+        disabledIconButtons: {
+            fontFamily: 'Nunito_300Light',
+            fontSize: 18,
+            color: colorSecondary,
+            textAlign: 'center'
+        },
+
         iconText: {
             fontFamily: 'Nunito_300Light',
             fontSize: 16,
-            color: colorSecundary,
+            color: colorTextInSecondary,
             textAlign: 'center'
         },
     }

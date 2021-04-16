@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { View, Text, ScrollView, RefreshControl, Image, StyleSheet } from 'react-native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
@@ -8,8 +8,6 @@ import { format } from 'date-fns';
 import api from '../../services/api';
 
 import { AuthContext } from '../../context/authContext';
-import { CustomerContext } from '../../context/customerContext';
-import { OrdersContext } from '../../context/ordersContext';
 import OrdersListShimmer from '../../components/Shimmers/OrdersList';
 import Header from '../../components/PageHeader';
 
@@ -21,44 +19,27 @@ import ButtonListItem from '../../components/Interfaces/ButtonListItem';
 export default function OrdersList() {
     const navigation = useNavigation();
 
-    const { signed } = useContext(AuthContext);
-    const { customer } = useContext(CustomerContext);
-    const { orders, handleOrders } = useContext(OrdersContext);
+    const { signed, customer, handleCustomer } = useContext(AuthContext);
 
-    const [refreshing, setRefreshing] = React.useState(true);
-
-    useEffect(() => {
-        if (signed && customer) {
-            api.get(`customer/orders/${customer.id}`).then(res => {
-                setRefreshing(false);
-
-                handleOrders(res.data);
-            })
-                .catch(() => {
-                    setRefreshing(false);
-
-                    console.log('Orders list failed');
-                });
-        }
-        else
-            setRefreshing(false);
-
-    }, [signed, customer]);
+    const [refreshing, setRefreshing] = React.useState(false);
 
     const onRefresh = React.useCallback(() => {
         setRefreshing(true);
 
-        if (signed && customer) {
-            api.get(`customer/orders/${customer.id}`).then(res => {
-
-                handleOrders(res.data);
-            }).catch(() => {
-                console.log('Orders list failed');
-            });
+        if (!signed) {
+            setRefreshing(false);
+            return;
         }
 
-        setRefreshing(false);
-    }, []);
+        api.get(`customer/${customer?.id}`).then(res => {
+            handleCustomer(res.data);
+        }).catch(() => {
+            setRefreshing(false);
+            console.log('Orders list failed');
+        }).finally(() => {
+            setRefreshing(false);
+        });
+    }, [signed, customer]);
 
     return (
         <>
@@ -85,7 +66,7 @@ export default function OrdersList() {
                 {
                     signed ? (
                         !refreshing ? (
-                            orders && orders.length > 0 ? orders.map((order, index) => {
+                            customer && customer.orders.length > 0 ? customer.orders.map((order, index) => {
                                 return <ButtonListItem key={index} onPress={() => { navigation.navigate('OrderDetails', { id: order.id }); }}>
                                     <View style={globalStyles.row}>
                                         <View style={{ flex: 1 }}>

@@ -4,11 +4,13 @@ import * as SecureStore from 'expo-secure-store';
 
 import api from '../services/api';
 
-import { CustomerContext } from '../context/customerContext';
+import { Customer } from '../components/Customer';
 
 interface AuthContextData {
-    signed: boolean;
     loading: boolean;
+    signed: boolean;
+    customer: Customer | undefined;
+    handleCustomer(customer: Customer | undefined): void;
     handleLogin(email: string, password: string): Promise<boolean>;
     handleLogout(): Promise<void>;
 }
@@ -16,9 +18,9 @@ interface AuthContextData {
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 const AuthProvider: React.FC = ({ children }) => {
-    const { handleCustomer } = useContext(CustomerContext);
-    const [signed, setSigned] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [signed, setSigned] = useState(false);
+    const [customer, setCustomer] = useState<Customer>();
 
     async function trySignin() {
         //console.log('Recuperando login e senha...');
@@ -35,7 +37,7 @@ const AuthProvider: React.FC = ({ children }) => {
                 handleLogin(emailLogin, password);
             }
             else {
-                setSigned(false);
+                handleLogout();
             }
         }
         else {
@@ -48,7 +50,7 @@ const AuthProvider: React.FC = ({ children }) => {
                 handleLogin(emailLogin, password);
             }
             else {
-                setSigned(false);
+                handleLogout();
             }
         }
     }
@@ -56,11 +58,10 @@ const AuthProvider: React.FC = ({ children }) => {
     useEffect(() => {
         try {
             //console.log('Auth provider useEffect...');
-
             trySignin();
         } catch (error) {
             //console.log('error customer authentication: ', error);
-            setSigned(false);
+            handleLogout();
         }
 
         setLoading(false);
@@ -75,23 +76,11 @@ const AuthProvider: React.FC = ({ children }) => {
                 password,
             });
 
-            const { id, name, cpf, birth, phone, email, active, paused, created_at, address, payment, token } = res.data;
+            if (res.status === 401) return false;
 
-            handleCustomer(
-                {
-                    id,
-                    name,
-                    cpf,
-                    birth,
-                    phone,
-                    active,
-                    paused,
-                    created_at,
-                    email,
-                    address,
-                    payment
-                }
-            );
+            const { customer, token } = res.data;
+
+            handleCustomer(customer);
 
             api.defaults.headers['Authorization'] = `Bearer ${token}`;
 
@@ -106,16 +95,20 @@ const AuthProvider: React.FC = ({ children }) => {
                 await AsyncStorage.setItem('password', password);
             }
 
-            //console.log('Sucesso...');
+            //console.log('setSigned(true)');
 
             setSigned(true);
 
             return true;
         }
         catch (error) {
-            //console.log('error get customer authentication', error);
+            console.log('error get customer authentication', error);
             return false;
         }
+    }
+
+    async function handleCustomer(customer: Customer | undefined) {
+        setCustomer(customer);
     }
 
     async function handleLogout() {
@@ -126,14 +119,16 @@ const AuthProvider: React.FC = ({ children }) => {
 
         await AsyncStorage.clear();
 
+        api.defaults.headers['Authorization'] = '';
+
         setSigned(false);
-        handleCustomer(null);
+        setCustomer(undefined);
 
         api.defaults.headers.Authorization = undefined;
     }
 
     return (
-        <AuthContext.Provider value={{ signed, loading, handleLogin, handleLogout }}>
+        <AuthContext.Provider value={{ loading, signed, customer, handleCustomer, handleLogin, handleLogout }}>
             {children}
         </AuthContext.Provider>
     );

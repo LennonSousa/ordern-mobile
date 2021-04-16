@@ -35,10 +35,4 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         paddingBottom: 15,
     },
-
-    categoryTitle: {
-        fontFamily: 'Nunito_600SemiBold',
-        fontSize: 22,
-        color: '#cc0000'
-    }
 });

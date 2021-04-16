@@ -1,7 +1,6 @@
-import React from 'react';
-
 import { CustomerAddress } from '../CustomerAddress';
 import { CustomerPayment } from '../CustomerPayments';
+import { Order } from '../Orders';
 
 export interface Customer {
     id: number;
@@ -15,4 +14,5 @@ export interface Customer {
     created_at: Date;
     address: CustomerAddress[];
     payment: CustomerPayment[];
+    orders: Order[];
 }
