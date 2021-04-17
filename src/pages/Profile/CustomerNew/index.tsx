@@ -54,19 +54,23 @@ export default function NewClient() {
                                             }
                                         });
 
-                                    if (res.status === 201) {
+                                    console.log(res.status)
+
+                                    if (res.status === 200) {
                                         setModalWaiting("hidden");
 
                                         navigation.navigate('CreateCustomer',
                                             {
+                                                id: res.data.id,
                                                 email: res.data.email,
                                                 token: res.data.token
                                             });
+
+                                        return;
                                     }
-                                    else {
-                                        setModalWaiting("error");
-                                        setErrorMessage("Código incorreto.");
-                                    }
+
+                                    setModalWaiting("error");
+                                    setErrorMessage("Código incorreto.");
                                 }
                                 catch {
                                     setModalWaiting("error");

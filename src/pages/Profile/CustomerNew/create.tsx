@@ -15,6 +15,7 @@ import InvalidFeedback from '../../../components/Interfaces/InvalidFeedback';
 import WaitingModal, { statusModal } from '../../../components/Interfaces/WaitingModal';
 
 interface NewCustomerRouteParams {
+    id: string;
     email: string;
     token: string;
 }
@@ -27,6 +28,7 @@ export default function NewClient() {
 
     const [show, setShow] = useState(false);
 
+    const [newCustomerId, setNewCustomerId] = useState('');
     const [email, setEmail] = useState('');
     const [token, setToken] = useState('');
     const [birth, setBirth] = useState(new Date());
@@ -38,11 +40,12 @@ export default function NewClient() {
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
 
     useEffect(() => {
-        if (params.email && params.token) {
+        if (params.id && params.email && params.token) {
+            setNewCustomerId(params.id);
             setEmail(params.email);
             setToken(params.token);
         }
-    }, [params.email, params.token]);
+    }, [params.id, params.email, params.token]);
 
     const validatiionSchema = Yup.object().shape({
         name: Yup.string().required('Você precisa preencher o seu nome!'),
@@ -64,16 +67,15 @@ export default function NewClient() {
                     setModalWaiting("waiting");
 
                     try {
-                        const res = await api.post('customer', {
+                        const res = await api.post(`/customer/${newCustomerId}`, {
                             "name": values.name,
                             "cpf": values.cpf,
                             "birth": birth,
                             "phone": values.phone,
-                            "email": email,
                             "password": values.password,
-                            "active": true,
-                            "paused": false,
                         }, { headers: { 'Authorization': `Bearer ${token}` } });
+
+                        console.log(res.status)
 
                         if (res.status !== 201) {
                             setModalWaiting("error");
@@ -82,8 +84,13 @@ export default function NewClient() {
 
                         handleLogin(email, values.password)
                             .then(res => {
-                                setModalWaiting("hidden");
-                                res && navigation.navigate('Profile');
+                                setModalWaiting("success");
+
+                                setTimeout(() => {
+                                    setModalWaiting("hidden");
+
+                                    res && navigation.navigate('Profile');
+                                }, 1500);
                             })
                             .catch(err => {
                                 setModalWaiting("error");
