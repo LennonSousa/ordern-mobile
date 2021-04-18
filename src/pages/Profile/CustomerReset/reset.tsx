@@ -15,9 +15,9 @@ import WaitingModal, { statusModal } from '../../../components/Interfaces/Waitin
 import Button from '../../../components/Interfaces/Button';
 
 interface NewCustomerRouteParams {
+    id: string;
     email: string;
     token: string;
-    customer: Customer;
 }
 
 export default function NewClient() {
@@ -26,20 +26,20 @@ export default function NewClient() {
     const { handleLogin } = useContext(AuthContext);
     const params = route.params as NewCustomerRouteParams;
 
+    const [customerId, setCustomerId] = useState('');
     const [email, setEmail] = useState('');
     const [token, setToken] = useState('');
-    const [customer, setCustomer] = useState<Customer>();
 
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
     const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
-        if (params.email && params.token) {
+        if (params.id && params.email && params.token) {
+            setCustomerId(params.id);
             setEmail(params.email);
             setToken(params.token);
-            setCustomer(params.customer);
         }
-    }, [params.email, params.token]);
+    }, [params.id, params.email, params.token]);
 
     const validatiionSchema = Yup.object().shape({
         password: Yup.string().required('Obrigatório!').min(8, 'Deve conter no mínimo 8 caracteres!').max(22, 'Deve ser menor que 22!')
@@ -53,38 +53,35 @@ export default function NewClient() {
                 }}
                 onSubmit={async values => {
                     try {
-                        if (customer) {
-                            setModalWaiting("waiting");
+                        setModalWaiting("waiting");
 
-                            const res = await api.put(`customer/password/${customer.id}`, {
-                                password: values.password
-                            }, { headers: { 'Authorization': `Bearer ${token}` } });
+                        const res = await api.put(`customer/password/${customerId}`, {
+                            password: values.password
+                        }, { headers: { 'Authorization': `Bearer ${token}` } });
 
-                            if (res.status === 204) {
-                                handleLogin(email, values.password)
-                                    .then(res => {
-                                        if (res) {
-                                            setModalWaiting("success");
+                        if (res.status !== 204) {
+                            setModalWaiting("error");
+                            return;
+                        }
 
-                                            setTimeout(() => {
-                                                setModalWaiting("hidden");
-                                                navigation.navigate('Profile');
-                                            }, 1500);
-                                        }
-                                    })
-                                    .catch(err => {
-                                        console.log('error profile');
-                                        console.log(err);
+                        handleLogin(email, values.password)
+                            .then(res => {
+                                if (res) {
+                                    setModalWaiting("success");
 
-                                        setModalWaiting("error");
-                                        setErrorMessage("Algo deu errado com a sua solicitação.");
-                                    });
-                            }
-                            else {
+                                    setTimeout(() => {
+                                        setModalWaiting("hidden");
+                                        navigation.navigate('Profile');
+                                    }, 1500);
+                                }
+                            })
+                            .catch(err => {
+                                console.log('error profile');
+                                console.log(err);
+
                                 setModalWaiting("error");
                                 setErrorMessage("Algo deu errado com a sua solicitação.");
-                            }
-                        }
+                            });
                     }
                     catch {
                         setModalWaiting("error");

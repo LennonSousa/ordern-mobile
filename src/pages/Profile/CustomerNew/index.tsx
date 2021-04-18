@@ -25,8 +25,6 @@ export default function NewClient() {
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
     const [errorMessage, setErrorMessage] = useState('');
 
-    const [fieldsFormTouched, setFieldsFormTouched] = useState(false);
-
     const validatiionSchema01 = Yup.object().shape({
         email: Yup.string().email('E-mail inválido!').required('Você precisa preencher o seu e-mail!'),
         termsAccepted: Yup.boolean().isTrue('Obrigatório aceitar os termos.')
@@ -54,8 +52,6 @@ export default function NewClient() {
                                             }
                                         });
 
-                                    console.log(res.status)
-
                                     if (res.status === 200) {
                                         setModalWaiting("hidden");
 
@@ -80,7 +76,7 @@ export default function NewClient() {
                         }}
                         validationSchema={validatiionSchema02}
                     >
-                        {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
+                        {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
                             <ScrollView style={styles.containerMenu}>
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
@@ -108,12 +104,12 @@ export default function NewClient() {
                                             textContentType='password'
                                             autoCapitalize='none'
                                             onChangeText={handleChange('token')}
-                                            onBlur={() => { handleBlur('token') }}
+                                            onBlur={handleBlur('token')}
                                             value={values.token}
                                             returnKeyType='go'
                                             onSubmitEditing={handleSubmit as any}
                                         />
-                                        <InvalidFeedback message={errors.token}></InvalidFeedback>
+                                        <InvalidFeedback message={touched.token ? errors.token : ''}></InvalidFeedback>
                                     </View>
                                 </View>
 
@@ -154,7 +150,6 @@ export default function NewClient() {
                                     setEmailState(values.email);
                                     setEmailSended(true);
 
-                                    setFieldsFormTouched(false);
                                     setModalWaiting("hidden");
                                 }
                                 catch {
@@ -165,7 +160,7 @@ export default function NewClient() {
                         }}
                         validationSchema={validatiionSchema01}
                     >
-                        {({ handleBlur, handleSubmit, values, setFieldValue, errors, isValid, touched }) => (
+                        {({ handleChange, handleBlur, handleSubmit, values, setFieldValue, errors, touched }) => (
                             <ScrollView style={styles.containerLogIn}>
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
@@ -175,12 +170,12 @@ export default function NewClient() {
                                             textContentType='emailAddress'
                                             autoCapitalize='none'
                                             keyboardType='email-address'
-                                            onChangeText={(e) => { setFieldValue('email', e, false); setFieldsFormTouched(true); }}
+                                            onChangeText={handleChange('email')}
                                             onBlur={handleBlur('email')}
                                             value={values.email}
                                             returnKeyType='next'
                                         />
-                                        {touched.email && <InvalidFeedback message={errors.email}></InvalidFeedback>}
+                                        <InvalidFeedback message={touched.email ? errors.email : ''}></InvalidFeedback>
                                     </View>
                                 </View>
 
@@ -193,19 +188,19 @@ export default function NewClient() {
                                                 trackColor={{ false: "#767577", true: "#cc0000" }}
                                                 thumbColor="#f4f3f4"
                                                 ios_backgroundColor="#3e3e3e"
-                                                onValueChange={() => { setFieldValue('termsAccepted', !values.termsAccepted); setFieldsFormTouched(true); }}
+                                                onValueChange={() => { setFieldValue('termsAccepted', !values.termsAccepted) }}
                                                 value={values.termsAccepted}
                                             />
                                         </View>
                                         <View style={{ flexDirection: 'row' }}>
-                                            <InvalidFeedback message={errors.termsAccepted}></InvalidFeedback>
+                                            <InvalidFeedback message={touched.termsAccepted ? errors.termsAccepted : ''}></InvalidFeedback>
                                         </View>
                                     </View>
                                 </View>
 
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
-                                        <Button title="Avançar" disabled={fieldsFormTouched && isValid ? false : true} onPress={handleSubmit as any} />
+                                        <Button title="Avançar" onPress={handleSubmit as any} />
                                     </View>
                                 </View>
 

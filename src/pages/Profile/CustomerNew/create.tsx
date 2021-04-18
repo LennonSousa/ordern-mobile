@@ -68,14 +68,12 @@ export default function NewClient() {
 
                     try {
                         const res = await api.post(`/customer/${newCustomerId}`, {
-                            "name": values.name,
-                            "cpf": values.cpf,
-                            "birth": birth,
-                            "phone": values.phone,
-                            "password": values.password,
+                            name: values.name,
+                            cpf: values.cpf,
+                            birth: birth,
+                            phone: values.phone,
+                            password: values.password,
                         }, { headers: { 'Authorization': `Bearer ${token}` } });
-
-                        console.log(res.status)
 
                         if (res.status !== 201) {
                             setModalWaiting("error");

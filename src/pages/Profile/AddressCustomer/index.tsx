@@ -232,7 +232,7 @@ export default function AddressCustomer() {
                                             }}
                                             value={values.zip_code}
                                         />
-                                        {touched.zip_code && <InvalidFeedback message={errors.zip_code}></InvalidFeedback>}
+                                        <InvalidFeedback message={touched.zip_code ? errors.zip_code : ''}></InvalidFeedback>
                                     </View>
                                 </View>
 
@@ -251,7 +251,7 @@ export default function AddressCustomer() {
                                             blurOnSubmit={false}
                                             ref={streetRef}
                                         />
-                                        {touched.street && <InvalidFeedback message={errors.street}></InvalidFeedback>}
+                                        <InvalidFeedback message={touched.street ? errors.street : ''}></InvalidFeedback>
                                     </View>
                                 </View>
 
@@ -268,7 +268,7 @@ export default function AddressCustomer() {
                                             blurOnSubmit={false}
                                             ref={numberRef}
                                         />
-                                        {touched.number && <InvalidFeedback message={errors.number}></InvalidFeedback>}
+                                        <InvalidFeedback message={touched.number ? errors.number : ''}></InvalidFeedback>
                                     </View>
                                 </View>
 
@@ -286,7 +286,7 @@ export default function AddressCustomer() {
                                             blurOnSubmit={false}
                                             ref={groupRef}
                                         />
-                                        {touched.group && <InvalidFeedback message={errors.group}></InvalidFeedback>}
+                                        <InvalidFeedback message={touched.group ? errors.group : ''}></InvalidFeedback>
                                     </View>
                                 </View>
 
@@ -305,7 +305,7 @@ export default function AddressCustomer() {
                                             blurOnSubmit={false}
                                             ref={complementtRef}
                                         />
-                                        {touched.complement && <InvalidFeedback message={errors.complement}></InvalidFeedback>}
+                                        <InvalidFeedback message={touched.complement ? errors.complement : ''}></InvalidFeedback>
                                     </View>
                                 </View>
 
@@ -323,7 +323,7 @@ export default function AddressCustomer() {
                                             blurOnSubmit={false}
                                             ref={cityRef}
                                         />
-                                        {touched.city && <InvalidFeedback message={errors.city}></InvalidFeedback>}
+                                        <InvalidFeedback message={touched.city ? errors.city : ''}></InvalidFeedback>
                                     </View>
                                 </View>
 
@@ -340,7 +340,7 @@ export default function AddressCustomer() {
                                             onSubmitEditing={handleSubmit as any}
                                             ref={countryRef}
                                         />
-                                        {touched.country && <InvalidFeedback message={errors.country}></InvalidFeedback>}
+                                        <InvalidFeedback message={touched.country ? errors.country : ''}></InvalidFeedback>
                                     </View>
                                 </View>
 

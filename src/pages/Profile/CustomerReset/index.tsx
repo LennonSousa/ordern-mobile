@@ -48,20 +48,21 @@ export default function CustomerReset() {
                                             }
                                         });
 
-                                    if (res.status === 201) {
+                                    if (res.status === 200) {
                                         setModalWaiting("hidden");
 
                                         navigation.navigate('CustomerReset',
                                             {
+                                                id: res.data.id,
                                                 email: res.data.email,
                                                 token: res.data.token,
-                                                customer: res.data.customer
                                             });
+
+                                        return;
                                     }
-                                    else {
-                                        setModalWaiting("error");
-                                        setErrorMessage("Código incorreto.");
-                                    }
+
+                                    setModalWaiting("error");
+                                    setErrorMessage("Código incorreto.");
                                 }
                                 catch {
                                     setModalWaiting("error");
@@ -71,7 +72,7 @@ export default function CustomerReset() {
                         }}
                         validationSchema={validatiionSchema02}
                     >
-                        {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
+                        {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
                             <ScrollView style={styles.containerMenu}>
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
@@ -101,8 +102,10 @@ export default function CustomerReset() {
                                             onChangeText={handleChange('token')}
                                             onBlur={() => { handleBlur('token') }}
                                             value={values.token}
+                                            returnKeyType='go'
+                                            onSubmitEditing={handleSubmit as any}
                                         />
-                                        <InvalidFeedback message={errors.token}></InvalidFeedback>
+                                        <InvalidFeedback message={touched.token ? errors.token : ''}></InvalidFeedback>
                                     </View>
                                 </View>
 
@@ -121,18 +124,26 @@ export default function CustomerReset() {
                                 try {
                                     setModalWaiting("waiting");
 
-                                    const res = await api.post('customers/reset', { email: values.email });
+                                    const res = await api.post('customers/reset', {
+                                        email: values.email
+                                    },
+                                        {
+                                            validateStatus: function (status) {
+                                                return status < 500; // Resolve only if the status code is less than 500
+                                            }
+                                        });
 
-                                    if (res.status === 204) {
+                                    if (res.status !== 200) {
                                         setModalWaiting("error");
                                         setErrorMessage("E-mail não cadastrado!");
-                                    }
-                                    else if (res.status === 200) {
-                                        setEmailState(values.email);
-                                        setEmailSended(true);
 
-                                        setModalWaiting("hidden");
+                                        return;
                                     }
+
+                                    setEmailState(values.email);
+                                    setEmailSended(true);
+
+                                    setModalWaiting("hidden");
                                 }
                                 catch {
                                     setModalWaiting("error");
@@ -143,7 +154,7 @@ export default function CustomerReset() {
                         validationSchema={validatiionSchema01}
                         validateOnChange={false}
                     >
-                        {({ handleChange, handleBlur, handleSubmit, values, errors, isValid, touched }) => (
+                        {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
                             <ScrollView style={styles.containerLogIn}>
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
@@ -159,13 +170,13 @@ export default function CustomerReset() {
                                             returnKeyType='go'
                                             onSubmitEditing={handleSubmit as any}
                                         />
-                                        {touched.email && <InvalidFeedback message={errors.email}></InvalidFeedback>}
+                                        <InvalidFeedback message={touched.email ? errors.email : ''}></InvalidFeedback>
                                     </View>
                                 </View>
 
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
-                                        <Button title="Avançar" disabled={touched.email && isValid ? false : true} onPress={handleSubmit as any} />
+                                        <Button title="Avançar" onPress={handleSubmit as any} />
                                     </View>
                                 </View>
                             </ScrollView>

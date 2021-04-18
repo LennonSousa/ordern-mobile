@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, ScrollView, Platform, TouchableHighlight } from 'react-native';
+import React, { useContext, useEffect, useState, useRef, LegacyRef } from 'react';
+import { View, Text, ScrollView, Platform, TouchableHighlight, TextInput } from 'react-native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
@@ -26,6 +26,9 @@ export default function CustomerUpdate() {
 
     const [fieldsFormTouched, setFieldsFormTouched] = useState(false);
     const [birth, setBirth] = useState(new Date());
+
+    const cpftRef: LegacyRef<TextInput> = useRef<TextInput>(null);
+    const phoneRef: LegacyRef<TextInput> = useRef<TextInput>(null);
 
     const [modalWaiting, setModalWaiting] = useState<typeof statusModal>("hidden");
     const [errorMessage, setErrorMessage] = useState('');
@@ -105,51 +108,6 @@ export default function CustomerUpdate() {
                             </View>
 
                             <View style={globalStyles.fieldsRow}>
-                                <View style={globalStyles.fieldsColumn}>
-                                    <Input
-                                        style={globalStyles.fieldsLogIn}
-                                        title='Seu nome'
-                                        placeholder='Obrigatório'
-                                        textContentType='name'
-                                        autoCapitalize='words'
-                                        onChangeText={(e) => { setFieldValue('name', e, true); setFieldsFormTouched(true); }}
-                                        onBlur={handleBlur('name')}
-                                        value={values.name}
-                                    />
-                                    <InvalidFeedback message={errors.name}></InvalidFeedback>
-                                </View>
-                            </View>
-
-                            <View style={globalStyles.fieldsRow}>
-                                <View style={globalStyles.fieldsColumn}>
-                                    <Input
-                                        style={globalStyles.fieldsLogIn}
-                                        title='E-mail'
-                                        textContentType='emailAddress'
-                                        autoCapitalize='none'
-                                        keyboardType='email-address'
-                                        editable={false}
-                                        value={customer.email}
-                                    />
-                                </View>
-                            </View>
-
-                            <View style={globalStyles.fieldsRow}>
-                                <View style={globalStyles.fieldsColumn}>
-                                    <Input
-                                        style={globalStyles.fieldsLogIn}
-                                        title='CPF'
-                                        placeholder='Opcional'
-                                        keyboardType='number-pad'
-                                        onChangeText={(e) => { setFieldValue('cpf', e, true); setFieldsFormTouched(true); }}
-                                        onBlur={handleBlur('cpf')}
-                                        value={values.cpf}
-                                    />
-                                    <InvalidFeedback message={errors.cpf}></InvalidFeedback>
-                                </View>
-                            </View>
-
-                            <View style={globalStyles.fieldsRow}>
                                 <View style={{ flex: 0.5 }}>
                                     <Input
                                         style={globalStyles.fieldsLogIn}
@@ -182,14 +140,69 @@ export default function CustomerUpdate() {
                                 <View style={globalStyles.fieldsColumn}>
                                     <Input
                                         style={globalStyles.fieldsLogIn}
+                                        title='E-mail'
+                                        textContentType='emailAddress'
+                                        autoCapitalize='none'
+                                        keyboardType='email-address'
+                                        editable={false}
+                                        value={customer.email}
+                                    />
+                                </View>
+                            </View>
+
+                            <View style={globalStyles.fieldsRow}>
+                                <View style={globalStyles.fieldsColumn}>
+                                    <Input
+                                        style={globalStyles.fieldsLogIn}
+                                        title='Seu nome'
+                                        placeholder='Obrigatório'
+                                        textContentType='name'
+                                        autoCapitalize='words'
+                                        onChangeText={(e) => { setFieldValue('name', e, true); setFieldsFormTouched(true); }}
+                                        onBlur={handleBlur('name')}
+                                        value={values.name}
+                                        returnKeyType='next'
+                                        onSubmitEditing={() => cpftRef?.current?.focus()}
+                                        blurOnSubmit={false}
+                                    />
+                                    <InvalidFeedback message={errors.name}></InvalidFeedback>
+                                </View>
+                            </View>
+
+                            <View style={globalStyles.fieldsRow}>
+                                <View style={globalStyles.fieldsColumn}>
+                                    <Input
+                                        style={globalStyles.fieldsLogIn}
+                                        title='CPF'
+                                        placeholder='Opcional'
+                                        keyboardType='number-pad'
+                                        onChangeText={(e) => { setFieldValue('cpf', e, true); setFieldsFormTouched(true); }}
+                                        onBlur={handleBlur('cpf')}
+                                        value={values.cpf}
+                                        returnKeyType='next'
+                                        onSubmitEditing={() => phoneRef?.current?.focus()}
+                                        blurOnSubmit={false}
+                                        ref={cpftRef}
+                                    />
+                                    <InvalidFeedback message={errors.cpf}></InvalidFeedback>
+                                </View>
+                            </View>
+
+                            <View style={globalStyles.fieldsRow}>
+                                <View style={globalStyles.fieldsColumn}>
+                                    <Input
+                                        style={globalStyles.fieldsLogIn}
                                         title='Telefone'
                                         placeholder='Opcional'
                                         textContentType='telephoneNumber'
                                         keyboardType='phone-pad'
-
                                         onChangeText={(e) => { setFieldValue('phone', e, true); setFieldsFormTouched(true); }}
                                         onBlur={handleBlur('phone')}
                                         value={values.phone}
+                                        returnKeyType='go'
+                                        onSubmitEditing={handleSubmit as any}
+                                        blurOnSubmit={false}
+                                        ref={phoneRef}
                                     />
                                     <InvalidFeedback message={errors.phone}></InvalidFeedback>
                                 </View>

@@ -175,7 +175,7 @@ export default function PaymentsCustomer() {
                         }}
                         validationSchema={validatiionSchema}
                     >
-                        {({ handleBlur, handleSubmit, values, errors, setFieldValue, isValid, touched }) => (
+                        {({ handleBlur, handleSubmit, values, errors, setFieldValue, setFieldTouched, isValid, touched }) => (
                             <View style={globalStyles.containerItem}>
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
@@ -197,12 +197,18 @@ export default function PaymentsCustomer() {
                                             keyboardType='numeric'
                                             onBlur={() => {
                                                 handleBlur('card_number');
-                                                setFieldValue('brand', values.card_number.length >= 15 ? creditCardType(values.card_number).length !== 0 ? (creditCardType(values.card_number)[0].niceType) : '' : '');
+                                                setFieldValue('brand',
+                                                    values.card_number.length >= 15 ? creditCardType(values.card_number).length !== 0 ?
+                                                        (creditCardType(values.card_number)[0].niceType) : '' : '');
+                                                setFieldTouched('card_number', true);
                                             }}
                                             onChangeText={e => {
                                                 setFieldValue('card_number', e, false);
-                                                setFieldValue('brand', values.card_number.length >= 15 ? creditCardType(values.card_number).length !== 0 ? (creditCardType(values.card_number)[0].niceType) : '' : '');
+                                                setFieldValue('brand',
+                                                    values.card_number.length >= 15 ? creditCardType(values.card_number).length !== 0 ?
+                                                        (creditCardType(values.card_number)[0].niceType) : '' : '');
                                                 setFieldsFormTouched(true);
+                                                setFieldTouched('card_number', true);
                                             }}
                                             value={values.card_number}
                                             returnKeyType='next'
