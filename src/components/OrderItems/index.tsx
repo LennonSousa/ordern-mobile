@@ -14,7 +14,7 @@ export interface OrderItem {
     name: string;
     value: number;
     notes: string;
-    product_id: number;
+    product_id: string;
     orderItemAdditionals: OrderItemAdditional[];
 }
 

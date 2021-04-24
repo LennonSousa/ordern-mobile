@@ -40,7 +40,7 @@ export default function Highlights({ highlight }: HighlightProps) {
         >
             <View style={styles.container}>
                 <View style={{ flex: 2 }}>
-                    <Image source={{ uri: highlight.product.image }} style={styles.highlightImage} />
+                    <Image source={{ uri: highlight.product.images[0].path }} style={styles.highlightImage} />
                 </View>
                 <View style={{ flex: 1, paddingLeft: 10, paddingTop: 5 }}>
                     <Text style={styles.productTitle}>{highlight.product.title}</Text>

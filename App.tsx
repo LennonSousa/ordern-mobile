@@ -3,7 +3,7 @@ import { Nunito_300Light, Nunito_300Light_Italic, Nunito_600SemiBold, Nunito_700
 
 import Routes from './src/routes';
 
-import { RestaurantProvider } from './src/context/restaurantContext';
+import { StoreProvider } from './src/context/storeContext';
 import { OpenedDaysProvider } from './src/context/openedDaysContext';
 import { HighlightsProvider } from './src/context/highlightsContext';
 import { CategoriesProvider } from './src/context/categoriesContext';
@@ -26,7 +26,7 @@ export default function App() {
   }
 
   return (
-    <RestaurantProvider>
+    <StoreProvider>
       <OpenedDaysProvider>
         <HighlightsProvider>
           <CategoriesProvider>
@@ -42,6 +42,6 @@ export default function App() {
           </CategoriesProvider>
         </HighlightsProvider>
       </OpenedDaysProvider>
-    </RestaurantProvider>
+    </StoreProvider>
   );
 }

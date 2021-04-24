@@ -2,10 +2,10 @@ import { OrderStatus } from '../OrderStatus';
 import { OrderItem } from '../OrderItems';
 
 export interface Order {
-    id: number;
+    id: string;
     tracker: string;
-    client_id: number;
-    client: string;
+    customer_id: string;
+    customer: string;
     ordered_at: Date;
     delivery_in: Date;
     placed_at: Date;

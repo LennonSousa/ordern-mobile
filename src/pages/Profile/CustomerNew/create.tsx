@@ -70,7 +70,7 @@ export default function NewClient() {
                         const res = await api.post(`/customer/${newCustomerId}`, {
                             name: values.name,
                             cpf: values.cpf,
-                            birth: birth,
+                            birth,
                             phone: values.phone,
                             password: values.password,
                         }, { headers: { 'Authorization': `Bearer ${token}` } });

@@ -3,18 +3,17 @@ import { useNavigation } from '@react-navigation/native';
 import { Image, StyleSheet, Text, View, TouchableHighlight } from 'react-native';
 
 import { Category } from '../Categories';
+import { ProductImage } from '../ProductImages';
 import { ProductValue } from '../ProductValues';
 import { ProductCategory } from '../ProductCategories';
 import { ProductAvailable } from '../ProductAvailables';
-import VerifyProductAvailable from '../../utils/verifyProductAvailable';
 
 import { colorHighLight } from '../../assets/styles/global';
 
 export interface Product {
-    id: number;
+    id: string;
     title: string;
     description: string;
-    image: string;
     maiority: boolean;
     code: string;
     price_one: boolean;
@@ -26,6 +25,7 @@ export interface Product {
     available_all: boolean;
     on_request: boolean;
     category: Category;
+    images: ProductImage[];
     values: ProductValue[];
     categoriesAdditional: ProductCategory[];
     availables: ProductAvailable[];
@@ -38,14 +38,12 @@ interface ProductProps {
 export default function Products({ product }: ProductProps) {
     const navigation = useNavigation();
 
-    const verify = VerifyProductAvailable(product);
-
     function handleNavigateToProductDetails(productObject: Product) {
         navigation.navigate('ProductDetails', { product: productObject });
     }
 
     return (
-        verify === "available" ? <View style={styles.productContainer} >
+        <View style={styles.productContainer} >
             <TouchableHighlight style={styles.button} underlayColor='#e6e6e6' onPress={() => { handleNavigateToProductDetails(product) }}>
                 <View style={styles.productRow} >
                     <View style={styles.productCol}>
@@ -55,7 +53,7 @@ export default function Products({ product }: ProductProps) {
                                 <Text style={styles.productDescription}>{product.description}</Text>
                             </View>
                             <View style={styles.productColImage}>
-                                <Image source={{ uri: product.image }} style={styles.productImage} />
+                                <Image source={{ uri: product.images[0].path }} style={styles.productImage} />
                             </View>
                         </View>
 
@@ -72,7 +70,7 @@ export default function Products({ product }: ProductProps) {
                     </View>
                 </View>
             </TouchableHighlight>
-        </View> : null
+        </View>
     )
 }
 

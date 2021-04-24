@@ -10,7 +10,7 @@ import br from 'date-fns/locale/pt-BR';
 
 import api from '../../services/api';
 
-import { RestaurantContext } from '../../context/restaurantContext';
+import { StoreContext } from '../../context/storeContext';
 import { AuthContext } from '../../context/authContext';
 import { Order } from '../../components/Orders';
 import OrderDetailsShimmer from '../../components/Shimmers/OrderDetails';
@@ -28,7 +28,7 @@ interface OrderDetailsRouteParams {
 export default function OrderDetails() {
     const route = useRoute();
 
-    const { restaurant } = useContext(RestaurantContext);
+    const { store } = useContext(StoreContext);
     const { signed, customer, handleCustomer } = useContext(AuthContext);
 
     const params = route.params as OrderDetailsRouteParams;
@@ -45,8 +45,8 @@ export default function OrderDetails() {
     });
 
     const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
-    const latLng = `${restaurant?.latitude},${restaurant?.longitude}`;
-    const label = restaurant?.title;
+    const latLng = `${store?.latitude},${store?.longitude}`;
+    const label = store?.title;
     const urlLocation = Platform.select({
         ios: `${scheme}${label}@${latLng}`,
         android: `${scheme}${latLng}(${label})`
@@ -468,11 +468,12 @@ export default function OrderDetails() {
                                         <View style={globalStyles.menuRow}>
                                             <View style={{ flex: 1 }}>
                                                 <View style={globalStyles.menuDescriptionColumn}>
-                                                    <Text style={globalStyles.textDescription}>{`${restaurant?.street}, ${restaurant?.number}`}</Text>
-                                                    <Text style={globalStyles.textDescription}>{`${restaurant?.group}`}</Text>
-                                                    <Text style={globalStyles.textDescription}>{`${restaurant?.city} - ${restaurant?.country}`}</Text>
-                                                    <Text style={globalStyles.textDescription}>{`CEP: ${restaurant?.zip_code}`}</Text>
-                                                    <Text style={globalStyles.textDescription}>{`Telefone: ${restaurant?.phone}`}</Text>
+                                                    <Text style={globalStyles.textDescription}>{`${store?.street}, ${store?.number}`}</Text>
+                                                    <Text style={globalStyles.textDescription}>{store?.complement}</Text>
+                                                    <Text style={globalStyles.textDescription}>{`${store?.group}`}</Text>
+                                                    <Text style={globalStyles.textDescription}>{`${store?.city} - ${store?.state}`}</Text>
+                                                    <Text style={globalStyles.textDescription}>{`CEP: ${store?.zip_code}`}</Text>
+                                                    <Text style={globalStyles.textDescription}>{`Telefone: ${store?.phone}`}</Text>
                                                 </View>
                                             </View>
 
@@ -519,7 +520,7 @@ export default function OrderDetails() {
 
                                     <View style={globalStyles.row}>
                                         <View style={{ flex: 1 }}>
-                                            <BorderlessButton onPress={() => { Linking.openURL(`tel:${restaurant?.phone}`); }}>
+                                            <BorderlessButton onPress={() => { Linking.openURL(`tel:${store?.phone}`); }}>
                                                 <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
                                                     <View style={globalStyles.column}>
                                                         <FontAwesome5
@@ -539,7 +540,7 @@ export default function OrderDetails() {
                                         </View>
 
                                         <View style={{ flex: 1 }}>
-                                            <BorderlessButton onPress={() => { Linking.openURL(`whatsapp://send?phone=+55${restaurant?.phone}`); }}>
+                                            <BorderlessButton onPress={() => { Linking.openURL(`whatsapp://send?phone=+55${store?.phone}`); }}>
                                                 <View style={[globalStyles.menuRow, { justifyContent: 'center' }]}>
                                                     <View style={globalStyles.column}>
                                                         <FontAwesome5

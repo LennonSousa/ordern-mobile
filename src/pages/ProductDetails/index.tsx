@@ -20,8 +20,7 @@ import { Feather } from '@expo/vector-icons';
 
 import api from '../../services/api';
 
-import { RestaurantContext } from '../../context/restaurantContext';
-import { OpenedDaysContext } from '../../context/openedDaysContext';
+import { StoreContext } from '../../context/storeContext';
 import { SelectedProductContext } from '../../context/selectedProductContext';
 import { CategoriesContext } from '../../context/categoriesContext';
 import { ContextOrdering } from '../../context/orderingContext';
@@ -59,8 +58,7 @@ export default function ProductDetails() {
     const route = useRoute();
     const navigation = useNavigation();
 
-    const { restaurant } = useContext(RestaurantContext);
-    const { isOpened } = useContext(OpenedDaysContext);
+    const { store } = useContext(StoreContext);
     const { handleCategories } = useContext(CategoriesContext);
     const { selectedProduct, handleSelectedProduct } = useContext(SelectedProductContext);
     const { order, handleTotalOrder } = useContext(ContextOrdering);
@@ -163,7 +161,7 @@ export default function ProductDetails() {
                         amount: 1,
                         name: "",
                         value: 0,
-                        additional_id: 0,
+                        additional_id: '0',
                     }]
                 };
 
@@ -320,10 +318,10 @@ export default function ProductDetails() {
                 else {
                     // Empity cart, create a new product on cart.
                     handleTotalOrder({
-                        id: 0,
+                        id: '0',
                         tracker: '',
-                        client_id: 0,
-                        client: '',
+                        customer_id: '0',
+                        customer: '',
                         ordered_at: new Date(),
                         placed_at: new Date(),
                         delivery_in: new Date(),
@@ -371,7 +369,7 @@ export default function ProductDetails() {
         setModalOnRequest(false);
 
         if (params.product)
-            Linking.openURL(`whatsapp://send?phone=+55${restaurant?.phone}&text=${message}`);
+            Linking.openURL(`whatsapp://send?phone=+55${store?.phone}&text=${message}`);
     }
 
     return (
@@ -455,7 +453,7 @@ export default function ProductDetails() {
                                             style={{ flex: 1 }}
                                         />
                                     </View>
-                                    <ImageBackground resizeMode='cover' source={{ uri: product.image }} style={styles.cover} />
+                                    <ImageBackground resizeMode='cover' source={{ uri: product.images[0].path }} style={styles.cover} />
                                 </Animated.View>
 
                                 <View style={globalStyles.container}>
@@ -657,7 +655,7 @@ export default function ProductDetails() {
 
                                         <View style={{ flex: 0.5 }}>
                                             <Buttons
-                                                disabled={selectedProduct?.price === 0.00 || !isOpened ? true : false}
+                                                disabled={selectedProduct?.price === 0.00 || !store?.opened ? true : false}
                                                 title={`Adicionar  R$ ${selectedProduct && Number(selectedProduct.total).toFixed(2).toString().replace('.', ',')}`}
                                                 onPress={handleAddProductToCart}
                                             />

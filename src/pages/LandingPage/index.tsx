@@ -8,7 +8,6 @@ import {
     ImageBackground,
     Text,
     TouchableOpacity,
-    ActivityIndicator,
     Modal,
     TouchableHighlight,
     Animated
@@ -19,10 +18,7 @@ import { Feather, FontAwesome5 } from '@expo/vector-icons';
 
 import api from '../../services/api';
 
-import { RestaurantContext } from '../../context/restaurantContext';
-import { OpenedDaysContext } from '../../context/openedDaysContext';
-import { HighlightsContext } from '../../context/highlightsContext';
-import { CategoriesContext } from '../../context/categoriesContext';
+import { StoreContext } from '../../context/storeContext';
 
 import Highlights from '../../components/Highlights';
 import CategoryItem from '../../components/Categories';
@@ -49,14 +45,10 @@ export default function LandingPage() {
     const HEADER_HEIGHT = STATUS_BAR_HEIGHT > 24 ? 140 + STATUS_BAR_HEIGHT : 140;
     const TOOLS_HEIGHT = 70;
 
-    const { restaurant, handleRestaurant } = useContext(RestaurantContext);
-    const { highlights, handleHighlights } = useContext(HighlightsContext);
-    const { categories, handleCategories } = useContext(CategoriesContext);
+    const { store, handleStore } = useContext(StoreContext);
 
     const sectionListCategories = useRef<SectionList>(null);
     const horizontalSectionListCategories = useRef<SectionList>(null);
-
-    const { isOpened, openedDays, handleOpenedDays } = useContext(OpenedDaysContext);
 
     const scrollY = new Animated.Value(0);
 
@@ -88,80 +80,44 @@ export default function LandingPage() {
     // };
 
     useEffect(() => {
-        api.get('stores')
+        api.get('store')
             .then(res => {
-                handleRestaurant(res.data[0]);
-
-                api.get('highlights/landing')
-                    .then(res => {
-                        handleHighlights(res.data);
-
-                        api.get('categories')
-                            .then(res => {
-                                handleCategories(res.data);
-
-                                handleOpenedDays();
-                            })
-                            .catch(err => {
-                                console.log('error get categories');
-                                console.log(err);
-                            });
-                    })
-                    .catch(err => {
-                        console.log('error get highlights');
-                        console.log(err);
-                    });
+                handleStore(res.data);
             })
             .catch(err => {
-                console.log('error get restaurants');
+                console.log('error get store');
                 console.log(err);
             });
     }, []);
 
     const onRefresh = useCallback(() => {
         setRefreshing(true);
-        handleCategories(undefined);
     }, []);
 
     useEffect(() => {
         if (refreshing) {
-            api.get('stores')
+            handleStore(undefined);
+
+            api.get('store')
                 .then(res => {
-                    handleRestaurant(res.data[0]);
-
-                    api.get('highlights/landing')
-                        .then(res => {
-                            handleHighlights(res.data);
-
-                            api.get('categories')
-                                .then(res => {
-                                    handleCategories(res.data);
-
-                                    handleOpenedDays();
-                                })
-                                .catch(err => {
-                                    console.log('error get categories');
-                                    console.log(err);
-                                });
-                        })
-                        .catch(err => {
-                            console.log('error get highlights');
-                            console.log(err);
-                        });
+                    console.log(res.data);
+                    
+                    handleStore(res.data);
+                    setRefreshing(false);
                 })
                 .catch(err => {
-                    console.log('error get restaurants');
+                    console.log('error get store');
                     console.log(err);
+                    setRefreshing(false);
                 });
 
-            setRefreshing(false);
         }
     }, [refreshing]);
 
     return (
         <View style={globalStyles.container}>
             {
-                restaurant ? <>
+                store ? <>
                     <Animated.View style={
                         [
                             styles.containerCover,
@@ -176,11 +132,11 @@ export default function LandingPage() {
                         ]}
                     >
                         <ImageBackground
-                            source={{ uri: restaurant.cover }}
+                            source={{ uri: store.cover }}
                             style={styles.cover}
                         >
                             <Animated.Image
-                                source={{ uri: restaurant.avatar }}
+                                source={{ uri: store.avatar }}
                                 style={[styles.avatar, {
                                     width: 90,
                                     height: 90,
@@ -243,27 +199,27 @@ export default function LandingPage() {
                                     style={{
                                         width: 95,
                                         height: 30,
-                                        backgroundColor: isOpened ? colorHighLight : colorPrimaryLight,
+                                        backgroundColor: store.opened ? colorHighLight : colorPrimaryLight,
                                         borderRadius: 5,
                                         justifyContent: 'center'
                                     }}
                                 >
-                                    {
-                                        openedDays ? <View style={{
-                                            flexDirection: 'row', alignItems: 'center', justifyContent: 'center'
-                                        }}>
-                                            <Feather
-                                                name={isOpened ? "thumbs-up" : "thumbs-down"}
-                                                size={24}
-                                                color="#ffffff"
-                                                style={{ flex: 0.3, paddingHorizontal: 5 }}
-                                            />
-                                            <Text
-                                                style={[globalStyles.textsButtonBorderMenu, { flex: 0.7, color: "#ffffff", textAlign: 'center' }]}>{isOpened ? "Aberto" : "Fechado"}
-                                            </Text>
-                                        </View> :
-                                            <ActivityIndicator size="small" color="#ffffff" />
-                                    }
+                                    <View style={{
+                                        flexDirection: 'row', alignItems: 'center', justifyContent: 'center'
+                                    }}>
+                                        <Feather
+                                            name={store.opened ? "thumbs-up" : "thumbs-down"}
+                                            size={24}
+                                            color="#ffffff"
+                                            style={{ flex: 0.3, paddingHorizontal: 5 }}
+                                        />
+                                        <Text
+                                            style={[globalStyles.textsButtonBorderMenu, {
+                                                flex: 0.7, color: "#ffffff", textAlign: 'center'
+                                            }]}
+                                        >{store.opened ? "Aberto" : "Fechado"}
+                                        </Text>
+                                    </View>
                                 </TouchableOpacity>
                             </View>
                         </Animated.View>
@@ -273,7 +229,7 @@ export default function LandingPage() {
             }
 
             {
-                categories && <Animated.SectionList
+                store && store.categories && <Animated.SectionList
                     horizontal
                     style={{
                         opacity: scrollY.interpolate({
@@ -282,7 +238,7 @@ export default function LandingPage() {
                             extrapolate: 'clamp'
                         }),
                     }}
-                    sections={categories.map((category, index) => {
+                    sections={store.categories.map((category, index) => {
                         return {
                             index,
                             title: category.title,
@@ -325,27 +281,28 @@ export default function LandingPage() {
             }
 
             {
-                categories ?
+                store && store.categories ?
                     <SectionList
                         ListHeaderComponent={
-                            restaurant && restaurant.highlights && highlights && highlights.length > 0 ? <View style={{ flex: 1, backgroundColor: colorBackground, }}>
-                                <Text style={globalStyles.titlePrimaryLight}>{restaurant.highlights_title}</Text>
+                            store.highlights && store.productsHighlights.length > 0 ?
+                                <View style={{ flex: 1, backgroundColor: colorBackground, }}>
+                                    <Text style={globalStyles.titlePrimaryLight}>{store.highlights_title}</Text>
 
-                                <View style={{ height: 200, marginTop: 20 }}>
-                                    <ScrollView
-                                        horizontal={true}
-                                        showsHorizontalScrollIndicator={false}
-                                    >
-                                        {
-                                            highlights && highlights.map((highlight, index) => {
-                                                return <Highlights key={index} highlight={highlight} />
-                                            })
-                                        }
-                                    </ScrollView>
-                                </View>
-                            </View> : <View></View>
+                                    <View style={{ height: 200, marginTop: 20 }}>
+                                        <ScrollView
+                                            horizontal={true}
+                                            showsHorizontalScrollIndicator={false}
+                                        >
+                                            {
+                                                store.productsHighlights.map((highlight, index) => {
+                                                    return <Highlights key={index} highlight={highlight} />
+                                                })
+                                            }
+                                        </ScrollView>
+                                    </View>
+                                </View> : <View></View>
                         }
-                        sections={categories.map(category => {
+                        sections={store.categories.map(category => {
                             return {
                                 title: category.title,
                                 data: category.products.map(product => { return product }),
@@ -387,7 +344,7 @@ export default function LandingPage() {
                             </View>
 
                             {
-                                openedDays && openedDays.map((weekDay, index) => {
+                                store && store.openedDays.map((weekDay, index) => {
                                     return (
                                         weekDay.opened && <View key={index} style={styles.containerCardBrands}>
                                             <View style={globalStyles.row}>

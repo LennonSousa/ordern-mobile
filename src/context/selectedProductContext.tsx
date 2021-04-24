@@ -4,7 +4,7 @@ import { ProductValue } from '../components/ProductValues';
 
 interface SelectedAdditionals {
     id: number;
-    additional_id: number;
+    additional_id: string;
     title: string;
     price: number;
     amount: number;
@@ -18,7 +18,7 @@ interface CategoriesAdditional {
 }
 
 export interface SelectedProduct {
-    id: number;
+    id: string;
     price_one: boolean;
     price: number;
     values: ProductValue[];

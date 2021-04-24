@@ -6,7 +6,7 @@ export interface OrderItemAdditional {
     amount: number;
     name: string;
     value: number;
-    additional_id: number;
+    additional_id: string;
 }
 
 interface OrderItemAdditionalProps {

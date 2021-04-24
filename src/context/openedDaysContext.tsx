@@ -3,7 +3,7 @@ import { getDay, getHours, getMinutes } from 'date-fns';
 
 import api from '../services/api';
 
-import { OpenedDay } from '../components/Restaurant/OpenedDays';
+import { OpenedDay } from '../components/Store/OpenedDays';
 
 import { convertHourToMinutes } from '../utils/convertHourToMinutes';
 

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'https://api.casadecarnesisrael.com.br',
+    baseURL: 'https://api.casadecarnesisrael.com.br/',
 });
 
 // Add a response interceptor

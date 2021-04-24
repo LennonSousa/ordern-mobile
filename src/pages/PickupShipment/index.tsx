@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { format } from 'date-fns';
 
-import { RestaurantContext } from '../../context/restaurantContext';
+import { StoreContext } from '../../context/storeContext';
 import { ContextOrdering } from '../../context/orderingContext';
 
 import PageFooter from '../../components/PageFooter';
@@ -15,12 +15,12 @@ import globalStyles, { colorPrimaryDark, colorPrimaryLight } from '../../assets/
 export default function PickupShipment() {
     const navigation = useNavigation();
 
-    const { restaurant } = useContext(RestaurantContext);
+    const { store } = useContext(StoreContext);
     const { order, handleOrder, handleTotalOrder } = useContext(ContextOrdering);
 
     const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
-    const latLng = `${restaurant?.latitude},${restaurant?.longitude}`;
-    const label = restaurant?.title;
+    const latLng = `${store?.latitude},${store?.longitude}`;
+    const label = store?.title;
     const urlLocation = Platform.select({
         ios: `${scheme}${label}@${latLng}`,
         android: `${scheme}${latLng}(${label})`
@@ -72,11 +72,12 @@ export default function PickupShipment() {
                         <View style={globalStyles.menuRow}>
                             <View style={{ flex: 1 }}>
                                 <View style={globalStyles.menuDescriptionColumn}>
-                                    <Text style={globalStyles.textDescription}>{`${restaurant?.street}, ${restaurant?.number}`}</Text>
-                                    <Text style={globalStyles.textDescription}>{`${restaurant?.group}`}</Text>
-                                    <Text style={globalStyles.textDescription}>{`${restaurant?.city} - ${restaurant?.country}`}</Text>
-                                    <Text style={globalStyles.textDescription}>{`CEP: ${restaurant?.zip_code}`}</Text>
-                                    <Text style={globalStyles.textDescription}>{`Telefone: ${restaurant?.phone}`}</Text>
+                                    <Text style={globalStyles.textDescription}>{`${store?.street}, ${store?.number}`}</Text>
+                                    <Text style={globalStyles.textDescription}>{store?.complement}</Text>
+                                    <Text style={globalStyles.textDescription}>{`${store?.group}`}</Text>
+                                    <Text style={globalStyles.textDescription}>{`${store?.city} - ${store?.state}`}</Text>
+                                    <Text style={globalStyles.textDescription}>{`CEP: ${store?.zip_code}`}</Text>
+                                    <Text style={globalStyles.textDescription}>{`Telefone: ${store?.phone}`}</Text>
                                 </View>
                             </View>
 

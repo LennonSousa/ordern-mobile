@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View, TouchableHighlight, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-import { RestaurantContext } from '../../context/restaurantContext';
+import { StoreContext } from '../../context/storeContext';
 import { HighlightsContext } from '../../context/highlightsContext';
 import Highlights from '../../components/Highlights';
 import { OpenedDaysContext } from '../../context/openedDaysContext';
@@ -26,7 +26,7 @@ interface NotAvailableProduct {
 }
 
 export default function Cart() {
-    const { restaurant } = useContext(RestaurantContext);
+    const { store } = useContext(StoreContext);
     const { highlights } = useContext(HighlightsContext);
     const { isOpened } = useContext(OpenedDaysContext);
     const { customer } = useContext(AuthContext);
@@ -38,8 +38,8 @@ export default function Cart() {
     const [errorMessage, setErrorMessage] = useState('');
 
     async function handleOrdertoShipment() {
-        if (restaurant && isOpened && order) {
-            if (order.sub_total >= restaurant.min_order) {
+        if (store && isOpened && order) {
+            if (order.sub_total >= store.min_order) {
                 setModalWaiting("waiting");
 
                 try {
@@ -96,7 +96,7 @@ export default function Cart() {
             }
             else {
                 setModalWaiting("error");
-                setErrorMessage(`Desculpe, o pedido mínimo é de R$ ${Number(restaurant.min_order).toFixed(2).replace('.', ',')}.`);
+                setErrorMessage(`Desculpe, o pedido mínimo é de R$ ${Number(store.min_order).toFixed(2).replace('.', ',')}.`);
             }
         }
     }
@@ -146,8 +146,8 @@ export default function Cart() {
 
                     <View style={[globalStyles.row, { marginVertical: 0 }]}>
                         {
-                            restaurant && restaurant.highlights && highlights && highlights.length > 0 && <View style={{ flex: 1, backgroundColor: 'white', marginVertical: 20 }}>
-                                <Text style={globalStyles.titlePrimaryLight}>{restaurant.highlights_title}</Text>
+                            store && store.highlights && highlights && highlights.length > 0 && <View style={{ flex: 1, backgroundColor: 'white', marginVertical: 20 }}>
+                                <Text style={globalStyles.titlePrimaryLight}>{store.highlights_title}</Text>
 
                                 <View style={{ height: 200, marginTop: 20 }}>
                                     <ScrollView

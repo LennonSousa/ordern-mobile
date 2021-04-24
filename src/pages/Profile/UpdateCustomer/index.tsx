@@ -66,7 +66,7 @@ export default function CustomerUpdate() {
                             await api.put(`customer/${customer.id}`, {
                                 name: values.name,
                                 cpf: values.cpf,
-                                birth: birth,
+                                birth,
                                 phone: values.phone
                             });
 
