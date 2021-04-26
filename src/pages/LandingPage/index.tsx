@@ -6,6 +6,7 @@ import {
     View,
     Dimensions,
     ImageBackground,
+    Image,
     Text,
     TouchableOpacity,
     Modal,
@@ -22,7 +23,7 @@ import { StoreContext } from '../../context/storeContext';
 
 import Highlights from '../../components/Highlights';
 import CategoryItem from '../../components/Categories';
-import ProductItem from '../../components/Products';
+import ProductItem, { Product } from '../../components/Products';
 import LandingPageShimmer from '../../components/Shimmers/Landing';
 import CategoriesShimmer from '../../components/Shimmers/Categories';
 import { dayOfWeekAsInteger } from '../../utils/dayOfWeekAsInteger';
@@ -38,12 +39,14 @@ import globalStyles, {
     colorBackground,
 } from '../../assets/styles/global';
 
+const STATUS_BAR_HEIGHT = getStatusBarHeight();
+const HEADER_HEIGHT = STATUS_BAR_HEIGHT > 24 ? 140 + STATUS_BAR_HEIGHT : 140;
+const TOOLS_HEIGHT = 70;
+
 export default function LandingPage() {
     const navigation = useNavigation();
 
-    const STATUS_BAR_HEIGHT = getStatusBarHeight();
-    const HEADER_HEIGHT = STATUS_BAR_HEIGHT > 24 ? 140 + STATUS_BAR_HEIGHT : 140;
-    const TOOLS_HEIGHT = 70;
+
 
     const { store, handleStore } = useContext(StoreContext);
 
@@ -51,6 +54,7 @@ export default function LandingPage() {
     const horizontalSectionListCategories = useRef<SectionList>(null);
 
     const scrollY = new Animated.Value(0);
+    let selectedItemSectionHeader = new Animated.Value(0);
 
     // const [state, setState] = useState(true);
 
@@ -64,7 +68,8 @@ export default function LandingPage() {
             contentOffset: { y: scrollY }
         },
     }],
-        { useNativeDriver: false });
+        { useNativeDriver: false }
+    );
 
     // const onScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
     //     let y = nativeEvent.contentOffset.y;
@@ -100,8 +105,6 @@ export default function LandingPage() {
 
             api.get('store')
                 .then(res => {
-                    console.log(res.data);
-                    
                     handleStore(res.data);
                     setRefreshing(false);
                 })
@@ -116,57 +119,41 @@ export default function LandingPage() {
 
     return (
         <View style={globalStyles.container}>
-            {
-                store ? <>
-                    <Animated.View style={
-                        [
-                            styles.containerCover,
-                            {
-                                height: scrollY.interpolate({
-                                    inputRange: [0, HEADER_HEIGHT],
-                                    outputRange: [HEADER_HEIGHT, STATUS_BAR_HEIGHT > 24 ? (TOOLS_HEIGHT + STATUS_BAR_HEIGHT) : TOOLS_HEIGHT],
+            <Animated.View
+                style={
+                    [styles.headerContainer, {
+                        height: scrollY.interpolate({
+                            inputRange: [-100, 0],
+                            outputRange: [HEADER_HEIGHT + 100, HEADER_HEIGHT],
+                            extrapolateRight: 'clamp'
+                        }),
+                        top: scrollY.interpolate({
+                            inputRange: [0, 100],
+                            outputRange: [0, -100],
+                            extrapolateLeft: 'clamp',
+                        }),
+                    }]
+                }
+            >
+                <ImageBackground style={styles.cover} source={{ uri: store?.cover }}>
+                    <View style={styles.avatarContainer}>
+                        <Animated.Image
+                            source={{ uri: store?.avatar }}
+                            style={[styles.avatar, {
+                                opacity: scrollY.interpolate({
+                                    inputRange: [0, 110],
+                                    outputRange: [1, 0],
                                     extrapolate: 'clamp'
                                 }),
-                                position: 'relative',
-                            }
-                        ]}
-                    >
-                        <ImageBackground
-                            source={{ uri: store.cover }}
-                            style={styles.cover}
-                        >
-                            <Animated.Image
-                                source={{ uri: store.avatar }}
-                                style={[styles.avatar, {
-                                    width: 90,
-                                    height: 90,
-                                    opacity: scrollY.interpolate({
-                                        inputRange: [0, 110],
-                                        outputRange: [1, 0],
-                                        extrapolate: 'clamp'
-                                    }),
-                                }]}
-                            ></Animated.Image>
-                        </ImageBackground>
+                            }]}
+                        />
+                    </View>
+                </ImageBackground>
 
-                        <Animated.View style={[styles.toolsHeader, styles.withShadow, {
-                            backgroundColor: scrollY.interpolate({
-                                inputRange: [105, STATUS_BAR_HEIGHT > 24 ? (HEADER_HEIGHT + STATUS_BAR_HEIGHT) : HEADER_HEIGHT],
-                                outputRange: ['transparent', colorHeaderBackground],
-                                extrapolate: 'clamp'
-                            }),
-                            shadowOpacity: scrollY.interpolate({
-                                inputRange: [105, STATUS_BAR_HEIGHT > 24 ? (HEADER_HEIGHT + STATUS_BAR_HEIGHT) : HEADER_HEIGHT],
-                                outputRange: [0, 0.25],
-                                extrapolate: 'clamp'
-                            }),
-                            elevation: scrollY.interpolate({
-                                inputRange: [105, STATUS_BAR_HEIGHT > 24 ? (HEADER_HEIGHT + STATUS_BAR_HEIGHT) : HEADER_HEIGHT],
-                                outputRange: [0, 5],
-                                extrapolate: 'clamp'
-                            }),
-                            height: STATUS_BAR_HEIGHT > 24 ? (TOOLS_HEIGHT + STATUS_BAR_HEIGHT) : TOOLS_HEIGHT,
-                        }]}>
+
+                {
+                    store && <View >
+                        <View style={styles.toolsHeader}>
                             <View style={
                                 {
                                     flex: 0.3, justifyContent: 'center', alignItems: 'center'
@@ -184,7 +171,7 @@ export default function LandingPage() {
                                         <Feather
                                             name="search"
                                             size={24}
-                                            color={colorPrimaryLight}
+                                            color={colorHeaderBackground}
                                             style={{ flex: 0.3, paddingHorizontal: 5 }}
                                         />
                                     </View>
@@ -222,22 +209,32 @@ export default function LandingPage() {
                                     </View>
                                 </TouchableOpacity>
                             </View>
-                        </Animated.View>
-                    </Animated.View>
-                </> :
-                    <LandingPageShimmer />
-            }
+                        </View>
+                    </View>
+                }
+            </Animated.View>
 
             {
-                store && store.categories && <Animated.SectionList
-                    horizontal
-                    style={{
+                store && <Animated.SectionList
+                    style={[styles.horizontalSectionList, {
                         opacity: scrollY.interpolate({
-                            inputRange: [109, 110],
+                            inputRange: [105, STATUS_BAR_HEIGHT > 24 ? (HEADER_HEIGHT + STATUS_BAR_HEIGHT) : HEADER_HEIGHT],
                             outputRange: [0, 1],
                             extrapolate: 'clamp'
                         }),
-                    }}
+                        backgroundColor: colorHeaderBackground,
+                        shadowOpacity: scrollY.interpolate({
+                            inputRange: [105, STATUS_BAR_HEIGHT > 24 ? (HEADER_HEIGHT + STATUS_BAR_HEIGHT) : HEADER_HEIGHT],
+                            outputRange: [0, 0.25],
+                            extrapolate: 'clamp'
+                        }),
+                        elevation: scrollY.interpolate({
+                            inputRange: [105, STATUS_BAR_HEIGHT > 24 ? (HEADER_HEIGHT + STATUS_BAR_HEIGHT) : HEADER_HEIGHT],
+                            outputRange: [0, 5],
+                            extrapolate: 'clamp'
+                        }),
+                    }]}
+                    horizontal
                     sections={store.categories.map((category, index) => {
                         return {
                             index,
@@ -246,12 +243,13 @@ export default function LandingPage() {
                             paused: category.paused,
                         }
                     })}
-                    keyExtractor={item => String(item.id)}
+                    keyExtractor={item => item.id}
                     renderItem={() => <View></View>}
                     renderSectionHeader={({ section: { index, title, paused } }) =>
                         !paused ? <TouchableHighlight
                             style={{
                                 paddingHorizontal: 20,
+                                paddingTop: 10,
                                 justifyContent: 'center',
                                 alignItems: 'center',
                             }}
@@ -263,15 +261,20 @@ export default function LandingPage() {
                         >
                             <Animated.View
                                 style={{
-                                    height: scrollY.interpolate({
-                                        inputRange: [90, 110],
-                                        outputRange: [0, 70],
-                                        extrapolate: 'clamp'
-                                    }),
+                                    height: 70,
                                     justifyContent: 'center',
                                 }}
                             >
-                                <Text style={[globalStyles.subTitlePrimary, { alignSelf: 'center', color: colorPrimaryLight }]}>{title}</Text>
+                                <Text style={
+                                    [
+                                        globalStyles.subTitlePrimary, {
+                                            alignSelf: 'center',
+                                            color: colorPrimaryLight,
+                                            borderBottomColor: colorPrimaryLight,
+                                            borderBottomWidth: Number(index) === Number(selectedItemSectionHeader) ? 2 : 0,
+                                        }
+                                    ]
+                                }>{title}</Text>
                             </Animated.View>
                         </TouchableHighlight> : null
                     }
@@ -283,9 +286,10 @@ export default function LandingPage() {
             {
                 store && store.categories ?
                     <SectionList
+                        style={{ zIndex: 0 }}
                         ListHeaderComponent={
                             store.highlights && store.productsHighlights.length > 0 ?
-                                <View style={{ flex: 1, backgroundColor: colorBackground, }}>
+                                <View style={{ marginTop: HEADER_HEIGHT }}>
                                     <Text style={globalStyles.titlePrimaryLight}>{store.highlights_title}</Text>
 
                                     <View style={{ height: 200, marginTop: 20 }}>
@@ -302,14 +306,15 @@ export default function LandingPage() {
                                     </View>
                                 </View> : <View></View>
                         }
-                        sections={store.categories.map(category => {
+                        sections={store.categories.map((category, index) => {
                             return {
+                                index,
                                 title: category.title,
                                 data: category.products.map(product => { return product }),
                                 paused: category.paused,
                             }
                         })}
-                        keyExtractor={item => String(item.id)}
+                        keyExtractor={item => item.id}
                         renderItem={({ item }) => <ProductItem product={item} />}
                         renderSectionHeader={({ section: { title, paused } }) => <CategoryItem title={title} paused={paused} />}
                         refreshing={refreshing}
@@ -317,6 +322,21 @@ export default function LandingPage() {
                         stickySectionHeadersEnabled
                         showsVerticalScrollIndicator={false}
                         onScroll={animatedEvent}
+                        onViewableItemsChanged={(info) => {
+                            const product: Product = info.viewableItems[info.viewableItems.length - 1].item;
+
+                            let itemToSelect = 0;
+
+                            horizontalSectionListCategories.current?.props.sections.forEach((section, index) => {
+                                if (product.category && section.data[0].category.id && section.data[0].category.id === product.category.id) {
+                                    itemToSelect = index;
+                                    selectedItemSectionHeader = new Animated.Value(index);
+                                }
+                            });
+
+                            product.category && horizontalSectionListCategories.current?.scrollToLocation({ sectionIndex: itemToSelect, itemIndex: 0 });
+                        }}
+                        viewabilityConfig={{ viewAreaCoveragePercentThreshold: 20 }}
                         ref={sectionListCategories}
                     /> :
                     <CategoriesShimmer />
@@ -401,27 +421,52 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
 
-    cover: {
+    horizontalSectionList: {
+        position: 'absolute',
         width: Dimensions.get('window').width,
+        top: 0,
+        left: 0,
+        zIndex: 3,
+    },
+
+    cover: {
+        resizeMode: "cover",
+        flex: 1
+    },
+
+    avatarContainer: {
+        position: 'absolute',
+        width: '100%',
         height: '100%',
-        backgroundColor: '#000',
+        justifyContent: 'center',
         alignItems: 'center',
-        justifyContent: 'center'
     },
 
     avatar: {
+        width: 90,
+        height: 90,
         resizeMode: 'cover',
         borderRadius: 100
     },
 
-    toolsHeader: {
+    headerContainer: {
         width: Dimensions.get('window').width,
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-        marginVertical: 10,
         position: 'absolute',
-        bottom: -10,
-        paddingBottom: 10,
+        top: 0,
+        left: 0,
+        zIndex: 5,
+    },
+
+    toolsHeader: {
+        position: 'absolute',
+        bottom: 10,
+        left: 0,
+        flexDirection: 'row',
+        flex: 1,
+        alignItems: 'flex-end',
+        height: STATUS_BAR_HEIGHT > 24 ? (TOOLS_HEIGHT + STATUS_BAR_HEIGHT) : TOOLS_HEIGHT,
+        width: Dimensions.get('window').width,
+        zIndex: 4,
     },
 
     withShadow: {

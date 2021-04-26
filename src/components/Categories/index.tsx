@@ -6,7 +6,7 @@ import { Product } from '../Products';
 import globalStyles from '../../assets/styles/global';
 
 export interface Category {
-    id: number;
+    id: string;
     title: string;
     paused: boolean;
     order: number;

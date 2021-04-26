@@ -32,8 +32,10 @@ export default function Highlights({ highlight }: HighlightProps) {
         navigation.navigate('ProductDetails', { product: productObject });
     }
 
+    console.log(highlight)
+
     return (
-        highlight.active && verify === "available" ? <TouchableHighlight
+        highlight.active ? <TouchableHighlight
             style={{ alignItems: "center" }}
             underlayColor={colorBorder}
             onPress={() => { handleNavigateToProductDetails(highlight.product) }}
@@ -66,7 +68,8 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         marginRight: 10,
         borderWidth: 0.5,
-        borderColor: colorBorder
+        borderColor: colorBorder,
+        backgroundColor: '#d6d6d6'
     },
 
     highlightImage: {
