@@ -87,7 +87,7 @@ export default function Shipment() {
                 {
                     ...order,
                     tracker: `${format(new Date(), 'ssmmddHHMM')}${order.total.toFixed(2).replace('.', '').replace(',', '')}`,
-                    address: `${selectedAddress.street} -  ${selectedAddress.number}\n${selectedAddress.group}\n${selectedAddress.complement}\n${selectedAddress.city} - ${selectedAddress.country}, ${selectedAddress.zip_code}`,
+                    address: `${selectedAddress.street} -  ${selectedAddress.number}\n${selectedAddress.group}\n${selectedAddress.complement}\n${selectedAddress.city} - ${selectedAddress.state}, ${selectedAddress.zip_code}`,
                     delivery_tax: selectedDeliveryGroup.price,
                     delivery_type: selectedDeliveryGroup.description,
                     delivery_estimated: selectedDeliveryGroup.estimated,

@@ -6,6 +6,6 @@ export interface CustomerAddress{
     group: string;
     complement: string;
     city: string;
-    country: string;
+    state: string;
     type: string;
 }

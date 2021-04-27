@@ -3,7 +3,6 @@ import { ScrollView, StyleSheet, Text, View, TouchableHighlight, Image } from 'r
 import { useNavigation } from '@react-navigation/native';
 
 import { StoreContext } from '../../context/storeContext';
-import { HighlightsContext } from '../../context/highlightsContext';
 import Highlights from '../../components/Highlights';
 import { OpenedDaysContext } from '../../context/openedDaysContext';
 import { AuthContext } from '../../context/authContext';
@@ -27,7 +26,6 @@ interface NotAvailableProduct {
 
 export default function Cart() {
     const { store } = useContext(StoreContext);
-    const { highlights } = useContext(HighlightsContext);
     const { isOpened } = useContext(OpenedDaysContext);
     const { customer } = useContext(AuthContext);
     const { handleCategories } = useContext(CategoriesContext);
@@ -146,7 +144,7 @@ export default function Cart() {
 
                     <View style={[globalStyles.row, { marginVertical: 0 }]}>
                         {
-                            store && store.highlights && highlights && highlights.length > 0 && <View style={{ flex: 1, backgroundColor: 'white', marginVertical: 20 }}>
+                            store && store.productsHighlights.length > 0 && <View style={{ flex: 1, backgroundColor: 'white', marginVertical: 20 }}>
                                 <Text style={globalStyles.titlePrimaryLight}>{store.highlights_title}</Text>
 
                                 <View style={{ height: 200, marginTop: 20 }}>
@@ -155,7 +153,7 @@ export default function Cart() {
                                         showsHorizontalScrollIndicator={false}
                                     >
                                         {
-                                            highlights && highlights.map((highlight, index) => {
+                                            store.productsHighlights.map((highlight, index) => {
                                                 return <Highlights key={index} highlight={highlight} />
                                             })
                                         }

@@ -33,6 +33,7 @@ const styles = StyleSheet.create({
     categoryItem: {
         width: Dimensions.get('window').width,
         backgroundColor: '#fff',
+        paddingTop: 10,
         paddingBottom: 15,
     },
 });

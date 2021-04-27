@@ -3,7 +3,11 @@ import { View, Animated, StyleSheet, Dimensions } from 'react-native';
 
 import { colorTextDescription } from '../../../assets/styles/global';
 
-export default function LandingPageShimmer() {
+interface LandingPageShimmerProps {
+    headerHeight: number;
+}
+
+export default ({ headerHeight }: LandingPageShimmerProps) => {
     const AnimatedValue = new Animated.Value(0);
 
     const circleAnimated = () => {
@@ -36,7 +40,7 @@ export default function LandingPageShimmer() {
 
     return (
         <View style={styles.containerCover}>
-            <View style={styles.cover}>
+            <View style={[styles.cover, { height: headerHeight }]}>
                 <View style={styles.avatar}>
                     <Animated.View
                         style={{
@@ -61,7 +65,6 @@ const styles = StyleSheet.create(
 
         cover: {
             width: Dimensions.get('window').width,
-            height: 110,
             alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: colorTextDescription,

@@ -4,13 +4,11 @@ import {
     Text,
     StyleSheet,
     Image,
-    TouchableHighlight
+    TouchableOpacity,
 } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 
 import { Product } from '../Products';
-import VerifyProductAvailable from '../../utils/verifyProductAvailable';
-
 import { colorHighLight, colorBorder } from '../../assets/styles/global';
 
 export interface Highlight {
@@ -26,18 +24,14 @@ interface HighlightProps {
 export default function Highlights({ highlight }: HighlightProps) {
     const navigation = useNavigation();
 
-    const verify = VerifyProductAvailable(highlight.product);
-
     function handleNavigateToProductDetails(productObject: Product) {
         navigation.navigate('ProductDetails', { product: productObject });
     }
 
-    console.log(highlight)
-
     return (
-        highlight.active ? <TouchableHighlight
+        highlight.active ? <TouchableOpacity
             style={{ alignItems: "center" }}
-            underlayColor={colorBorder}
+            activeOpacity={0.8}
             onPress={() => { handleNavigateToProductDetails(highlight.product) }}
         >
             <View style={styles.container}>
@@ -57,7 +51,7 @@ export default function Highlights({ highlight }: HighlightProps) {
                     }
                 </View>
             </View>
-        </TouchableHighlight> : null
+        </TouchableOpacity> : null
     );
 }
 
@@ -69,7 +63,6 @@ const styles = StyleSheet.create({
         marginRight: 10,
         borderWidth: 0.5,
         borderColor: colorBorder,
-        backgroundColor: '#d6d6d6'
     },
 
     highlightImage: {

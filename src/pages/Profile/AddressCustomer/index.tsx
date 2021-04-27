@@ -37,7 +37,7 @@ export default function AddressCustomer() {
     const groupRef: LegacyRef<TextInput> = useRef<TextInput>(null);
     const complementtRef: LegacyRef<TextInput> = useRef<TextInput>(null);
     const cityRef: LegacyRef<TextInput> = useRef<TextInput>(null);
-    const countryRef: LegacyRef<TextInput> = useRef<TextInput>(null);
+    const stateRef: LegacyRef<TextInput> = useRef<TextInput>(null);
 
     const validatiionSchema = Yup.object().shape({
         zip_code: Yup.string().required('Obrigatório!').max(8, 'Deve conter no máximo 8 caracteres!'),
@@ -45,7 +45,7 @@ export default function AddressCustomer() {
         number: Yup.string().required('Obigatório!'),
         group: Yup.string().required('Obigatório!'),
         city: Yup.string().required('Obigatório!'),
-        country: Yup.string().required('Obigatório!'),
+        state: Yup.string().required('Obigatório!'),
     });
 
     function handleAddressCustomer(id: number) {
@@ -128,7 +128,7 @@ export default function AddressCustomer() {
                             group: selectedCustomerAddress ? selectedCustomerAddress.group : '',
                             complement: selectedCustomerAddress ? selectedCustomerAddress.complement : '',
                             city: selectedCustomerAddress ? selectedCustomerAddress.city : '',
-                            country: selectedCustomerAddress ? selectedCustomerAddress.country : '',
+                            state: selectedCustomerAddress ? selectedCustomerAddress.state : '',
                             type: selectedCustomerAddress ? selectedCustomerAddress.type : 'home',
                         }}
                         onSubmit={async values => {
@@ -144,7 +144,7 @@ export default function AddressCustomer() {
                                             group: values.group,
                                             complement: values.complement,
                                             city: values.city,
-                                            country: values.country,
+                                            state: values.state,
                                             type: values.type,
                                             customer: customer.id
                                         });
@@ -157,7 +157,7 @@ export default function AddressCustomer() {
                                             group: values.group,
                                             complement: values.complement,
                                             city: values.city,
-                                            country: values.country,
+                                            state: values.state,
                                             type: values.type,
                                             customer: customer.id
                                         });
@@ -217,9 +217,11 @@ export default function AddressCustomer() {
                                                                 setFieldValue('street', street, false);
                                                                 setFieldValue('group', neighborhood, false);
                                                                 setFieldValue('city', city, false);
-                                                                setFieldValue('country', state, false);
+                                                                setFieldValue('state', state, false);
 
                                                                 setModalWaiting("hidden");
+
+                                                                numberRef?.current?.focus();
                                                             })
                                                             .catch(() => {
                                                                 setErrorMessage("CEP incorreto!");
@@ -319,7 +321,7 @@ export default function AddressCustomer() {
                                             onBlur={handleBlur('city')}
                                             value={values.city}
                                             returnKeyType='next'
-                                            onSubmitEditing={() => countryRef?.current?.focus()}
+                                            onSubmitEditing={() => stateRef?.current?.focus()}
                                             blurOnSubmit={false}
                                             ref={cityRef}
                                         />
@@ -333,14 +335,14 @@ export default function AddressCustomer() {
                                             style={globalStyles.fieldsLogIn}
                                             title='Estado'
                                             textContentType='addressState'
-                                            onChangeText={(e) => { setFieldValue('country', e, false); setFieldsFormTouched(true); }}
-                                            onBlur={handleBlur('country')}
-                                            value={values.country}
+                                            onChangeText={(e) => { setFieldValue('state', e, false); setFieldsFormTouched(true); }}
+                                            onBlur={handleBlur('state')}
+                                            value={values.state}
                                             returnKeyType='go'
                                             onSubmitEditing={handleSubmit as any}
-                                            ref={countryRef}
+                                            ref={stateRef}
                                         />
-                                        <InvalidFeedback message={touched.country ? errors.country : ''}></InvalidFeedback>
+                                        <InvalidFeedback message={touched.state ? errors.state : ''}></InvalidFeedback>
                                     </View>
                                 </View>
 

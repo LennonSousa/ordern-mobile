@@ -5,13 +5,12 @@ import {
     SectionList,
     View,
     Dimensions,
-    ImageBackground,
-    Image,
     Text,
     TouchableOpacity,
     Modal,
     TouchableHighlight,
-    Animated
+    Animated,
+    RefreshControl
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { getStatusBarHeight } from 'react-native-status-bar-height';
@@ -20,11 +19,12 @@ import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import api from '../../services/api';
 
 import { StoreContext } from '../../context/storeContext';
+import { Store } from '../../components/Store';
 
-import Highlights from '../../components/Highlights';
+import Highlights, { Highlight } from '../../components/Highlights';
 import CategoryItem from '../../components/Categories';
 import ProductItem, { Product } from '../../components/Products';
-import LandingPageShimmer from '../../components/Shimmers/Landing';
+import ShimmerHeaderLandingPage from '../../components/Shimmers/HeaderLandingPage';
 import CategoriesShimmer from '../../components/Shimmers/Categories';
 import { dayOfWeekAsInteger } from '../../utils/dayOfWeekAsInteger';
 import { convertMinutesToHours } from '../../utils/convertHourToMinutes';
@@ -36,7 +36,6 @@ import globalStyles, {
     colorTextDescription,
     colorHeaderBackground,
     colorSecondary,
-    colorBackground,
 } from '../../assets/styles/global';
 
 const STATUS_BAR_HEIGHT = getStatusBarHeight();
@@ -45,8 +44,6 @@ const TOOLS_HEIGHT = 70;
 
 export default function LandingPage() {
     const navigation = useNavigation();
-
-
 
     const { store, handleStore } = useContext(StoreContext);
 
@@ -87,13 +84,30 @@ export default function LandingPage() {
     useEffect(() => {
         api.get('store')
             .then(res => {
-                handleStore(res.data);
+                const resStore: Store = res.data;
+
+                handleStore({ ...resStore, productsHighlights: handleHighlights(resStore) });
+
             })
             .catch(err => {
                 console.log('error get store');
                 console.log(err);
             });
     }, []);
+
+    function handleHighlights(store: Store) {
+        const highlightProducts: Highlight[] = [];
+
+        store.productsHighlights.forEach(highlight => {
+            store.categories.forEach(category => {
+                const productFound = category.products.find(product => { return product.id === highlight.product.id })
+
+                productFound && highlightProducts.push({ ...highlight, product: productFound });
+            })
+        });
+
+        return highlightProducts;
+    }
 
     const onRefresh = useCallback(() => {
         setRefreshing(true);
@@ -105,7 +119,10 @@ export default function LandingPage() {
 
             api.get('store')
                 .then(res => {
-                    handleStore(res.data);
+                    const resStore: Store = res.data;
+
+                    handleStore({ ...resStore, productsHighlights: handleHighlights(resStore) });
+
                     setRefreshing(false);
                 })
                 .catch(err => {
@@ -119,23 +136,29 @@ export default function LandingPage() {
 
     return (
         <View style={globalStyles.container}>
-            <Animated.View
-                style={
-                    [styles.headerContainer, {
-                        height: scrollY.interpolate({
-                            inputRange: [-100, 0],
-                            outputRange: [HEADER_HEIGHT + 100, HEADER_HEIGHT],
-                            extrapolateRight: 'clamp'
-                        }),
-                        top: scrollY.interpolate({
-                            inputRange: [0, 100],
-                            outputRange: [0, -100],
-                            extrapolateLeft: 'clamp',
-                        }),
-                    }]
-                }
-            >
-                <ImageBackground style={styles.cover} source={{ uri: store?.cover }}>
+            {
+                store ? <Animated.View
+                    style={
+                        [styles.headerContainer, {
+                            top: scrollY.interpolate({
+                                inputRange: [0, 100],
+                                outputRange: [0, -100],
+                                extrapolateLeft: 'clamp',
+                            }),
+                        }]
+                    }
+                >
+                    <Animated.Image
+                        style={[styles.cover, {
+                            height: scrollY.interpolate({
+                                inputRange: [-30, 50],
+                                outputRange: [HEADER_HEIGHT + 20, HEADER_HEIGHT],
+                                extrapolateRight: 'clamp',
+                            })
+                        }]}
+                        source={{ uri: store?.cover }}
+                    />
+
                     <View style={styles.avatarContainer}>
                         <Animated.Image
                             source={{ uri: store?.avatar }}
@@ -148,71 +171,82 @@ export default function LandingPage() {
                             }]}
                         />
                     </View>
-                </ImageBackground>
 
 
-                {
-                    store && <View >
-                        <View style={styles.toolsHeader}>
-                            <View style={
-                                {
-                                    flex: 0.3, justifyContent: 'center', alignItems: 'center'
-                                }
-                            }>
-                                <TouchableOpacity
-                                    onPress={() => { navigation.navigate('Search') }}
-                                    style={{
-                                        width: 95,
-                                        height: 30,
-                                        justifyContent: 'center'
-                                    }}
-                                >
-                                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                                        <Feather
-                                            name="search"
-                                            size={24}
-                                            color={colorHeaderBackground}
-                                            style={{ flex: 0.3, paddingHorizontal: 5 }}
-                                        />
-                                    </View>
-                                </TouchableOpacity>
+                </Animated.View> : <ShimmerHeaderLandingPage headerHeight={HEADER_HEIGHT} />
+            }
+
+            {
+                store && <Animated.View style={[styles.toolsHeader, {
+                    top: STATUS_BAR_HEIGHT > 24 ? (TOOLS_HEIGHT + STATUS_BAR_HEIGHT) : TOOLS_HEIGHT,
+                    zIndex: scrollY.interpolate({
+                        inputRange: [105, STATUS_BAR_HEIGHT > 24 ? (HEADER_HEIGHT + STATUS_BAR_HEIGHT) : HEADER_HEIGHT],
+                        outputRange: [4, 0],
+                        extrapolate: 'clamp'
+                    }),
+                    opacity: scrollY.interpolate({
+                        inputRange: [0, STATUS_BAR_HEIGHT],
+                        outputRange: [1, 0],
+                        extrapolate: 'clamp'
+                    }),
+                }]}>
+                    <View style={
+                        {
+                            flex: 0.3, justifyContent: 'center', alignItems: 'center'
+                        }
+                    }>
+                        <TouchableOpacity
+                            onPress={() => { navigation.navigate('Search') }}
+                            style={{
+                                width: 95,
+                                height: 30,
+                                justifyContent: 'center'
+                            }}
+                        >
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                                <Feather
+                                    name="search"
+                                    size={24}
+                                    color={colorPrimaryLight}
+                                    style={{ flex: 0.3, paddingHorizontal: 5 }}
+                                />
                             </View>
-
-                            <View style={{ flex: 0.4 }}></View>
-
-                            <View style={{ flex: 0.3, alignItems: 'center' }}>
-                                <TouchableOpacity
-                                    onPress={() => { setbusinessTimeModal(true) }}
-                                    style={{
-                                        width: 95,
-                                        height: 30,
-                                        backgroundColor: store.opened ? colorHighLight : colorPrimaryLight,
-                                        borderRadius: 5,
-                                        justifyContent: 'center'
-                                    }}
-                                >
-                                    <View style={{
-                                        flexDirection: 'row', alignItems: 'center', justifyContent: 'center'
-                                    }}>
-                                        <Feather
-                                            name={store.opened ? "thumbs-up" : "thumbs-down"}
-                                            size={24}
-                                            color="#ffffff"
-                                            style={{ flex: 0.3, paddingHorizontal: 5 }}
-                                        />
-                                        <Text
-                                            style={[globalStyles.textsButtonBorderMenu, {
-                                                flex: 0.7, color: "#ffffff", textAlign: 'center'
-                                            }]}
-                                        >{store.opened ? "Aberto" : "Fechado"}
-                                        </Text>
-                                    </View>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
+                        </TouchableOpacity>
                     </View>
-                }
-            </Animated.View>
+
+                    <View style={{ flex: 0.4 }}></View>
+
+                    <View style={{ flex: 0.3, alignItems: 'center' }}>
+                        <TouchableOpacity
+                            onPress={() => { setbusinessTimeModal(true) }}
+                            style={{
+                                width: 95,
+                                height: 30,
+                                backgroundColor: store.opened ? colorHighLight : colorPrimaryLight,
+                                borderRadius: 5,
+                                justifyContent: 'center'
+                            }}
+                        >
+                            <View style={{
+                                flexDirection: 'row', alignItems: 'center', justifyContent: 'center'
+                            }}>
+                                <Feather
+                                    name={store.opened ? "thumbs-up" : "thumbs-down"}
+                                    size={24}
+                                    color="#ffffff"
+                                    style={{ flex: 0.3, paddingHorizontal: 5 }}
+                                />
+                                <Text
+                                    style={[globalStyles.textsButtonBorderMenu, {
+                                        flex: 0.7, color: "#ffffff", textAlign: 'center'
+                                    }]}
+                                >{store.opened ? "Aberto" : "Fechado"}
+                                </Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                </Animated.View>
+            }
 
             {
                 store && <Animated.SectionList
@@ -220,6 +254,11 @@ export default function LandingPage() {
                         opacity: scrollY.interpolate({
                             inputRange: [105, STATUS_BAR_HEIGHT > 24 ? (HEADER_HEIGHT + STATUS_BAR_HEIGHT) : HEADER_HEIGHT],
                             outputRange: [0, 1],
+                            extrapolate: 'clamp'
+                        }),
+                        zIndex: scrollY.interpolate({
+                            inputRange: [105, STATUS_BAR_HEIGHT > 24 ? (HEADER_HEIGHT + STATUS_BAR_HEIGHT) : HEADER_HEIGHT],
+                            outputRange: [0, 2],
                             extrapolate: 'clamp'
                         }),
                         backgroundColor: colorHeaderBackground,
@@ -255,8 +294,9 @@ export default function LandingPage() {
                             }}
                             underlayColor={colorSecondary}
                             onPress={() => {
-                                horizontalSectionListCategories.current?.scrollToLocation({ sectionIndex: index, itemIndex: 0 });
-                                sectionListCategories.current?.scrollToLocation({ sectionIndex: index, itemIndex: 0 });
+                                //horizontalSectionListCategories.current?.scrollToLocation({ sectionIndex: index, itemIndex: 0 });
+
+                                sectionListCategories.current?.scrollToLocation({ sectionIndex: index, itemIndex: 0, viewOffset: 80 });
                             }}
                         >
                             <Animated.View
@@ -265,16 +305,16 @@ export default function LandingPage() {
                                     justifyContent: 'center',
                                 }}
                             >
-                                <Text style={
+                                <Animated.Text style={
                                     [
                                         globalStyles.subTitlePrimary, {
                                             alignSelf: 'center',
                                             color: colorPrimaryLight,
                                             borderBottomColor: colorPrimaryLight,
-                                            borderBottomWidth: Number(index) === Number(selectedItemSectionHeader) ? 2 : 0,
+                                            borderBottomWidth: index === selectedItemSectionHeader ? 2 : 0,
                                         }
                                     ]
-                                }>{title}</Text>
+                                }>{title}</Animated.Text>
                             </Animated.View>
                         </TouchableHighlight> : null
                     }
@@ -286,10 +326,10 @@ export default function LandingPage() {
             {
                 store && store.categories ?
                     <SectionList
-                        style={{ zIndex: 0 }}
+                        style={{ zIndex: 5 }}
                         ListHeaderComponent={
                             store.highlights && store.productsHighlights.length > 0 ?
-                                <View style={{ marginTop: HEADER_HEIGHT }}>
+                                <View style={{ paddingTop: 10, marginTop: HEADER_HEIGHT, zIndex: 4 }}>
                                     <Text style={globalStyles.titlePrimaryLight}>{store.highlights_title}</Text>
 
                                     <View style={{ height: 200, marginTop: 20 }}>
@@ -317,26 +357,31 @@ export default function LandingPage() {
                         keyExtractor={item => item.id}
                         renderItem={({ item }) => <ProductItem product={item} />}
                         renderSectionHeader={({ section: { title, paused } }) => <CategoryItem title={title} paused={paused} />}
-                        refreshing={refreshing}
-                        onRefresh={onRefresh}
+                        refreshControl={<RefreshControl
+                            style={{ paddingTop: HEADER_HEIGHT }}
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
+                        />}
                         stickySectionHeadersEnabled
                         showsVerticalScrollIndicator={false}
                         onScroll={animatedEvent}
                         onViewableItemsChanged={(info) => {
-                            const product: Product = info.viewableItems[info.viewableItems.length - 1].item;
+                            const product: Product = info.viewableItems.length > 0 ? info.viewableItems[info.viewableItems.length >= 1 ? info.viewableItems.length - 1 : 0].item : null;
 
-                            let itemToSelect = 0;
+                            let sectionIndex = 0;
+
+                            if (product === null) return;
 
                             horizontalSectionListCategories.current?.props.sections.forEach((section, index) => {
                                 if (product.category && section.data[0].category.id && section.data[0].category.id === product.category.id) {
-                                    itemToSelect = index;
-                                    selectedItemSectionHeader = new Animated.Value(index);
+                                    sectionIndex = index;
+                                    selectedItemSectionHeader.setValue(index);
                                 }
                             });
 
-                            product.category && horizontalSectionListCategories.current?.scrollToLocation({ sectionIndex: itemToSelect, itemIndex: 0 });
+                            product.category && horizontalSectionListCategories.current?.scrollToLocation({ sectionIndex, itemIndex: 0 });
                         }}
-                        viewabilityConfig={{ viewAreaCoveragePercentThreshold: 20 }}
+                        viewabilityConfig={{ viewAreaCoveragePercentThreshold: 100 }}
                         ref={sectionListCategories}
                     /> :
                     <CategoriesShimmer />
@@ -412,7 +457,7 @@ export default function LandingPage() {
                     </View>
                 </View>
             </Modal>
-        </View>
+        </View >
     )
 }
 
@@ -421,17 +466,22 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
 
-    horizontalSectionList: {
-        position: 'absolute',
+    headerContainer: {
+        height: HEADER_HEIGHT,
         width: Dimensions.get('window').width,
+        position: 'absolute',
         top: 0,
         left: 0,
-        zIndex: 3,
+        zIndex: 0,
+        overflow: 'hidden',
     },
 
     cover: {
+        position: 'absolute',
+        width: '100%',
         resizeMode: "cover",
-        flex: 1
+        top: 0,
+        left: 0,
     },
 
     avatarContainer: {
@@ -449,24 +499,20 @@ const styles = StyleSheet.create({
         borderRadius: 100
     },
 
-    headerContainer: {
-        width: Dimensions.get('window').width,
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        zIndex: 5,
-    },
-
     toolsHeader: {
         position: 'absolute',
-        bottom: 10,
-        left: 0,
         flexDirection: 'row',
-        flex: 1,
-        alignItems: 'flex-end',
+        left: 0,
+        alignItems: 'center',
         height: STATUS_BAR_HEIGHT > 24 ? (TOOLS_HEIGHT + STATUS_BAR_HEIGHT) : TOOLS_HEIGHT,
+        width: '100%',
+    },
+
+    horizontalSectionList: {
+        position: 'absolute',
         width: Dimensions.get('window').width,
-        zIndex: 4,
+        top: 0,
+        left: 0,
     },
 
     withShadow: {

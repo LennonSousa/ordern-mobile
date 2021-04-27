@@ -195,6 +195,7 @@ export default function PaymentsCustomer() {
                                             placeholder='Somente números'
                                             textContentType='creditCardNumber'
                                             keyboardType='numeric'
+                                            editable={selectedCustomerPayment ? false : true}
                                             onBlur={() => {
                                                 handleBlur('card_number');
                                                 setFieldValue('brand',
