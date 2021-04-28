@@ -453,7 +453,7 @@ export default function LandingPage() {
                                     style={globalStyles.footerButton}
                                     onPress={() => { setbusinessTimeModal(false) }}
                                 >
-                                    <Text style={globalStyles.footerButtonText}>Entendi</Text>
+                                    <Text style={globalStyles.footerButtonText}>Fechar</Text>
                                 </TouchableHighlight>
                             </View>
                         </View>

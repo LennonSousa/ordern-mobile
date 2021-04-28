@@ -1,13 +1,15 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { ScrollView, StyleSheet, Text, View, TouchableHighlight, Platform, Linking } from 'react-native';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { format } from 'date-fns';
 
+import api from '../../services/api';
+import { AuthContext } from '../../context/authContext';
 import { StoreContext } from '../../context/storeContext';
 import { ContextOrdering } from '../../context/orderingContext';
-
+import { StoreShipments } from '../../components/StoreShipments';
 import PageFooter from '../../components/PageFooter';
 
 import globalStyles, { colorPrimaryDark, colorPrimaryLight } from '../../assets/styles/global';
@@ -15,8 +17,10 @@ import globalStyles, { colorPrimaryDark, colorPrimaryLight } from '../../assets/
 export default function PickupShipment() {
     const navigation = useNavigation();
 
+    const { customer } = useContext(AuthContext);
     const { store } = useContext(StoreContext);
     const { order, handleOrder, handleTotalOrder } = useContext(ContextOrdering);
+    const [pickupShipmentEstimated, setPickupShipmentEstimated] = useState(30);
 
     const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
     const latLng = `${store?.latitude},${store?.longitude}`;
@@ -27,6 +31,22 @@ export default function PickupShipment() {
     });
 
     useEffect(() => {
+        if (customer) {
+            api.get(`customer/${customer.id}/store/shipments`)
+                .then(res => {
+                    const storeShipments: StoreShipments[] = res.data;
+
+                    if (storeShipments && storeShipments.length > 0) {
+                        const pickupShipment = storeShipments.find(shipment => { return shipment.code === 'pickup' });
+
+                        pickupShipment && setPickupShipmentEstimated(pickupShipment.default_price);
+                    }
+                })
+                .catch(() => {
+                    console.log('Error to get store shipments');
+                });
+        }
+
         if (order) {
             handleTotalOrder(
                 {
@@ -47,7 +67,7 @@ export default function PickupShipment() {
                     address: 'Retirar no local.',
                     delivery_tax: 0,
                     delivery_type: 'pickup',
-                    delivery_estimated: 30,
+                    delivery_estimated: pickupShipmentEstimated,
                 }
             );
 
@@ -78,6 +98,7 @@ export default function PickupShipment() {
                                     <Text style={globalStyles.textDescription}>{`${store?.city} - ${store?.state}`}</Text>
                                     <Text style={globalStyles.textDescription}>{`CEP: ${store?.zip_code}`}</Text>
                                     <Text style={globalStyles.textDescription}>{`Telefone: ${store?.phone}`}</Text>
+                                    <Text style={globalStyles.textDescription}>{`Tempo estimado:\n ${pickupShipmentEstimated} minutos`}</Text>
                                 </View>
                             </View>
 

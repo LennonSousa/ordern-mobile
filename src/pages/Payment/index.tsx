@@ -69,29 +69,29 @@ export default function Payment() {
 
     useEffect(() => {
         if (customer) {
-            api.get('payments/delivery').then(res => {
+            api.get(`customer/${customer.id}/payments/delivery`).then(res => {
                 setPaymentsDelivery(res.data);
             }).catch(() => {
                 console.log("Error get payments delivery.");
             });
 
-            api.get(`stripe/customers/${customer.id}`).then(res => {
-                if (res.status === 200)
-                    setPaymentStripe(res.data);
-            }).catch(() => {
-                console.log("Error get payment stripe.");
-            });
-
-            api.get('payments/credit-brands').then(res => {
+            api.get(`customer/${customer.id}/payments/credit-brands`).then(res => {
                 setCreditBrands(res.data);
             }).catch(() => {
                 console.log("Error get credit brands.");
             });
 
-            api.get('payments/debit-brands').then(res => {
+            api.get(`customer/${customer.id}/payments/debit-brands`).then(res => {
                 setDebitBrands(res.data);
             }).catch(() => {
                 console.log("Error get debit brands.");
+            });
+
+            api.get(`customer/${customer.id}/payments/stripe`).then(res => {
+                if (res.status === 200)
+                    setPaymentStripe(res.data);
+            }).catch(() => {
+                console.log("Error get payment stripe.");
             });
         }
     }, [customer]);
@@ -145,7 +145,6 @@ export default function Payment() {
 
                             const res = await api.post(`customer/${customer.id}/orders`, {
                                 tracker: order.tracker,
-                                delivery_in: new Date,
                                 sub_total: order.sub_total,
                                 cupom: order.cupom,
                                 delivery_tax: order.delivery_tax,
@@ -638,9 +637,6 @@ export default function Payment() {
 
                                     const res = await api.post(`customer/${customer.id}/orders`, {
                                         tracker: order.tracker,
-                                        client_id: customer.id,
-                                        client: customer.name,
-                                        delivery_in: new Date,
                                         sub_total: order.sub_total,
                                         cupom: order.cupom,
                                         delivery_tax: order.delivery_tax,
@@ -715,12 +711,12 @@ export default function Payment() {
                                     }, 2000);
                                 }
                             }
-                            catch {
+                            catch(err) {
                                 setModalWaiting("error");
 
                                 setErrorMessage('Erro na transação. Tente novamente mais tarde.');
 
-                                console.log('Order failed');
+                                console.log('Order failed: ', err);
                             }
                         }}
                         validationSchema={changeValidatiionSchema}

@@ -1,11 +1,20 @@
 import React, { forwardRef, LegacyRef } from 'react';
 import { View, Text, StyleSheet, TextInputProps, TextInput } from 'react-native';
 
+import {
+    colorBackground,
+    colorTextDescription,
+    colorBorder,
+    colorDisabledBorder,
+    colorInputText,
+    colorDisabledInputText
+} from '../../../assets/styles/global';
+
 interface InputsProps extends TextInputProps {
     title?: string
 }
 
-const Input = forwardRef(({ title, style, ...props }: InputsProps, ref: LegacyRef<TextInput>) => {
+const Input = forwardRef(({ title, style, editable = true, ...props }: InputsProps, ref: LegacyRef<TextInput>) => {
     return (
         <View>
             <View style={title ? styles.rowTitle : {}}>
@@ -14,8 +23,12 @@ const Input = forwardRef(({ title, style, ...props }: InputsProps, ref: LegacyRe
 
             <TextInput
                 {...props}
-                {...{ref}}
-                style={[styles.input, style]}
+                {...{ ref }}
+                editable={editable}
+                style={[styles.input, style, {
+                    color: editable ? colorInputText : colorDisabledInputText,
+                    borderColor: editable ? colorBorder : colorDisabledBorder
+                }]}
                 placeholderTextColor={'#c8c8c8'}
             />
         </View>
@@ -34,8 +47,8 @@ const styles = StyleSheet.create({
     },
 
     title: {
-        color: '#8c8c8c',
-        backgroundColor: '#ffffff',
+        color: colorTextDescription,
+        backgroundColor: colorBackground,
         paddingHorizontal: 10
     },
 
@@ -43,8 +56,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 10,
         borderRadius: 8,
-        color: '#4d4d4d',
-        borderColor: '#c8c8c8',
         borderWidth: 1,
     },
 });

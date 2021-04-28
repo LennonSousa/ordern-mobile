@@ -1,4 +1,4 @@
-export interface RestaurantDeliveryGroups{
+export interface StoreDeliveryGroups{
     id: number;
     description: string;
     price: number;

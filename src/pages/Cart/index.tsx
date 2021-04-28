@@ -11,13 +11,13 @@ import Highlights from '../../components/Highlights';
 import OrderItems from '../../components/OrderItems';
 import Header from '../../components/PageHeader';
 import PageFooter from '../../components/PageFooter';
-import VerifyProductAvailable from '../../utils/verifyProductAvailable';
 import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingModal';
 
 import api from '../../services/api';
 
 import globalStyles, { colorPrimaryDark } from '../../assets/styles/global';
 import emptyCart from '../../assets/images/empty-cart.png';
+import { Category } from '../../components/Categories';
 
 interface NotAvailableProduct {
     name: string;
@@ -39,15 +39,17 @@ export default function Cart() {
             try {
                 if (order.sub_total < store.min_order) {
                     setModalWaiting("error");
-                    setErrorMessage(`Desculpe, o pedido mínimo é de R$ ${Number(store.min_order).toFixed(2).replace('.', ',')}.`);
+                    setErrorMessage(`O pedido mínimo é de R$ ${Number(store.min_order).toFixed(2).replace('.', ',')}.`);
                     return;
                 }
 
-                const res = await api.get('store');
+                const resStore = await api.get('store');
 
-                handleStore(res.data);
+                const resCategories = await api.get('categories');
+                
+                const updatedCategories: Category[] = resCategories.data;
 
-                const updatedStore: Store = res.data;
+                const updatedStore: Store = { ...resStore.data, categories: updatedCategories };
 
                 let notAvailableProducts: NotAvailableProduct[] = [];
 
@@ -88,6 +90,7 @@ export default function Cart() {
                     return;
                 }
 
+                handleStore(updatedStore);
                 handleOrder(order);
 
                 setTimeout(() => {

@@ -136,7 +136,6 @@ export default function PaymentsCustomer() {
 
                                     if (selectedCustomerPayment) {
                                         await api.put(`customer/${customer.id}/payments/${selectedCustomerPayment.id}`, {
-                                            card_number: values.card_number,
                                             brand: values.brand,
                                             exp_month: values.exp_month,
                                             exp_year: values.exp_year,
