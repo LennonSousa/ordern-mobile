@@ -22,7 +22,7 @@ import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingMo
 import globalStyles, { colorPrimaryLight, colorSecondaryDark, colorHighLight, colorTextMenuDescription } from '../../assets/styles/global';
 
 interface OrderDetailsRouteParams {
-    id: number;
+    id: string;
 }
 
 export default function OrderDetails() {

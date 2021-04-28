@@ -10,7 +10,7 @@ import { SelectedProductContext } from '../../context/selectedProductContext';
 import globalStyles, { colorPrimaryLight, colorSecondary, colorTextInSecondary } from '../../assets/styles/global';
 
 export interface ProductAdditional {
-    id: number;
+    id: string;
     pdv: string;
     price: number;
     order: number;

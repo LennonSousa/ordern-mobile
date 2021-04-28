@@ -3,12 +3,11 @@ import { ScrollView, StyleSheet, Text, View, TouchableHighlight, Image } from 'r
 import { useNavigation } from '@react-navigation/native';
 
 import { StoreContext } from '../../context/storeContext';
-import Highlights from '../../components/Highlights';
-import { OpenedDaysContext } from '../../context/openedDaysContext';
 import { AuthContext } from '../../context/authContext';
-import { CategoriesContext } from '../../context/categoriesContext';
 import { ContextOrdering } from '../../context/orderingContext';
-import { Category } from '../../components/Categories';
+
+import { Store } from '../../components/Store';
+import Highlights from '../../components/Highlights';
 import OrderItems from '../../components/OrderItems';
 import Header from '../../components/PageHeader';
 import PageFooter from '../../components/PageFooter';
@@ -25,10 +24,8 @@ interface NotAvailableProduct {
 }
 
 export default function Cart() {
-    const { store } = useContext(StoreContext);
-    const { isOpened } = useContext(OpenedDaysContext);
+    const { store, handleStore } = useContext(StoreContext);
     const { customer } = useContext(AuthContext);
-    const { handleCategories } = useContext(CategoriesContext);
     const { order, handleOrder } = useContext(ContextOrdering);
     const navigation = useNavigation();
 
@@ -36,65 +33,75 @@ export default function Cart() {
     const [errorMessage, setErrorMessage] = useState('');
 
     async function handleOrdertoShipment() {
-        if (store && isOpened && order) {
-            if (order.sub_total >= store.min_order) {
-                setModalWaiting("waiting");
+        if (store && order) {
+            setModalWaiting("waiting");
 
-                try {
-                    const res = await api.get('categories');
+            try {
+                if (order.sub_total < store.min_order) {
+                    setModalWaiting("error");
+                    setErrorMessage(`Desculpe, o pedido mínimo é de R$ ${Number(store.min_order).toFixed(2).replace('.', ',')}.`);
+                    return;
+                }
 
-                    handleCategories(res.data);
-                    const categories: Category[] = res.data;
+                const res = await api.get('store');
 
-                    let notAvailableProducts: NotAvailableProduct[] = [];
+                handleStore(res.data);
 
-                    categories.forEach(category => {
-                        category.products.forEach(product => {
-                            const productFound = order.orderItems.find(orderItem => { return orderItem.product_id === product.id });
+                const updatedStore: Store = res.data;
 
-                            if (productFound) {
-                                const verify = VerifyProductAvailable(product);
+                let notAvailableProducts: NotAvailableProduct[] = [];
 
-                                console.log(productFound.name, verify);
+                order.orderItems.forEach(orderItem => {
+                    let foundItem = false;
 
-                                if (verify === "paused")
-                                    notAvailableProducts.push({ name: productFound.name });
-                                else if (verify === "not-available") {
-                                    notAvailableProducts.push({ name: productFound.name });
-                                }
-                            }
-                        });
+                    updatedStore.categories.forEach(category => {
+                        const foundProduct = category.products.find(product => { return product.id === orderItem.product_id });
+
+                        if (foundProduct) {
+                            orderItem.orderItemAdditionals.forEach(itemAdditional => {
+                                foundProduct.categoriesAdditional.forEach(categoryAdditional => {
+                                    const foundAdditional = categoryAdditional.productAdditional.find(productAdditional => {
+                                        return productAdditional.additional.id === itemAdditional.additional_id
+                                    });
+
+                                    if (!foundAdditional) notAvailableProducts.push({
+                                        name: `Adicional ${itemAdditional.name} no produto ${foundProduct.title}`
+                                    });
+                                });
+                            });
+
+                            foundItem = true;
+                            return;
+                        }
                     });
 
-                    if (notAvailableProducts.length > 0) {
-                        setTimeout(() => {
-                            setModalWaiting("error");
-                            setErrorMessage(`Infelizmente os seguintes itens acabaram de sair do estoque:${notAvailableProducts.map(item => { return ` ${item.name}\n` })}`);
+                    if (!foundItem) notAvailableProducts.push({ name: orderItem.name });
+                });
 
-                            return;
-                        }, 1500);
-                    }
-                    else {
-                        handleOrder(order);
-
-                        setTimeout(() => {
-                            setModalWaiting("hidden");
-
-                            if (customer)
-                                navigation.navigate('Shipment');
-                            else
-                                navigation.navigate('Profile');
-                        }, 1500);
-                    }
-                }
-                catch {
+                if (notAvailableProducts.length > 0) {
                     setModalWaiting("error");
-                    setErrorMessage("Por favor, verifique a sua conexão com a internet.");
+                    setErrorMessage(
+                        `Infelizmente os seguintes itens acabaram de sair do estoque:\n ${notAvailableProducts.map((item, index) => {
+                            return `${index > 8 ? index + 1 : `0${index + 1}`} - ${item.name}\n`
+                        })}`
+                    );
+                    return;
                 }
+
+                handleOrder(order);
+
+                setTimeout(() => {
+                    setModalWaiting("hidden");
+
+                    if (customer)
+                        navigation.navigate('Shipment');
+                    else
+                        navigation.navigate('Profile');
+                }, 1500);
             }
-            else {
+            catch {
                 setModalWaiting("error");
-                setErrorMessage(`Desculpe, o pedido mínimo é de R$ ${Number(store.min_order).toFixed(2).replace('.', ',')}.`);
+                setErrorMessage("Erro de conexão! Por favor, verifique a sua conexão com a internet.");
             }
         }
     }

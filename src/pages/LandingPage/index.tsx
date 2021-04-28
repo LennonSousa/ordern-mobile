@@ -84,30 +84,13 @@ export default function LandingPage() {
     useEffect(() => {
         api.get('store')
             .then(res => {
-                const resStore: Store = res.data;
-
-                handleStore({ ...resStore, productsHighlights: handleHighlights(resStore) });
-
+                handleStore(res.data);
             })
             .catch(err => {
                 console.log('error get store');
                 console.log(err);
             });
     }, []);
-
-    function handleHighlights(store: Store) {
-        const highlightProducts: Highlight[] = [];
-
-        store.productsHighlights.forEach(highlight => {
-            store.categories.forEach(category => {
-                const productFound = category.products.find(product => { return product.id === highlight.product.id })
-
-                productFound && highlightProducts.push({ ...highlight, product: productFound });
-            })
-        });
-
-        return highlightProducts;
-    }
 
     const onRefresh = useCallback(() => {
         setRefreshing(true);
@@ -119,9 +102,7 @@ export default function LandingPage() {
 
             api.get('store')
                 .then(res => {
-                    const resStore: Store = res.data;
-
-                    handleStore({ ...resStore, productsHighlights: handleHighlights(resStore) });
+                    handleStore(res.data);
 
                     setRefreshing(false);
                 })

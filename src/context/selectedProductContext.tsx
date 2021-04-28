@@ -3,7 +3,7 @@ import React, { createContext, useState } from 'react';
 import { ProductValue } from '../components/ProductValues';
 
 interface SelectedAdditionals {
-    id: number;
+    id: string;
     additional_id: string;
     title: string;
     price: number;
@@ -11,7 +11,7 @@ interface SelectedAdditionals {
 }
 
 interface CategoriesAdditional {
-    id: number;
+    id: string;
     min: number;
     max: number;
     selectedAdditionals: SelectedAdditionals[];

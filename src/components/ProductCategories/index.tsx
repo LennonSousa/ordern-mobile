@@ -7,14 +7,13 @@ import ProductAdditionalItem, { ProductAdditional } from '../ProductAdditionals'
 import globalStyles from '../../assets/styles/global';
 
 export interface ProductCategory {
-    id: number;
+    id: string;
     title: string;
     min: number;
     max: number;
     repeat: boolean;
     order: number;
     productAdditional: ProductAdditional[];
-    product: number;
 }
 
 interface ProductDetailsRouteParams {
