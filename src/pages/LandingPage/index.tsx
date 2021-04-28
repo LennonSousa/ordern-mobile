@@ -84,7 +84,16 @@ export default function LandingPage() {
     useEffect(() => {
         api.get('store')
             .then(res => {
-                handleStore(res.data);
+                let resStore: Store = res.data;
+
+                api.get('categories')
+                    .then(res => {
+                        handleStore({ ...resStore, categories: res.data });
+                    })
+                    .catch(err => {
+                        console.log('error get categries');
+                        console.log(err);
+                    });
             })
             .catch(err => {
                 console.log('error get store');
@@ -102,16 +111,27 @@ export default function LandingPage() {
 
             api.get('store')
                 .then(res => {
-                    handleStore(res.data);
+                    let resStore: Store = res.data;
 
-                    setRefreshing(false);
+                    api.get('categories')
+                        .then(res => {
+                            handleStore({ ...resStore, categories: res.data });
+
+                            setRefreshing(false);
+                        })
+                        .catch(err => {
+                            console.log('error get categries');
+                            console.log(err);
+
+                            setRefreshing(false);
+                        });
                 })
                 .catch(err => {
                     console.log('error get store');
                     console.log(err);
+
                     setRefreshing(false);
                 });
-
         }
     }, [refreshing]);
 
@@ -230,7 +250,7 @@ export default function LandingPage() {
             }
 
             {
-                store && <Animated.SectionList
+                store && store.categories && <Animated.SectionList
                     style={[styles.horizontalSectionList, {
                         opacity: scrollY.interpolate({
                             inputRange: [105, STATUS_BAR_HEIGHT > 24 ? (HEADER_HEIGHT + STATUS_BAR_HEIGHT) : HEADER_HEIGHT],
@@ -353,8 +373,10 @@ export default function LandingPage() {
 
                             if (product === null) return;
 
+
+
                             horizontalSectionListCategories.current?.props.sections.forEach((section, index) => {
-                                if (product.category && section.data[0].category.id && section.data[0].category.id === product.category.id) {
+                                if (product.category && section.data.length > 0 && section.data[0].category.id === product.category.id) {
                                     sectionIndex = index;
                                     selectedItemSectionHeader.setValue(index);
                                 }
@@ -390,7 +412,7 @@ export default function LandingPage() {
                             </View>
 
                             {
-                                store && store.openedDays.map((weekDay, index) => {
+                                store && store.openedDays && store.openedDays.map((weekDay, index) => {
                                     return (
                                         weekDay.opened && <View key={index} style={styles.containerCardBrands}>
                                             <View style={globalStyles.row}>

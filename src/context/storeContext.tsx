@@ -14,6 +14,11 @@ const StoreProvider: React.FC = ({ children }) => {
     const [store, setStore] = useState<Store | undefined>();
 
     function handleStore(storeItem: Store) {
+        if (!storeItem) {
+            setStore(storeItem);
+            return;
+        }
+
         setStore({ ...storeItem, productsHighlights: handleHighlights(storeItem) });
     }
 
