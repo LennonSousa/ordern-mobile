@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, TouchableHighlight, ScrollView, TextInput } fro
 import { Feather } from '@expo/vector-icons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+import { getYear } from 'date-fns';
 
 import creditCardType, {
     getTypeInfo,
@@ -131,6 +132,12 @@ export default function PaymentsCustomer() {
                         }}
                         onSubmit={async values => {
                             if (customer) {
+                                if (values.brand === '') {
+                                    setModalWaiting("error");
+                                    setErrorMessage("Número de cartão não reconhecido!");
+                                    return;
+                                }
+
                                 try {
                                     setModalWaiting("waiting");
 
@@ -145,6 +152,12 @@ export default function PaymentsCustomer() {
                                         });
                                     }
                                     else {
+                                        if (customer.payment.length >= 5) {
+                                            setModalWaiting("error");
+                                            setErrorMessage("Você pode adicionar no máximo 05 cartões.");
+                                            return;
+                                        }
+
                                         await api.post(`customer/${customer.id}/payments`, {
                                             card_number: values.card_number,
                                             brand: values.brand,
@@ -174,7 +187,7 @@ export default function PaymentsCustomer() {
                         }}
                         validationSchema={validatiionSchema}
                     >
-                        {({ handleBlur, handleSubmit, values, errors, setFieldValue, setFieldTouched, isValid, touched }) => (
+                        {({ handleBlur, handleSubmit, values, errors, setFieldError, setFieldValue, setFieldTouched, isValid, touched }) => (
                             <View style={globalStyles.containerItem}>
                                 <View style={styles.fieldsRow}>
                                     <View style={styles.fieldsColumn}>
@@ -234,7 +247,25 @@ export default function PaymentsCustomer() {
                                             placeholder='xx'
                                             keyboardType='numeric'
                                             maxLength={2}
-                                            onChangeText={(e) => { setFieldValue('exp_month', e, false); setFieldsFormTouched(true); }}
+                                            onChangeText={(e) => {
+                                                try {
+                                                    const month = Number(e);
+
+                                                    if (e.length > 1 && month < 1 || month > 12) {
+                                                        setFieldTouched('exp_month', true);
+                                                        setFieldError('exp_month', 'Mês inválido!');
+                                                        return;
+                                                    }
+
+                                                    setFieldError('exp_month', '');
+                                                }
+                                                catch {
+                                                    setFieldError('exp_month', 'Mês inválido!');
+                                                }
+
+                                                setFieldValue('exp_month', e, false);
+                                                setFieldsFormTouched(true);
+                                            }}
                                             onBlur={handleBlur('exp_month')}
                                             value={values.exp_month}
                                             returnKeyType='next'
@@ -251,7 +282,25 @@ export default function PaymentsCustomer() {
                                             placeholder='xxxx'
                                             keyboardType='numeric'
                                             maxLength={4}
-                                            onChangeText={(e) => { setFieldValue('exp_year', e, false); setFieldsFormTouched(true); }}
+                                            onChangeText={(e) => {
+                                                try {
+                                                    const year = Number(e);
+
+                                                    if (e.length > 3 && year < getYear(new Date()) || year > getYear(new Date()) + 30) {
+                                                        setFieldTouched('exp_year', true);
+                                                        setFieldError('exp_year', 'Ano inválido!');
+                                                        return;
+                                                    }
+
+                                                    setFieldError('exp_year', '');
+                                                }
+                                                catch {
+                                                    setFieldError('exp_year', 'Ano inválido!');
+                                                }
+
+                                                setFieldValue('exp_year', e, false);
+                                                setFieldsFormTouched(true);
+                                            }}
                                             onBlur={handleBlur('exp_year')}
                                             value={values.exp_year}
                                             returnKeyType='next'

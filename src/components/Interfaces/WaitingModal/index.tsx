@@ -55,7 +55,6 @@ export default function WaitingModal({ status, message }: WaitingModalProps) {
             setSuccessWaiting(false);
             setErrorWaiting(false);
         }
-
     }, [status, message]);
 
     return (
@@ -105,8 +104,8 @@ export default function WaitingModal({ status, message }: WaitingModalProps) {
                                     <View style={{ marginVertical: 5, alignItems: 'center' }}>
                                         <FontAwesome5 name="times-circle" size={48} color="#fe3807" />
                                     </View>
-                                    
-                                    
+
+
                                     <View style={{ marginVertical: 5 }}>
                                         <Text style={[globalStyles.subTitlePrimary, { textAlign: 'center' }]}>{errorMessage}</Text>
                                     </View>

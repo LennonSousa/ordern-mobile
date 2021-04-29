@@ -56,6 +56,7 @@ export default function OrderDetails() {
         if (signed) {
             customer && customer.orders.map(order => {
                 if (order.id === params.id) {
+                    console.log(order)
                     setSelectedOrder(order);
                 }
             });
@@ -607,7 +608,7 @@ export default function OrderDetails() {
                                                 autoCapitalize='sentences'
                                                 onChangeText={handleChange('reasonCancellation')}
                                                 onBlur={handleBlur('reasonCancellation')}
-                                                value={values.reasonCancellation}
+                                                value={selectedOrder.orderStatus.order === 5 && values.reasonCancellation ? values.reasonCancellation : ''}
                                                 editable={selectedOrder.orderStatus.order !== 5 ? true : false}
                                             />
                                             <InvalidFeedback message={errors.reasonCancellation}></InvalidFeedback>

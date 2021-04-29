@@ -58,13 +58,24 @@ export default function Products({ product }: ProductProps) {
                         </View>
 
                         <View style={styles.rowBase}>
-
                             {
-                                product.discount ? <Text style={styles.productPriceDiscount}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text> :
-                                    <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text>
+                                product.discount ?
+                                    <Text style={styles.productPriceDiscount}>
+                                        {`R$ ${product.price_one ?
+                                            product.price.toString().replace('.', ',') :
+                                            product.values.length > 0 ? product.values[0].value.toString().replace('.', ',') : '0,00'}`}
+                                    </Text> :
+                                    <Text style={[styles.productPrice, { color: colorHighLight }]}>
+                                        {`R$ ${product.price_one ?
+                                            product.price.toString().replace('.', ',') :
+                                            product.values.length > 0 ? product.values[0].value.toString().replace('.', ',') : '0,00'}`}
+                                    </Text>
                             }
                             {
-                                product.discount && <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.discount_price.toString().replace('.', ',')}`}</Text>
+                                product.discount &&
+                                <Text style={[styles.productPrice, { color: colorHighLight }]}>
+                                    {`R$ ${product.discount_price.toString().replace('.', ',')}`}
+                                </Text>
                             }
                         </View>
                     </View>
@@ -79,6 +90,7 @@ const styles = StyleSheet.create({
         flex: 1,
         borderColor: '#e6e6e6',
         borderTopWidth: 1,
+        borderRadius: 5,
     },
 
     button: {

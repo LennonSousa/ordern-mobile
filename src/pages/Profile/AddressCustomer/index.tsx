@@ -356,7 +356,13 @@ export default function AddressCustomer() {
                                     <View style={globalStyles.fieldsColumn}>
                                         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                                             <View style={{ width: '30%' }}>
-                                                <TouchableOpacity style={styles.buttonTypeAddressCustomer} onPress={() => { setFieldValue('type', 'home') }}>
+                                                <TouchableOpacity
+                                                    style={styles.buttonTypeAddressCustomer}
+                                                    onPress={() => {
+                                                        setFieldValue('type', 'home');
+                                                        setFieldsFormTouched(true);
+                                                    }}
+                                                >
                                                     <View style={{ alignItems: 'center' }}>
                                                         <Text style={{ color: values.type === 'home' ? '#cc0000' : 'darkgray' }}>Casa</Text>
                                                         <Feather name="home" size={24} color={values.type === 'home' ? '#cc0000' : 'darkgray'} />
@@ -366,7 +372,13 @@ export default function AddressCustomer() {
 
 
                                             <View style={{ width: '30%' }}>
-                                                <TouchableOpacity style={styles.buttonTypeAddressCustomer} onPress={() => { setFieldValue('type', 'work') }}>
+                                                <TouchableOpacity
+                                                    style={styles.buttonTypeAddressCustomer}
+                                                    onPress={() => {
+                                                        setFieldValue('type', 'work')
+                                                        setFieldsFormTouched(true);
+                                                    }}
+                                                >
                                                     <View style={{ alignItems: 'center' }}>
                                                         <Text style={{ color: values.type === 'work' ? '#cc0000' : 'darkgray' }}>Trabalho</Text>
                                                         <Feather name="coffee" size={24} color={values.type === 'work' ? '#cc0000' : 'darkgray'} />
@@ -375,7 +387,13 @@ export default function AddressCustomer() {
                                             </View>
 
                                             <View style={{ width: '30%' }}>
-                                                <TouchableOpacity style={styles.buttonTypeAddressCustomer} onPress={() => { setFieldValue('type', 'other') }}>
+                                                <TouchableOpacity
+                                                    style={styles.buttonTypeAddressCustomer}
+                                                    onPress={() => {
+                                                        setFieldValue('type', 'other')
+                                                        setFieldsFormTouched(true);
+                                                    }}
+                                                >
                                                     <View style={{ alignItems: 'center' }}>
                                                         <Text style={{ color: values.type === 'other' ? '#cc0000' : 'darkgray' }}>Outros</Text>
                                                         <Feather name="box" size={24} color={values.type === 'other' ? '#cc0000' : 'darkgray'} />
@@ -442,6 +460,11 @@ export default function AddressCustomer() {
                                     <View style={{ flexDirection: 'row' }}>
                                         <View style={globalStyles.colTitleButtonItem}>
                                             <Text style={{ color: '#8c8c8c' }}>{`${address.street} - ${address.number}`}</Text>
+                                            <Text style={[globalStyles.textDescription, { fontStyle: 'italic' }]}>{
+                                                address.type === "home" && "Casa" ||
+                                                address.type === "work" && "Trabalho" ||
+                                                address.type === "other" && "Outro"
+                                            }</Text>
                                         </View>
                                         <View style={globalStyles.colIconButtonItem}>
                                             <Feather name="chevron-right" size={24} color="#cc0000" />

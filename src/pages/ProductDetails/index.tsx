@@ -144,59 +144,108 @@ export default function ProductDetails() {
                 }
             });
 
-            if (validetedAmountAdditionals) {
-                setModalWaiting("waiting");
+            console.log(validetedAmountAdditionals)
 
-                const selectedValue = selectedProduct.values.find(item => { return item.id === selectedProduct.selectedValue });
+            if (!validetedAmountAdditionals) {
+                setModalWaiting("error");
+                setErrorMessage("Você deve escolher os itens obrigatórios.");
+                return;
+            }
 
-                let itemsToOrder: OrderItem = {
+            setModalWaiting("waiting");
+
+            const selectedValue = selectedProduct.values.find(item => { return item.id === selectedProduct.selectedValue });
+
+            let itemsToOrder: OrderItem = {
+                id: 0,
+                amount: selectedProduct.amount,
+                name: `${product.title} - ${!product.price_one && selectedValue ? selectedValue.description : ''} (${product.category.title})`,
+                value: selectedProduct.price,
+                notes: selectedProductNotes,
+                product_id: product.id,
+                orderItemAdditionals: [{
                     id: 0,
-                    amount: selectedProduct.amount,
-                    name: `${product.title} - ${!product.price_one && selectedValue ? selectedValue.description : ''} (${product.category.title})`,
-                    value: selectedProduct.price,
-                    notes: selectedProductNotes,
-                    product_id: product.id,
-                    orderItemAdditionals: [{
-                        id: 0,
-                        amount: 1,
-                        name: "",
-                        value: 0,
-                        additional_id: '0',
-                    }]
-                };
+                    amount: 1,
+                    name: "",
+                    value: 0,
+                    additional_id: '0',
+                }]
+            };
 
-                itemsToOrder.orderItemAdditionals = [];
+            itemsToOrder.orderItemAdditionals = [];
 
-                selectedProduct.categoiesAdditional.forEach(category => {
-                    category.selectedAdditionals.forEach(additional => {
-                        itemsToOrder.orderItemAdditionals.push({
-                            id: itemsToOrder.orderItemAdditionals.length,
-                            amount: additional.amount,
-                            name: additional.title,
-                            value: additional.price,
-                            additional_id: additional.additional_id
-                        });
+            selectedProduct.categoiesAdditional.forEach(category => {
+                category.selectedAdditionals.forEach(additional => {
+                    itemsToOrder.orderItemAdditionals.push({
+                        id: itemsToOrder.orderItemAdditionals.length,
+                        amount: additional.amount,
+                        name: additional.title,
+                        value: additional.price,
+                        additional_id: additional.additional_id
                     });
                 });
+            });
 
-                if (order) {
-                    let identicFound = false;
+            if (order) {
+                let identicFound = false;
 
-                    if (order.orderItems.length > 0) {
-                        //console.log('function findOne');
+                if (order.orderItems.length > 0) {
+                    //console.log('function findOne');
 
-                        order.orderItems.forEach((listItem: OrderItem) => { // Searching for each one.
-                            if (itemsToOrder.product_id === listItem.product_id) {
-                                if (!selectedProduct.price_one) {
+                    order.orderItems.forEach((listItem: OrderItem) => { // Searching for each one.
+                        if (itemsToOrder.product_id === listItem.product_id) {
+                            if (!selectedProduct.price_one) {
 
-                                    if (listItem.name !== itemsToOrder.name)
+                                if (listItem.name !== itemsToOrder.name)
+                                    return;
+                            }
+
+                            if (itemsToOrder.orderItemAdditionals.length === 0 && listItem.orderItemAdditionals.length === 0) { // No addiciontals, means that are identicals.
+                                identicFound = true;
+
+                                //console.log('Idêntico!');
+
+                                handleTotalOrder(
+                                    {
+                                        ...order, orderItems: order.orderItems.map((item, index) => {
+                                            if (index === listItem.id) {
+                                                return {
+                                                    ...item, amount: item.amount + selectedProduct.amount
+                                                };
+                                            }
+
+                                            return item;
+                                        })
+                                    }
+                                );
+
+                                setTimeout(() => {
+                                    setModalWaiting("hidden");
+
+                                    navigation.navigate('Cart');
+                                }, 1000);
+                            }
+                            else if (itemsToOrder.orderItemAdditionals.length === listItem.orderItemAdditionals.length) { // Same additionals amount.
+                                let allAdditionalsIdentcials = true;
+
+                                itemsToOrder.orderItemAdditionals.forEach(additionalToOrder => {
+                                    const itemFound = listItem.orderItemAdditionals.find(orderItemAdditionals => {
+                                        return additionalToOrder.additional_id === orderItemAdditionals.additional_id
+                                    });
+
+                                    //console.log('itemFound: ', itemFound);
+
+                                    if (!itemFound)
+                                        allAdditionalsIdentcials = false;
+
+                                    if (!allAdditionalsIdentcials)
                                         return;
-                                }
+                                });
 
-                                if (itemsToOrder.orderItemAdditionals.length === 0 && listItem.orderItemAdditionals.length === 0) { // No addiciontals, means that are identicals.
+                                if (allAdditionalsIdentcials) {
                                     identicFound = true;
 
-                                    //console.log('Idêntico!');
+                                    //console.log('Idêntico com adicionais!');
 
                                     handleTotalOrder(
                                         {
@@ -218,147 +267,100 @@ export default function ProductDetails() {
                                         navigation.navigate('Cart');
                                     }, 1000);
                                 }
-                                else if (itemsToOrder.orderItemAdditionals.length === listItem.orderItemAdditionals.length) { // Same additionals amount.
-                                    let allAdditionalsIdentcials = true;
+                            }
+                        }
+                    });
+                }
 
-                                    itemsToOrder.orderItemAdditionals.forEach(additionalToOrder => {
-                                        const itemFound = listItem.orderItemAdditionals.find(orderItemAdditionals => {
-                                            return additionalToOrder.additional_id === orderItemAdditionals.additional_id
-                                        });
+                if (!identicFound) {
+                    // Not identic product on cart, create a new.
+                    try {
+                        const res = await api.get('categories');
 
-                                        //console.log('itemFound: ', itemFound);
+                        handleCategories(res.data);
+                        const categories: Category[] = res.data;
 
-                                        if (!itemFound)
-                                            allAdditionalsIdentcials = false;
+                        categories.forEach(category => {
+                            category.products.forEach(productItem => {
+                                if (productItem.id === product.id) {
+                                    // const verify = verifyProductAvailable(productItem);
 
-                                        if (!allAdditionalsIdentcials)
-                                            return;
+                                    // if (verify === "paused") {
+                                    //     setModalWaiting("error");
+                                    //     setErrorMessage("Desculpe, mas esse produto acabou de ficar sem estoque.");
+
+                                    //     return;
+                                    // }
+                                    // else if (verify === "not-available") {
+                                    //     setModalWaiting("error");
+                                    //     setErrorMessage("Desculpe, mas esse produto não está mais disponível nesse horário.");
+
+                                    //     return;
+                                    // }
+
+                                    const newItemnsToOrder = [...order.orderItems, itemsToOrder];
+
+                                    handleTotalOrder({
+                                        ...order, orderItems: newItemnsToOrder.map((item, index) => {
+
+                                            return { ...item, id: index };
+                                        })
                                     });
 
-                                    if (allAdditionalsIdentcials) {
-                                        identicFound = true;
+                                    setTimeout(() => {
+                                        setModalWaiting("hidden");
 
-                                        //console.log('Idêntico com adicionais!');
-
-                                        handleTotalOrder(
-                                            {
-                                                ...order, orderItems: order.orderItems.map((item, index) => {
-                                                    if (index === listItem.id) {
-                                                        return {
-                                                            ...item, amount: item.amount + selectedProduct.amount
-                                                        };
-                                                    }
-
-                                                    return item;
-                                                })
-                                            }
-                                        );
-
-                                        setTimeout(() => {
-                                            setModalWaiting("hidden");
-
-                                            navigation.navigate('Cart');
-                                        }, 1000);
-                                    }
+                                        navigation.navigate('Cart');
+                                    }, 1000);
                                 }
-                            }
+                            });
                         });
                     }
-
-                    if (!identicFound) {
-                        // Not identic product on cart, create a new.
-                        try {
-                            const res = await api.get('categories');
-
-                            handleCategories(res.data);
-                            const categories: Category[] = res.data;
-
-                            categories.forEach(category => {
-                                category.products.forEach(productItem => {
-                                    if (productItem.id === product.id) {
-                                        const verify = verifyProductAvailable(productItem);
-
-                                        if (verify === "paused") {
-                                            setModalWaiting("error");
-                                            setErrorMessage("Desculpe, mas esse produto acabou de ficar sem estoque.");
-
-                                            return;
-                                        }
-                                        else if (verify === "not-available") {
-                                            setModalWaiting("error");
-                                            setErrorMessage("Desculpe, mas esse produto não está mais disponível nesse horário.");
-
-                                            return;
-                                        }
-
-                                        const newItemnsToOrder = [...order.orderItems, itemsToOrder];
-
-                                        handleTotalOrder({
-                                            ...order, orderItems: newItemnsToOrder.map((item, index) => {
-
-                                                return { ...item, id: index };
-                                            })
-                                        });
-
-                                        setTimeout(() => {
-                                            setModalWaiting("hidden");
-
-                                            navigation.navigate('Cart');
-                                        }, 1000);
-                                    }
-                                });
-                            });
-                        }
-                        catch {
-                            setModalWaiting("error");
-                            setErrorMessage("Por favor, verifique a sua conexão com a internet.");
-                        }
+                    catch {
+                        setModalWaiting("error");
+                        setErrorMessage("Por favor, verifique a sua conexão com a internet.");
                     }
-                }
-                else {
-                    // Empity cart, create a new product on cart.
-                    handleTotalOrder({
-                        id: '0',
-                        tracker: '',
-                        customer_id: '0',
-                        customer: '',
-                        ordered_at: new Date(),
-                        placed_at: new Date(),
-                        delivery_in: new Date(),
-                        delivered_at: new Date(),
-                        sub_total: 0,
-                        cupom: '',
-                        delivery_tax: 0,
-                        delivery_type: '',
-                        delivery_estimated: 0,
-                        discount: 0,
-                        fee: 0,
-                        total: 0,
-                        payment: '',
-                        payment_type: '',
-                        paid: false,
-                        address: '',
-                        reason_cancellation: '',
-                        cancelled_at: new Date(),
-                        orderStatus: {
-                            id: 1,
-                            title: '',
-                            description: '',
-                            order: 0,
-                        },
-                        orderItems: [itemsToOrder],
-                    });
-
-                    setTimeout(() => {
-                        setModalWaiting("hidden");
-
-                        navigation.navigate('Cart');
-                    }, 1000);
                 }
             }
             else {
-                setModalWaiting("error");
-                setErrorMessage("Você deve escolher os itens obrigatórios.");
+                // Empity cart, create a new product on cart.
+                handleTotalOrder({
+                    id: '0',
+                    tracker: '',
+                    customer_id: '0',
+                    customer: '',
+                    ordered_at: new Date(),
+                    placed_at: new Date(),
+                    delivery_in: new Date(),
+                    delivered_at: new Date(),
+                    sub_total: 0,
+                    cupom: '',
+                    delivery_tax: 0,
+                    delivery_type: '',
+                    delivery_estimated: 0,
+                    discount: 0,
+                    fee: 0,
+                    total: 0,
+                    payment: '',
+                    payment_type: '',
+                    paid: false,
+                    address: '',
+                    reason_cancellation: '',
+                    cancelled_at: new Date(),
+                    orderStatus: {
+                        id: 1,
+                        title: '',
+                        description: '',
+                        order: 0,
+                    },
+                    orderItems: [itemsToOrder],
+                });
+
+                setTimeout(() => {
+                    setModalWaiting("hidden");
+
+                    navigation.navigate('Cart');
+                }, 1000);
             }
         }
     }
@@ -464,8 +466,13 @@ export default function ProductDetails() {
 
                                     <View style={styles.rowPrice}>
                                         {
-                                            product.discount ? <Text style={styles.productPriceDiscount}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text> :
-                                                <Text style={[styles.productPrice, { color: colorHighLight }]}>{`R$ ${product.price.toString().replace('.', ',')}`}</Text>
+                                            product.discount ?
+                                                <Text style={styles.productPriceDiscount}>
+                                                    {`R$ ${product.price.toString().replace('.', ',')}`}
+                                                </Text> :
+                                                <Text style={[styles.productPrice, { color: colorHighLight }]}>
+                                                    {`R$ ${product.price.toString().replace('.', ',')}`}
+                                                </Text>
                                         }
 
                                         {
@@ -578,7 +585,7 @@ export default function ProductDetails() {
 
                                                 <View>
                                                     <View style={{ marginVertical: 5 }}>
-                                                        <Text style={[globalStyles.subTitlePrimary, { textAlign: 'center' }]}>Para comprar este produto você precisa 
+                                                        <Text style={[globalStyles.subTitlePrimary, { textAlign: 'center' }]}>Para comprar este produto você precisa
                                                         primeiro consultar a quantidade e o total com um atendente.</Text>
                                                     </View>
 
@@ -628,39 +635,39 @@ export default function ProductDetails() {
                                         <Text style={globalStyles.footerButtonText}>Verificar valor</Text>
                                     </TouchableHighlight>
                                 </View> : <>
-                                        <View style={styles.footerContainerAmount}>
-                                            <View style={styles.footerContainerAmountRow}>
-                                                <View style={styles.footerContainerAmountColumnMinus}>
-                                                    <TouchableOpacity
-                                                        onPress={() => { handleAmount("minus") }}
-                                                        disabled={
-                                                            selectedProduct && selectedProduct.amount > 1 ? false : true
-                                                        }
-                                                    >
-                                                        <Feather name="minus" style={styles.iconButtons} />
-                                                    </TouchableOpacity>
-                                                </View>
+                                    <View style={styles.footerContainerAmount}>
+                                        <View style={styles.footerContainerAmountRow}>
+                                            <View style={styles.footerContainerAmountColumnMinus}>
+                                                <TouchableOpacity
+                                                    onPress={() => { handleAmount("minus") }}
+                                                    disabled={
+                                                        selectedProduct && selectedProduct.amount > 1 ? false : true
+                                                    }
+                                                >
+                                                    <Feather name="minus" style={styles.iconButtons} />
+                                                </TouchableOpacity>
+                                            </View>
 
-                                                <View style={styles.footerContainerAmountColumnValue}>
-                                                    <Text style={styles.iconButtons}>{selectedProduct?.amount}</Text>
-                                                </View>
+                                            <View style={styles.footerContainerAmountColumnValue}>
+                                                <Text style={styles.iconButtons}>{selectedProduct?.amount}</Text>
+                                            </View>
 
-                                                <View style={styles.footerContainerAmountColumnPlus}>
-                                                    <TouchableOpacity onPress={() => { handleAmount("plus") }}>
-                                                        <Feather name="plus" style={styles.iconButtons} />
-                                                    </TouchableOpacity>
-                                                </View>
+                                            <View style={styles.footerContainerAmountColumnPlus}>
+                                                <TouchableOpacity onPress={() => { handleAmount("plus") }}>
+                                                    <Feather name="plus" style={styles.iconButtons} />
+                                                </TouchableOpacity>
                                             </View>
                                         </View>
+                                    </View>
 
-                                        <View style={{ flex: 0.5 }}>
-                                            <Buttons
-                                                disabled={selectedProduct?.price === 0.00 || !store?.opened ? true : false}
-                                                title={`Adicionar  R$ ${selectedProduct && Number(selectedProduct.total).toFixed(2).toString().replace('.', ',')}`}
-                                                onPress={handleAddProductToCart}
-                                            />
-                                        </View>
-                                    </>
+                                    <View style={{ flex: 0.5 }}>
+                                        <Buttons
+                                            disabled={selectedProduct?.price === 0.00 || !store?.opened ? true : false}
+                                            title={`Adicionar  R$ ${selectedProduct && Number(selectedProduct.total).toFixed(2).toString().replace('.', ',')}`}
+                                            onPress={handleAddProductToCart}
+                                        />
+                                    </View>
+                                </>
                             }
                         </PageFooter>
                     </> :
@@ -737,8 +744,7 @@ const styles = StyleSheet.create({
     },
 
     productValuesContainer: {
-        paddingHorizontal: 15,
-        marginVertical: 8
+        marginVertical: 8,
     },
 
     containerAdditionals: {
