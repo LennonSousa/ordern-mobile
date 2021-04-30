@@ -8,7 +8,7 @@ import {
     StatusBar
 } from 'react-native';
 
-import { CategoriesContext } from '../../context/categoriesContext';
+import { StoreContext } from '../../context/storeContext';
 
 import Input from '../../components/Interfaces/Inputs';
 import CategoryItem, { Category } from '../../components/Categories';
@@ -18,23 +18,24 @@ import searchResult from '../../assets/images/undraw_searching_p5ux.png';
 import globalStyles from '../../assets/styles/global';
 
 export default function Search() {
-    const { categories } = useContext(CategoriesContext);
+    const { store } = useContext(StoreContext);
 
-    const [results, setResults] = useState(categories)
+    const [results, setResults] = useState(store ? store.categories : [])
 
     useEffect(() => {
-        setResults(categories);
+        setResults(store ? store.categories : []);
     }, []);
 
     function handleSearch(term: string) {
-        if (term === "") {
-            setResults(categories);
-        }
-        else if (categories) {
+        if (store) {
+            if (term === "") {
+                setResults(store.categories);
+                return;
+            }
 
             let resultsUpdated: Category[] = [];
 
-            categories.forEach(category => {
+            store.categories.forEach(category => {
                 const productsFound = category.products.filter(product => {
                     return product.title.toLocaleLowerCase().includes(term.toLocaleLowerCase());
                 });
@@ -66,7 +67,7 @@ export default function Search() {
                 results && results.length > 0 ? <ScrollView showsVerticalScrollIndicator={false}>
                     {
                         results.map((category, index) => {
-                            return <CategoryItem key={index} category={category} />
+                            return <CategoryItem key={index} title={category.title} renderProducts products={category.products} />
                         })
                     }
                 </ScrollView> :

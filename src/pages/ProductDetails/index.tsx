@@ -18,18 +18,13 @@ import { getStatusBarHeight } from 'react-native-status-bar-height';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
 
-import api from '../../services/api';
-
 import { StoreContext } from '../../context/storeContext';
 import { SelectedProductContext } from '../../context/selectedProductContext';
-import { CategoriesContext } from '../../context/categoriesContext';
 import { ContextOrdering } from '../../context/orderingContext';
 
-import { Category } from '../../components/Categories';
 import { Product } from '../../components/Products';
 import { ProductCategory } from '../../components/ProductCategories';
 import ProductValues from '../../components/ProductValues';
-import verifyProductAvailable from '../../utils/verifyProductAvailable';
 import ProductDetailsShimmer from '../../components/Shimmers/ProductDetails';
 import WaitingModal, { statusModal } from '../../components/Interfaces/WaitingModal';
 import { OrderItem } from '../../components/OrderItems';
@@ -59,7 +54,6 @@ export default function ProductDetails() {
     const navigation = useNavigation();
 
     const { store } = useContext(StoreContext);
-    const { handleCategories } = useContext(CategoriesContext);
     const { selectedProduct, handleSelectedProduct } = useContext(SelectedProductContext);
     const { order, handleTotalOrder } = useContext(ContextOrdering);
     const [selectedProductNotes, setSelectedProductNotes] = useState('');
@@ -143,8 +137,6 @@ export default function ProductDetails() {
                         validetedAmountAdditionals = false;
                 }
             });
-
-            console.log(validetedAmountAdditionals)
 
             if (!validetedAmountAdditionals) {
                 setModalWaiting("error");
@@ -274,52 +266,20 @@ export default function ProductDetails() {
 
                 if (!identicFound) {
                     // Not identic product on cart, create a new.
-                    try {
-                        const res = await api.get('categories');
+                    const newItemnsToOrder = [...order.orderItems, itemsToOrder];
 
-                        handleCategories(res.data);
-                        const categories: Category[] = res.data;
+                    handleTotalOrder({
+                        ...order, orderItems: newItemnsToOrder.map((item, index) => {
 
-                        categories.forEach(category => {
-                            category.products.forEach(productItem => {
-                                if (productItem.id === product.id) {
-                                    // const verify = verifyProductAvailable(productItem);
+                            return { ...item, id: index };
+                        })
+                    });
 
-                                    // if (verify === "paused") {
-                                    //     setModalWaiting("error");
-                                    //     setErrorMessage("Desculpe, mas esse produto acabou de ficar sem estoque.");
+                    setTimeout(() => {
+                        setModalWaiting("hidden");
 
-                                    //     return;
-                                    // }
-                                    // else if (verify === "not-available") {
-                                    //     setModalWaiting("error");
-                                    //     setErrorMessage("Desculpe, mas esse produto não está mais disponível nesse horário.");
-
-                                    //     return;
-                                    // }
-
-                                    const newItemnsToOrder = [...order.orderItems, itemsToOrder];
-
-                                    handleTotalOrder({
-                                        ...order, orderItems: newItemnsToOrder.map((item, index) => {
-
-                                            return { ...item, id: index };
-                                        })
-                                    });
-
-                                    setTimeout(() => {
-                                        setModalWaiting("hidden");
-
-                                        navigation.navigate('Cart');
-                                    }, 1000);
-                                }
-                            });
-                        });
-                    }
-                    catch {
-                        setModalWaiting("error");
-                        setErrorMessage("Por favor, verifique a sua conexão com a internet.");
-                    }
+                        navigation.navigate('Cart');
+                    }, 1000);
                 }
             }
             else {

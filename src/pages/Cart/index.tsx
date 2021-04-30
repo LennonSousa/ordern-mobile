@@ -45,7 +45,7 @@ export default function Cart() {
 
                 const resStore = await api.get('store');
 
-                const resCategories = await api.get('categories');
+                const resCategories = await api.get('store/categories');
                 
                 const updatedCategories: Category[] = resCategories.data;
 

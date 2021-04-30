@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, Dimensions } from 'react-native';
 
-import { Product } from '../Products';
+import ProductItem, { Product } from '../Products';
 
 import globalStyles from '../../assets/styles/global';
 
@@ -15,17 +15,23 @@ export interface Category {
 
 interface CategoryProps {
     title: string;
-    paused: boolean;
+    renderProducts?: boolean;
+    products?: Product[];
 }
 
-export default function Categories({ title, paused }: CategoryProps) {
+export default function Categories({ title, renderProducts = false, products }: CategoryProps) {
 
     return (
-        !paused ? <View style={styles.categoryItem}>
+        <View style={styles.categoryItem}>
             <View>
                 <Text style={globalStyles.titlePrimaryLight}>{title}</Text>
             </View>
-        </View> : null
+            {
+                renderProducts && products && products.map((product, index) => {
+                    return <ProductItem key={index} product={product} />
+                })
+            }
+        </View>
     )
 }
 
